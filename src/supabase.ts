@@ -8,7 +8,7 @@ export const db = createClient(supabaseUrl, supabaseKey)
 // ── Users ──
 export async function ensureUser(telegramId: number, username?: string, firstName?: string) {
   const { data, error } = await db
-    .from('users')
+    .from('tg_users')
     .upsert({ id: telegramId, username, first_name: firstName }, { onConflict: 'id' })
     .select()
     .single()
@@ -24,7 +24,7 @@ export async function connectWallet(
   signature?: string,
 ) {
   const { data, error } = await db
-    .from('wallet_connections')
+    .from('tg_wallet_connections')
     .upsert({ user_id: userId, chain, address, signature }, { onConflict: 'user_id,chain' })
     .select()
     .single()
@@ -34,7 +34,7 @@ export async function connectWallet(
 
 export async function getWalletConnection(userId: number, chain: 'evm' | 'solana' | 'ton') {
   const { data } = await db
-    .from('wallet_connections')
+    .from('tg_wallet_connections')
     .select('*')
     .eq('user_id', userId)
     .eq('chain', chain)
@@ -43,13 +43,13 @@ export async function getWalletConnection(userId: number, chain: 'evm' | 'solana
 }
 
 export async function getUserWallets(userId: number) {
-  const { data } = await db.from('wallet_connections').select('*').eq('user_id', userId)
+  const { data } = await db.from('tg_wallet_connections').select('*').eq('user_id', userId)
   return data ?? []
 }
 
 // ── Balances ──
 export async function getBalance(userId: number) {
-  const { data } = await db.from('balances').select('*').eq('user_id', userId).single()
+  const { data } = await db.from('tg_balances').select('*').eq('user_id', userId).single()
   return data ?? { user_id: userId, balance: 0, balance_evm: 0, balance_sol: 0, balance_ton: 0 }
 }
 
@@ -59,7 +59,7 @@ export async function updateBalance(
   delta: number,
 ) {
   const col = chain === 'evm' ? 'balance_evm' : chain === 'solana' ? 'balance_sol' : 'balance_ton'
-  const { data, error } = await db.rpc('update_balance', {
+  const { data, error } = await db.rpc('tg_update_balance', {
     p_user_id: userId,
     p_chain_col: col,
     p_delta: delta,
@@ -78,7 +78,7 @@ export async function createDeposit(
   amount: number,
 ) {
   const { data, error } = await db
-    .from('deposits')
+    .from('tg_deposits')
     .insert({
       user_id: userId,
       chain,
@@ -95,7 +95,7 @@ export async function createDeposit(
 
 export async function confirmDeposit(txHash: string) {
   const { data, error } = await db
-    .from('deposits')
+    .from('tg_deposits')
     .update({ status: 'confirmed', confirmed_at: new Date().toISOString() })
     .eq('tx_hash', txHash)
     .select()
@@ -112,7 +112,7 @@ export async function createWithdrawal(
   amount: number,
 ) {
   const { data, error } = await db
-    .from('withdrawals')
+    .from('tg_withdrawals')
     .insert({ user_id: userId, chain, to_address: toAddress, amount })
     .select()
     .single()
@@ -122,7 +122,7 @@ export async function createWithdrawal(
 
 export async function completeWithdrawal(id: string, txHash: string) {
   const { data, error } = await db
-    .from('withdrawals')
+    .from('tg_withdrawals')
     .update({ status: 'completed', tx_hash: txHash, completed_at: new Date().toISOString() })
     .eq('id', id)
     .select()
@@ -146,7 +146,7 @@ export async function recordBet(params: {
   playerWon: boolean
 }) {
   const { data, error } = await db
-    .from('bets')
+    .from('tg_bets')
     .insert({
       user_id: params.userId,
       game: params.game,
@@ -170,7 +170,7 @@ export async function recordBet(params: {
 // ── Server Seeds ──
 export async function getActiveSeed() {
   const { data } = await db
-    .from('server_seeds')
+    .from('tg_server_seeds')
     .select('*')
     .eq('status', 'active')
     .single()
@@ -179,7 +179,7 @@ export async function getActiveSeed() {
 
 export async function createServerSeed(seed: string, seedHash: string) {
   const { data, error } = await db
-    .from('server_seeds')
+    .from('tg_server_seeds')
     .insert({ seed, seed_hash: seedHash, max_nonce: 10000 })
     .select()
     .single()
@@ -188,14 +188,14 @@ export async function createServerSeed(seed: string, seedHash: string) {
 }
 
 export async function incrementSeedNonce(seedId: string) {
-  const { data, error } = await db.rpc('increment_seed_nonce', { p_seed_id: seedId })
+  const { data, error } = await db.rpc('tg_increment_seed_nonce', { p_seed_id: seedId })
   if (error) throw error
   return data
 }
 
 export async function revealSeed(seedId: string) {
   const { data, error } = await db
-    .from('server_seeds')
+    .from('tg_server_seeds')
     .update({ status: 'revealed', revealed_at: new Date().toISOString() })
     .eq('id', seedId)
     .select()

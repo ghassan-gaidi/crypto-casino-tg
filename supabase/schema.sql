@@ -1,10 +1,10 @@
--- Crypto Casino TG — Supabase Schema
--- Assumes pgcrypto is already enabled in the Supabase project
+-- Crypto Casino TG — Supabase Schema (clean, standalone tables)
+-- Prefixed with tg_ to avoid conflicts with existing project tables
 
 -- ============================================================
--- USERS
+-- TG USERS
 -- ============================================================
-CREATE TABLE IF NOT EXISTS public.users (
+CREATE TABLE IF NOT EXISTS public.tg_users (
   id            BIGINT PRIMARY KEY,           -- Telegram user ID
   username      TEXT,
   first_name    TEXT,
@@ -16,39 +16,38 @@ CREATE TABLE IF NOT EXISTS public.users (
 -- ============================================================
 -- WALLET CONNECTIONS (non-custodial)
 -- ============================================================
-CREATE TABLE IF NOT EXISTS public.wallet_connections (
+CREATE TABLE IF NOT EXISTS public.tg_wallet_connections (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       BIGINT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id       BIGINT NOT NULL REFERENCES public.tg_users(id) ON DELETE CASCADE,
   chain         TEXT NOT NULL CHECK (chain IN ('evm', 'solana', 'ton')),
   address       TEXT NOT NULL,
-  signature     TEXT,                          -- signed message proving ownership
+  signature     TEXT,
   connected_at  TIMESTAMPTZ DEFAULT now(),
   UNIQUE(user_id, chain)
 );
 
-CREATE INDEX idx_wallet_connections_user ON public.wallet_connections(user_id);
-CREATE INDEX idx_wallet_connections_address ON public.wallet_connections(address);
+CREATE INDEX IF NOT EXISTS idx_tg_wallet_user ON public.tg_wallet_connections(user_id);
+CREATE INDEX IF NOT EXISTS idx_tg_wallet_addr ON public.tg_wallet_connections(address);
 
 -- ============================================================
--- DEPOSIT ADDRESSES (per-user hot wallet sub-addresses)
+-- DEPOSIT ADDRESSES
 -- ============================================================
-CREATE TABLE IF NOT EXISTS public.deposit_addresses (
+CREATE TABLE IF NOT EXISTS public.tg_deposit_addresses (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       BIGINT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id       BIGINT NOT NULL REFERENCES public.tg_users(id) ON DELETE CASCADE,
   chain         TEXT NOT NULL CHECK (chain IN ('evm', 'solana', 'ton')),
-  address       TEXT NOT NULL UNIQUE,          -- the deposit address
-  prv_key_id    TEXT,                          -- key identifier in KMS / env (never store raw PK)
+  address       TEXT NOT NULL UNIQUE,
+  prv_key_id    TEXT,
   created_at    TIMESTAMPTZ DEFAULT now(),
   UNIQUE(user_id, chain)
 );
 
 -- ============================================================
--- BALANCES (credit balance for fast bets)
+-- BALANCES
 -- ============================================================
-CREATE TABLE IF NOT EXISTS public.balances (
-  user_id       BIGINT PRIMARY KEY REFERENCES public.users(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS public.tg_balances (
+  user_id       BIGINT PRIMARY KEY REFERENCES public.tg_users(id) ON DELETE CASCADE,
   balance       DECIMAL(20,8) NOT NULL DEFAULT 0,
-  -- per-chain breakdown (denominated in smallest unit for that chain)
   balance_evm   DECIMAL(20,8) NOT NULL DEFAULT 0,
   balance_sol   DECIMAL(20,8) NOT NULL DEFAULT 0,
   balance_ton   DECIMAL(20,8) NOT NULL DEFAULT 0,
@@ -58,31 +57,31 @@ CREATE TABLE IF NOT EXISTS public.balances (
 -- ============================================================
 -- DEPOSITS
 -- ============================================================
-CREATE TABLE IF NOT EXISTS public.deposits (
+CREATE TABLE IF NOT EXISTS public.tg_deposits (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id         BIGINT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id         BIGINT NOT NULL REFERENCES public.tg_users(id) ON DELETE CASCADE,
   chain           TEXT NOT NULL CHECK (chain IN ('evm', 'solana', 'ton')),
   tx_hash         TEXT NOT NULL UNIQUE,
   from_address    TEXT NOT NULL,
   to_address      TEXT NOT NULL,
   amount          DECIMAL(20,8) NOT NULL,
-  token           TEXT NOT NULL DEFAULT 'native',  -- 'native' or token contract address
+  token           TEXT NOT NULL DEFAULT 'native',
   confirmations   INT DEFAULT 0,
   status          TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'failed')),
   detected_at     TIMESTAMPTZ DEFAULT now(),
   confirmed_at    TIMESTAMPTZ
 );
 
-CREATE INDEX idx_deposits_user ON public.deposits(user_id);
-CREATE INDEX idx_deposits_tx ON public.deposits(tx_hash);
-CREATE INDEX idx_deposits_status ON public.deposits(status);
+CREATE INDEX IF NOT EXISTS idx_tg_deposits_user ON public.tg_deposits(user_id);
+CREATE INDEX IF NOT EXISTS idx_tg_deposits_tx ON public.tg_deposits(tx_hash);
+CREATE INDEX IF NOT EXISTS idx_tg_deposits_status ON public.tg_deposits(status);
 
 -- ============================================================
 -- WITHDRAWALS
 -- ============================================================
-CREATE TABLE IF NOT EXISTS public.withdrawals (
+CREATE TABLE IF NOT EXISTS public.tg_withdrawals (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id         BIGINT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id         BIGINT NOT NULL REFERENCES public.tg_users(id) ON DELETE CASCADE,
   chain           TEXT NOT NULL CHECK (chain IN ('evm', 'solana', 'ton')),
   to_address      TEXT NOT NULL,
   amount          DECIMAL(20,8) NOT NULL,
@@ -94,41 +93,39 @@ CREATE TABLE IF NOT EXISTS public.withdrawals (
   completed_at    TIMESTAMPTZ
 );
 
-CREATE INDEX idx_withdrawals_user ON public.withdrawals(user_id);
+CREATE INDEX IF NOT EXISTS idx_tg_withdrawals_user ON public.tg_withdrawals(user_id);
 
 -- ============================================================
 -- BETS
 -- ============================================================
-CREATE TABLE IF NOT EXISTS public.bets (
+CREATE TABLE IF NOT EXISTS public.tg_bets (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id         BIGINT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id         BIGINT NOT NULL REFERENCES public.tg_users(id) ON DELETE CASCADE,
   game            TEXT NOT NULL CHECK (game IN ('dice', 'coinflip')),
   chain           TEXT NOT NULL CHECK (chain IN ('evm', 'solana', 'ton')),
   bet_amount      DECIMAL(20,8) NOT NULL,
   payout          DECIMAL(20,8) NOT NULL,
-  outcome         JSONB,                       -- game-specific result data
-  -- Provably fair fields
+  outcome         JSONB,
   server_seed     TEXT NOT NULL,
   client_seed     TEXT NOT NULL,
   nonce           INT NOT NULL,
   result_hash     TEXT NOT NULL,
-  -- Settlements
   player_won      BOOLEAN,
   settled         BOOLEAN DEFAULT false,
   created_at      TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX idx_bets_user ON public.bets(user_id);
-CREATE INDEX idx_bets_game ON public.bets(game);
-CREATE INDEX idx_bets_created ON public.bets(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_tg_bets_user ON public.tg_bets(user_id);
+CREATE INDEX IF NOT EXISTS idx_tg_bets_game ON public.tg_bets(game);
+CREATE INDEX IF NOT EXISTS idx_tg_bets_created ON public.tg_bets(created_at DESC);
 
 -- ============================================================
 -- SERVER SEEDS (provably fair)
 -- ============================================================
-CREATE TABLE IF NOT EXISTS public.server_seeds (
+CREATE TABLE IF NOT EXISTS public.tg_server_seeds (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   seed            TEXT NOT NULL UNIQUE,
-  seed_hash       TEXT NOT NULL UNIQUE,         -- SHA-256 hash published before use
+  seed_hash       TEXT NOT NULL UNIQUE,
   status          TEXT DEFAULT 'active' CHECK (status IN ('active', 'used', 'revealed')),
   max_nonce       INT NOT NULL DEFAULT 10000,
   current_nonce   INT NOT NULL DEFAULT 0,
@@ -136,4 +133,4 @@ CREATE TABLE IF NOT EXISTS public.server_seeds (
   revealed_at     TIMESTAMPTZ
 );
 
-CREATE INDEX idx_server_seeds_status ON public.server_seeds(status);
+CREATE INDEX IF NOT EXISTS idx_tg_seeds_status ON public.tg_server_seeds(status);

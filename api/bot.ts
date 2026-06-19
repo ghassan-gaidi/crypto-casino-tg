@@ -1,6 +1,6 @@
 import { Bot, webhookCallback, InlineKeyboard, Keyboard } from 'grammy'
 import type { Context } from 'grammy'
-import { ensureUser, getBalance, getActiveSeed, createServerSeed, incrementSeedNonce, recordBet, connectWallet, getUserWallets, createWithdrawal, revealSeed } from '../src/supabase'
+import { ensureUser, getBalance, getActiveSeed, createServerSeed, incrementSeedNonce, recordBet, connectWallet, getUserWallets, createWithdrawal, revealSeed, updateBalance } from '../src/supabase'
 import { generateSeed, hashSeed } from '../src/provably-fair'
 import { playDice } from '../src/games/dice'
 import { playCoinflip } from '../src/games/coinflip'
@@ -78,6 +78,35 @@ bot.command('withdraw', async (ctx) => {
     .text('TON', 'withdraw:ton')
 
   await ctx.reply('Select a chain to withdraw from:', { reply_markup: keyboard })
+})
+
+// ── /withdraw <chain> <amount> <address> ──
+bot.hears(/^\/wd\s+(evm|sol|ton)\s+(\d+(?:\.\d+)?)\s+(0x[a-fA-F0-9]+|\S+)$/, async (ctx) => {
+  const userId = ctx.from!.id
+  const chain = ctx.match[1] as string
+  const amount = parseFloat(ctx.match[2]!)
+  const toAddress = ctx.match[3]!
+
+  const chainMap: Record<string, 'evm' | 'solana' | 'ton'> = { evm: 'evm', sol: 'solana', ton: 'ton' }
+  const dbChain = chainMap[chain] || 'evm'
+
+  const bal = await getBalance(userId)
+  const balCol = chain === 'evm' ? bal.balance_evm : chain === 'sol' ? bal.balance_sol : bal.balance_ton
+
+  if (amount > Number(balCol)) {
+    await ctx.reply('❌ Insufficient balance.')
+    return
+  }
+
+  await createWithdrawal(userId, dbChain, toAddress, amount)
+
+  // Deduct from balance immediately
+  await updateBalance(userId, dbChain, -amount)
+
+  await ctx.reply(
+    `✅ *Withdrawal Requested*\n\nChain: ${chain.toUpperCase()}\nAmount: ${amount}\nTo: \`${toAddress.slice(0, 8)}...${toAddress.slice(-4)}\`\nStatus: pending\n\nYou'll receive the funds once the withdrawal is processed.`,
+    { parse_mode: 'Markdown' },
+  )
 })
 
 // ── /connect ──
@@ -241,7 +270,7 @@ bot.command('dice', async (ctx) => {
 
   // Update balance (deduct bet, add payout)
   const delta = result.payout - betAmount
-  // In real impl: updateBalance(userId, 'evm', delta)
+  await updateBalance(userId, 'evm', delta)
 
   await incrementSeedNonce(seed.id)
 

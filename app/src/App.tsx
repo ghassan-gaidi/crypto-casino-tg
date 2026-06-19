@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import DiceGame from './components/DiceGame'
 import CoinflipGame from './components/CoinflipGame'
+import BalancePage from './components/BalancePage'
 
 type Page = 'home' | 'dice' | 'coinflip' | 'balance'
 
@@ -48,6 +49,7 @@ export default function App() {
 
   if (page === 'dice') return <DiceGame onBack={nav('home')} userId={user?.id} />
   if (page === 'coinflip') return <CoinflipGame onBack={nav('home')} userId={user?.id} />
+  if (page === 'balance') return <BalancePage onBack={nav('home')} userId={user?.id} username={user?.username} />
 
   return (
     <div style={{ padding: '16px', maxWidth: 480, margin: '0 auto' }}>
@@ -90,8 +92,8 @@ export default function App() {
         borderTop: '1px solid #1a1a2e',
       }}>
         <QuickLink label="💰 Balance" onClick={nav('balance')} />
-        <QuickLink label="🔍 Verify" onClick={() => window.open('https://t.me/' + process.env.VITE_BOT_USERNAME, '_blank')} />
-        <QuickLink label="❓ Help" onClick={() => setPage('balance')} />
+        <QuickLink label="🔍 Verify" onClick={() => {}} />
+        <QuickLink label="❓ Help" onClick={() => window.open('https://t.me/' + (window as any).BOT_USERNAME, '_blank')} />
       </div>
     </div>
   )
