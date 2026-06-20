@@ -1,6 +1,7 @@
 {
   "name": "crypto-casino-tg",
   "private": true,
+  "type": "module",
   "scripts": {
     "build:app": "cd app && npm run build",
     "set-webhook": "npx tsx scripts/set-webhook.ts",
