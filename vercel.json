@@ -2,6 +2,17 @@
   "installCommand": "npm install && cd app && npm install",
   "buildCommand": "cd app && npm run build",
   "outputDirectory": "app/dist",
+  "functions": {
+    "api/bot.js": {
+      "runtime": "@vercel/node@3"
+    },
+    "api/debug.js": {
+      "runtime": "@vercel/node@3"
+    },
+    "api/min.js": {
+      "runtime": "@vercel/node@3"
+    }
+  },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
