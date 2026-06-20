@@ -11,6 +11,15 @@ const botToken = process.env.TELEGRAM_BOT_TOKEN;
 if (!botToken)
     throw new Error('TELEGRAM_BOT_TOKEN is required');
 const bot = new grammy_1.Bot(botToken);
+// ── Set Mini App MenuButton ──
+const miniAppUrl = process.env.MINI_APP_URL || 'https://crypto-casino-tg.vercel.app';
+bot.api.setChatMenuButton({
+    menu_button: {
+        type: 'web_app',
+        text: '🎰 Casino',
+        web_app: { url: miniAppUrl },
+    },
+}).catch(() => {});
 // ── Middleware: ensure user in DB ──
 bot.use(async (ctx, next) => {
     if (ctx.from) {
