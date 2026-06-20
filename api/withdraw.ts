@@ -1,6 +1,5 @@
-import { generateSeed, hashSeed } from '../src/provably-fair'
-import { getActiveSeed, createServerSeed, incrementSeedNonce, recordBet, updateBalance, ensureUser, getBalance } from '../src/supabase'
-import { playCoinflip } from '../src/games/coinflip'
+import { ensureUser, getBalance, createWithdrawal, completeWithdrawal, updateBalance } from '../src/supabase'
+import { Wallet, JsonRpcProvider, parseEther } from 'ethers'
 
 interface WithdrawRequest {
   amount: number
@@ -50,9 +49,42 @@ export default async function handler(req: Request) {
     }
 
     // Create withdrawal record and deduct balance
-    const { createWithdrawal } = await import('../src/supabase')
-    await createWithdrawal(userId, chain, address, amount)
+    const withdrawal = await createWithdrawal(userId, chain, address, amount)
     await updateBalance(userId, chain, -amount)
+
+    // Send the transaction for EVM withdrawals
+    if (chain === 'evm' && process.env.HOT_WALLET_PK && process.env.BASE_RPC_URL) {
+      try {
+        const provider = new JsonRpcProvider(process.env.BASE_RPC_URL)
+        const wallet = new Wallet(process.env.HOT_WALLET_PK, provider)
+        const tx = await wallet.sendTransaction({
+          to: address,
+          value: parseEther(amount.toString()),
+        })
+        await completeWithdrawal(withdrawal.id, tx.hash)
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            chain,
+            amount,
+            address: `${address.slice(0, 8)}...${address.slice(-4)}`,
+            status: 'completed',
+            txHash: tx.hash,
+            explorerUrl: `https://basescan.org/tx/${tx.hash}`,
+          }),
+          { headers: { 'Content-Type': 'application/json' } },
+        )
+      } catch (err) {
+        console.error('Withdrawal TX failed:', err)
+        // Refund balance
+        await updateBalance(userId, chain, amount)
+        return new Response(
+          JSON.stringify({ error: 'Transaction failed, balance refunded' }),
+          { status: 500 },
+        )
+      }
+    }
 
     return new Response(
       JSON.stringify({

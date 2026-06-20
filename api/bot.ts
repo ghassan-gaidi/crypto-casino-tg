@@ -1,9 +1,10 @@
 import { Bot, webhookCallback, InlineKeyboard, Keyboard } from 'grammy'
 import type { Context } from 'grammy'
-import { ensureUser, getBalance, getActiveSeed, createServerSeed, incrementSeedNonce, recordBet, connectWallet, getUserWallets, createWithdrawal, revealSeed, updateBalance } from '../src/supabase'
+import { ensureUser, getBalance, getActiveSeed, createServerSeed, incrementSeedNonce, recordBet, connectWallet, getUserWallets, createWithdrawal, completeWithdrawal, revealSeed, updateBalance } from '../src/supabase'
 import { generateSeed, hashSeed } from '../src/provably-fair'
 import { playDice } from '../src/games/dice'
 import { playCoinflip } from '../src/games/coinflip'
+import { Wallet, JsonRpcProvider, parseEther } from 'ethers'
 
 // ── Init Bot ──
 const botToken = process.env.TELEGRAM_BOT_TOKEN!
@@ -98,11 +99,43 @@ bot.hears(/^\/wd\s+(evm|sol|ton)\s+(\d+(?:\.\d+)?)\s+(0x[a-fA-F0-9]+|\S+)$/, asy
     return
   }
 
-  await createWithdrawal(userId, dbChain, toAddress, amount)
+  // Create withdrawal record
+  const withdrawal = await createWithdrawal(userId, dbChain, toAddress, amount)
 
   // Deduct from balance immediately
   await updateBalance(userId, dbChain, -amount)
 
+  // Only process EVM withdrawals automatically
+  if (chain === 'evm' && process.env.HOT_WALLET_PK && process.env.BASE_RPC_URL) {
+    try {
+      const provider = new JsonRpcProvider(process.env.BASE_RPC_URL)
+      const wallet = new Wallet(process.env.HOT_WALLET_PK, provider)
+
+      const tx = await wallet.sendTransaction({
+        to: toAddress,
+        value: parseEther(amount.toString()),
+      })
+
+      await completeWithdrawal(withdrawal.id, tx.hash)
+
+      await ctx.reply(
+        `✅ *Withdrawal Sent*\n\nChain: ${chain.toUpperCase()}\nAmount: ${amount} ETH\nTo: \`${toAddress.slice(0, 8)}...${toAddress.slice(-4)}\`\nTx: [View on Basescan](https://basescan.org/tx/${tx.hash})\n\nFunds sent successfully!`,
+        { parse_mode: 'Markdown', link_preview_options: { is_disabled: true } },
+      )
+      return
+    } catch (err) {
+      console.error('Withdrawal TX failed:', err)
+      // Refund the balance since TX failed
+      await updateBalance(userId, dbChain, amount)
+      await ctx.reply(
+        `❌ *Withdrawal Failed*\n\nThe transaction could not be sent. Your balance has been refunded.\n\nPlease try again later.`,
+        { parse_mode: 'Markdown' },
+      )
+      return
+    }
+  }
+
+  // For non-EVM or missing config — pending mode
   await ctx.reply(
     `✅ *Withdrawal Requested*\n\nChain: ${chain.toUpperCase()}\nAmount: ${amount}\nTo: \`${toAddress.slice(0, 8)}...${toAddress.slice(-4)}\`\nStatus: pending\n\nYou'll receive the funds once the withdrawal is processed.`,
     { parse_mode: 'Markdown' },
@@ -151,20 +184,13 @@ Open the Mini App and go to *Verify* to check any bet.
 bot.callbackQuery(/^deposit:/, async (ctx) => {
   const chain = ctx.match[0].split(':')[1] as string
   const userId = ctx.from!.id
+  const hotWallet = process.env.HOT_WALLET_PK
+    ? '0x29021dd5306D7b3b6608a2bc8276D33c1200C7Ef'
+    : '0x0000000000000000000000000000000000000000'
 
-  // In a real implementation, we'd generate/return a deposit address
   await ctx.answerCallbackQuery()
   await ctx.editMessageText(
-    `📥 *Deposit on ${chain.toUpperCase()}*
-
-To deposit, send funds to the address below. Your balance will be credited after 12 confirmations.
-
-\`0x0000000000000000000000000000000000000000\`
-
-*Minimum deposit:* 0.001 ${chain === 'evm' ? 'ETH' : chain === 'sol' ? 'SOL' : 'TON'}
-*Confirmations needed:* 12
-
-⚠️ Only send ${chain === 'evm' ? 'ETH (Base)' : chain === 'sol' ? 'SOL' : 'TON'} to this address.`,
+    `📥 *Deposit on ${chain.toUpperCase()}*\n\nTo deposit, send funds to the address below. Your balance will be credited after 12 confirmations.\n\n\`${hotWallet}\`\n\n*Minimum deposit:* 0.001 ${chain === 'evm' ? 'ETH' : chain === 'sol' ? 'SOL' : 'TON'}\n*Confirmations needed:* 12\n\n⚠️ Only send ${chain === 'evm' ? 'ETH (Base)' : chain === 'sol' ? 'SOL' : 'TON'} to this address.`,
     { parse_mode: 'Markdown' },
   )
 })
