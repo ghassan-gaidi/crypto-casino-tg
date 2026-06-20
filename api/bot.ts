@@ -1,10 +1,11 @@
 import { Bot, webhookCallback, InlineKeyboard, Keyboard } from 'grammy'
 import type { Context } from 'grammy'
-import { ensureUser, getBalance, getActiveSeed, createServerSeed, incrementSeedNonce, recordBet, connectWallet, getUserWallets, createWithdrawal, completeWithdrawal, revealSeed, updateBalance } from '../src/supabase'
+import { ensureUser, getBalance, getActiveSeed, createServerSeed, incrementSeedNonce, recordBet, connectWallet, getUserWallets, createWithdrawal, completeWithdrawal, revealSeed, updateBalance, db } from '../src/supabase'
 import { generateSeed, hashSeed } from '../src/provably-fair'
 import { playDice } from '../src/games/dice'
 import { playCoinflip } from '../src/games/coinflip'
-import { Wallet, JsonRpcProvider, parseEther } from 'ethers'
+import { Wallet, JsonRpcProvider, parseEther, formatEther } from 'ethers'
+import { verifyDepositTx } from '../src/wallet'
 
 // ── Init Bot ──
 const botToken = process.env.TELEGRAM_BOT_TOKEN!
@@ -391,6 +392,64 @@ Payout: \`${result.payout}\` (${result.payoutMultiplier}x)
   )
 })
 
+// ── /claim <txHash> ──
+bot.command('claim', async (ctx) => {
+  const userId = ctx.from!.id
+  const txHash = ctx.match?.trim()
+  if (!txHash || !/^0x[a-fA-F0-9]{64}$/.test(txHash)) {
+    await ctx.reply(
+      'Usage: `/claim 0x<txhash>`\n\nProvide the transaction hash of your deposit. The bot will verify it on-chain and credit your balance.',
+      { parse_mode: 'Markdown' },
+    )
+    return
+  }
+
+  await ctx.reply(`⏳ Verifying transaction ${txHash.slice(0, 10)}...${txHash.slice(-6)} on Base...`)
+
+  const result = await verifyDepositTx(txHash)
+  if (!result.valid) {
+    await ctx.reply(
+      `❌ *Verification Failed*\n\n${result.error}\n\nMake sure the transaction:\n• Was sent to the casino hot wallet\n• Is on the Base (Base Mainnet) chain\n• Has at least 1 confirmation`,
+      { parse_mode: 'Markdown' },
+    )
+    return
+  }
+
+  // Check if already claimed
+  const { data: existing } = await db
+    .from('tg_deposits')
+    .select('id')
+    .eq('tx_hash', txHash.toLowerCase())
+    .single()
+
+  if (existing) {
+    await ctx.reply('⏳ This deposit has already been credited.')
+    return
+  }
+
+  const valueEth = parseFloat(formatEther(result.value!))
+
+  // Record the deposit
+  await db.from('tg_deposits').insert({
+    user_id: userId,
+    chain: 'evm',
+    tx_hash: txHash.toLowerCase(),
+    amount: valueEth,
+    from_address: result.from!,
+    to_address: result.to!,
+    confirmations: result.confirmations,
+    status: 'completed',
+  })
+
+  // Credit user balance
+  await updateBalance(userId, 'evm', valueEth)
+
+  await ctx.reply(
+    `✅ *Deposit Confirmed!*\n\nAmount: \`${valueEth.toFixed(6)}\` ETH\nConfirmations: \`${result.confirmations}\`\nTx: [View on Basescan](https://basescan.org/tx/${txHash})\n\nYour balance has been credited! 🎉`,
+    { parse_mode: 'Markdown', link_preview_options: { is_disabled: true } },
+  )
+})
+
 // ── Help ──
 bot.command('help', async (ctx) => {
   await ctx.reply(
@@ -403,6 +462,7 @@ bot.command('help', async (ctx) => {
 /connect — Connect your wallet
 /dice <amount> <under|over> <target> — Play dice
 /flip <amount> <heads|tails> — Coinflip
+/claim <txhash> — Verify & claim a deposit
 /verify — Verify a bet (provably fair)
 /help — This message`,
     { parse_mode: 'Markdown' },
