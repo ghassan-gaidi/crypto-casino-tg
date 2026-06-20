@@ -480,7 +480,9 @@ bot.command('help', async (ctx) => {
 })
 
 // ── Vercel webhook export ──
-export default process.env.VERCEL_ENV
+// Note: use `export =` so TypeScript compiles to `module.exports`
+// (Vercel reads serverless handler from module.exports directly, not .default)
+export = process.env.VERCEL_ENV
   ? webhookCallback(bot, 'std/http', {
       secretToken: process.env.TELEGRAM_SECRET_TOKEN,
     })

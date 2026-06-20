@@ -332,7 +332,7 @@ bot.command('help', async (ctx) => {
 /help — This message`, { parse_mode: 'Markdown' });
 });
 // ── Vercel webhook export ──
-exports.default = process.env.VERCEL_ENV
+module.exports = process.env.VERCEL_ENV
     ? (0, grammy_1.webhookCallback)(bot, 'std/http', {
         secretToken: process.env.TELEGRAM_SECRET_TOKEN,
     })
