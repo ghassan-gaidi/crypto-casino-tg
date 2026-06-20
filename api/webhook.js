@@ -12,6 +12,8 @@ try {
   const { generateSeed, hashSeed } = require("../src/provably-fair");
   const { playDice } = require("../src/games/dice");
   const { playCoinflip } = require("../src/games/coinflip");
+  const { playCrash } = require("../src/games/crash");
+  const { playMines } = require("../src/games/mines");
   const { JsonRpcProvider, Wallet, parseEther } = require("ethers");
 
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -213,13 +215,89 @@ try {
     await ctx.reply(`${emoji} *Coinflip Result*\n\nResult: \`${result.result}\`\nYour pick: \`${pick}\`\nBet: \`${betAmount}\`\nPayout: \`${result.payout}\` (${result.payoutMultiplier}x)\n\n*${result.playerWon ? 'You won! 🎉' : 'You lost.'}*`, { parse_mode: 'Markdown' });
   });
 
+  // ── /crash <amount> <autoCashout> ──
+  bot.command('crash', async (ctx) => {
+    const args = ctx.match?.split(/\s+/) || [];
+    if (args.length < 2) {
+      await ctx.reply('Usage: `/crash <amount> <multiplier>`\nExample: `/crash 0.01 2` (auto-cashout at 2x)', { parse_mode: 'Markdown' });
+      return;
+    }
+    const userId = ctx.from.id;
+    const betAmount = parseFloat(args[0]);
+    const autoCashout = parseFloat(args[1]);
+    if (isNaN(betAmount) || betAmount <= 0) { await ctx.reply('❌ Invalid bet amount'); return; }
+    if (isNaN(autoCashout) || autoCashout < 1.01) { await ctx.reply('❌ Auto cashout must be at least 1.01x'); return; }
+    if (autoCashout > 1000) { await ctx.reply('❌ Max auto cashout is 1000x'); return; }
+    const bal = await getBalance(userId);
+    if (betAmount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance. Use /deposit to add funds.'); return; }
+    let seed = await getActiveSeed();
+    if (!seed || seed.current_nonce >= seed.max_nonce) {
+      const newSeed = generateSeed();
+      seed = await createServerSeed(newSeed, hashSeed(newSeed));
+    }
+    const clientSeed = generateSeed();
+    const roundId = seed.current_nonce;
+    const result = playCrash({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, roundId, betAmount, autoCashout });
+    await recordBet({ userId, game: 'crash', chain: 'evm', betAmount, payout: result.payout, outcome: { crashPoint: result.crashPoint, autoCashout }, serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, resultHash: result.resultHash, playerWon: result.playerWon });
+    const delta = result.payout - betAmount;
+    await updateBalance(userId, 'evm', delta);
+    await incrementSeedNonce(seed.id);
+    const emoji = result.playerWon ? '🟢' : '🔴';
+    await ctx.reply(
+      `${emoji} *Crash Result*\n\nCrash Point: \`${result.crashPoint}x\`\nAuto Cashout: \`${autoCashout}x\`\nBet: \`${betAmount}\`\nPayout: \`${result.payout}\` (${result.payoutMultiplier}x)\n\n*${result.playerWon ? 'Cashed out in time! 🚀' : 'Crashed before cashout. 💥'}*`,
+      { parse_mode: 'Markdown' }
+    );
+  });
+
+  // ── /mines <amount> <numMines> <revealCount> ──
+  bot.command('mines', async (ctx) => {
+    const args = ctx.match?.split(/\s+/) || [];
+    if (args.length < 3) {
+      await ctx.reply('Usage: `/mines <amount> <numMines> <revealCount>`\nExample: `/mines 0.01 3 4` (3 mines, reveal 4 tiles)', { parse_mode: 'Markdown' });
+      return;
+    }
+    const userId = ctx.from.id;
+    const betAmount = parseFloat(args[0]);
+    const numMines = parseInt(args[1]);
+    const revealCount = parseInt(args[2]);
+    if (isNaN(betAmount) || betAmount <= 0) { await ctx.reply('❌ Invalid bet amount'); return; }
+    if (isNaN(numMines) || numMines < 1 || numMines > 20) { await ctx.reply('❌ Mines must be 1–20'); return; }
+    if (isNaN(revealCount) || revealCount < 1 || revealCount > 25 - numMines) { await ctx.reply('❌ Reveal count must be 1–' + (25 - numMines)); return; }
+    const bal = await getBalance(userId);
+    if (betAmount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance. Use /deposit to add funds.'); return; }
+    let seed = await getActiveSeed();
+    if (!seed || seed.current_nonce >= seed.max_nonce) {
+      const newSeed = generateSeed();
+      seed = await createServerSeed(newSeed, hashSeed(newSeed));
+    }
+    const clientSeed = generateSeed();
+    const result = playMines({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, numMines, revealCount });
+    await recordBet({ userId, game: 'mines', chain: 'evm', betAmount, payout: result.safe ? Math.round(betAmount * result.multiplier * 1e8) / 1e8 : 0, outcome: { safe: result.safe, numMines, revealCount, mines: result.minePositions }, serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, resultHash: result.resultHash, playerWon: result.safe });
+    const delta = result.safe ? Math.round(betAmount * (result.multiplier - 1) * 1e8) / 1e8 : -betAmount;
+    await updateBalance(userId, 'evm', delta);
+    await incrementSeedNonce(seed.id);
+    if (result.safe) {
+      await ctx.reply(
+        `🟢 *Mines Result*\n\nMines: \`${numMines}\` | Revealed: \`${revealCount}\` tiles\nBet: \`${betAmount}\`\nPayout: \`${(betAmount * result.multiplier).toFixed(6)}\` (${result.multiplier}x)\n\n*All safe! You won! 🎉*`,
+        { parse_mode: 'Markdown' }
+      );
+    } else {
+      await ctx.reply(
+        `🔴 *Mines Result*\n\nMines: \`${numMines}\` | Revealed: \`${revealCount}\` tiles\nBet: \`${betAmount}\` (lost)\n\n*Hit a mine! 💥*`,
+        { parse_mode: 'Markdown' }
+      );
+    }
+  });
+
   // ── /help ──
   bot.command('help', async (ctx) => {
     await ctx.reply(
       '*Commands*\n\n/start — Open the casino\n/balance — Check your balance\n/deposit — Deposit crypto\n'
       + '/withdraw — Withdraw crypto\n/connect — Connect your wallet\n'
       + '/dice <amount> <under|over> <target> — Play dice\n'
-      + '/flip <amount> <heads|tails> — Coinflip\n'
+ + '/crash <amount> <multiplier> — Crash game (auto-cashout)\n'
+ + '/mines <amount> <mines> <reveal> — Mines game\n'
+ + '/flip <amount> <heads|tails> — Coinflip\n'
       + '/verify — Verify a bet (provably fair)\n'
       + '/help — This message',
       { parse_mode: 'Markdown' }
