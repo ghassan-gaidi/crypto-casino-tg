@@ -231,6 +231,11 @@ try {
   // "req.headers.get is not a function" error on Vercel's runtime
   // ════════════════════════════════════════════════════════════════
   const secretToken = process.env.TELEGRAM_SECRET_TOKEN;
+  let botInitPromise = null;
+  function ensureBotInit() {
+    if (!botInitPromise) botInitPromise = bot.init().catch(e => { botInitPromise = null; throw e; });
+    return botInitPromise;
+  }
   handler = async (req, res) => {
     try {
       // Verify secret token
@@ -238,12 +243,13 @@ try {
         res.status(401).send('Unauthorized');
         return;
       }
-      // Read body (Vercel may pre-parse as Buffer or string)
+      // Read body
       const chunks = [];
       for await (const chunk of req) chunks.push(chunk);
       const body = Buffer.concat(chunks).toString('utf-8');
       if (!body) { res.status(400).json({ error: 'empty body' }); return; }
       const update = JSON.parse(body);
+      await ensureBotInit();
       await bot.handleUpdate(update);
       res.status(200).send('OK');
     } catch (e) {
