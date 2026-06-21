@@ -3,6 +3,7 @@
   "buildCommand": "cd app && npm run build",
   "outputDirectory": "app/dist",
   "rewrites": [
+    { "source": "/api/(dice|coinflip|crash|mines|plinko|slots|roulette|limbo|jackpot|balance)", "destination": "/api/game" },
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

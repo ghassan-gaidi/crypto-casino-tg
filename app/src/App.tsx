@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react'
 import DiceGame from './components/DiceGame'
 import CoinflipGame from './components/CoinflipGame'
+import CrashGame from './components/CrashGame'
+import MinesGame from './components/MinesGame'
+import LimboGame from './components/LimboGame'
+import JackpotGame from './components/JackpotGame'
 import BalancePage from './components/BalancePage'
 
-type Page = 'home' | 'dice' | 'coinflip' | 'balance'
+type Page = 'home' | 'dice' | 'coinflip' | 'crash' | 'mines' | 'limbo' | 'jackpot' | 'balance'
 
 declare global {
   interface Window {
@@ -49,6 +53,10 @@ export default function App() {
 
   if (page === 'dice') return <DiceGame onBack={nav('home')} userId={user?.id} />
   if (page === 'coinflip') return <CoinflipGame onBack={nav('home')} userId={user?.id} />
+  if (page === 'crash') return <CrashGame onBack={nav('home')} userId={user?.id} />
+  if (page === 'mines') return <MinesGame onBack={nav('home')} userId={user?.id} />
+  if (page === 'limbo') return <LimboGame onBack={nav('home')} userId={user?.id} />
+  if (page === 'jackpot') return <JackpotGame onBack={nav('home')} userId={user?.id} />
   if (page === 'balance') return <BalancePage onBack={nav('home')} userId={user?.id} username={user?.username} />
 
   return (
@@ -80,6 +88,30 @@ export default function App() {
           title="Coinflip"
           subtitle="Heads or tails — 50% win chance"
           onClick={nav('coinflip')}
+        />
+        <GameCard
+          emoji="🚀"
+          title="Crash"
+          subtitle="Cash out before the rocket crashes"
+          onClick={nav('crash')}
+        />
+        <GameCard
+          emoji="⛏️"
+          title="Mines"
+          subtitle="Pick gems, avoid bombs — 5×5 grid"
+          onClick={nav('mines')}
+        />
+        <GameCard
+          emoji="🚀"
+          title="Limbo"
+          subtitle="Rocket multiplier — set a target and fly!"
+          onClick={nav('limbo')}
+        />
+        <GameCard
+          emoji="🎰"
+          title="Jackpot"
+          subtitle="Progressive pool — highest wins!"
+          onClick={nav('jackpot')}
         />
       </div>
 
