@@ -9,7 +9,10 @@ try {
     updateBalance, recordBet, getActiveSeed, createServerSeed,
     incrementSeedNonce, getUserWallets,
     getOrCreateJackpotRound, enterJackpotRound, closeJackpotRound,
-    finalizeJackpotRound, getJackpotEntries
+    finalizeJackpotRound, getJackpotEntries,
+    getUserStats, getLeaderboard, getPlatformStats,
+    getPendingWithdrawals, approveWithdrawal, rejectWithdrawal,
+    getBetById, getRecentBets
   } = require("../src/supabase");
   const { generateSeed, hashSeed } = require("../src/provably-fair");
   const { playDice } = require("../src/games/dice");
@@ -41,7 +44,8 @@ try {
   bot.command('start', async (ctx) => {
     await ctx.reply(
       '🎲 *Crypto Casino*\n\nWelcome to the most transparent casino on Telegram.\n\n'
-      + '• Provably fair Dice, Coinflip, Crash & Mines\n'
+      + '• Provably fair: Dice, Coinflip, Crash, Mines, Plinko, Slots, Roulette, Limbo\n'
+      + '• Jackpot lottery — 90/10 split\n'
       + '• Multi-chain: Base · Solana · TON\n'
       + '• 2% house edge\n'
       + '• Instant deposits & withdrawals\n\n👇 Tap to open the casino',
@@ -573,8 +577,178 @@ try {
       + '/roulette <amount> <type> <bet> — European roulette\n'
       + '/limbo <amount> <target> — Limbo multiplier\n'
       + '/jackpot — Jackpot lottery (90/10 split)\n'
-      + '/verify — Verify a bet (provably fair)\n'
+      + '/stats — Your betting stats\n'
+      + '/top — Leaderboard\n'
+      + '/verify <id> — Provably fair verification\n'
       + '/help — This message',
+      { parse_mode: 'Markdown' }
+    );
+  });
+
+  // ── /stats — Personal betting statistics ──
+  bot.command('stats', async (ctx) => {
+    const userId = ctx.from.id;
+    const stats = await getUserStats(userId);
+    if (stats.total_bets === 0) {
+      await ctx.reply('📊 No bets yet. Start playing with /dice, /crash, /mines, or any game!');
+      return;
+    }
+    const profitEmoji = stats.profit >= 0 ? '🟢' : '🔴';
+    const gamesList = Object.entries(stats.games)
+      .sort(([, a], [, b]) => b.plays - a.plays)
+      .slice(0, 5)
+      .map(([game, g]) => `${game}: ${g.plays} plays | ${g.wins}W/${g.plays - g.wins}L | ${g.profit >= 0 ? '+' : ''}${g.profit.toFixed(6)}`)
+      .join('\n');
+    await ctx.reply(
+      `📊 *Your Stats*\n\n`
+      + `Total Bets: \`${stats.total_bets}\`\n`
+      + `Wins: \`${stats.wins}\` | Losses: \`${stats.losses}\`\n`
+      + `Win Rate: \`${stats.win_rate}%\`\n`
+      + `Total Wagered: \`${stats.total_wagered.toFixed(6)}\` ETH\n`
+      + `Total Payout: \`${stats.total_payout.toFixed(6)}\` ETH\n`
+      + `Net Profit: \`${stats.profit >= 0 ? '+' : ''}${stats.profit.toFixed(6)}\` ETH ${profitEmoji}\n\n`
+      + `*Per Game*\n${gamesList || 'N/A'}`,
+      { parse_mode: 'Markdown' }
+    );
+  });
+
+  // ── /top — Leaderboard ──
+  bot.command('top', async (ctx) => {
+    const leaderboard = await getLeaderboard(10);
+    if (leaderboard.length === 0) { await ctx.reply('🏆 No players yet.'); return; }
+    const lines = leaderboard.map((p, i) => {
+      const badge = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+      const name = p.username ? `@${p.username}` : p.first_name || `User ${p.user_id}`;
+      return `${badge} ${name} — ${p.profit >= 0 ? '+' : ''}${p.profit.toFixed(6)} ETH`;
+    });
+    await ctx.reply(`🏆 *Leaderboard — Top Players*\n\n${lines.join('\n')}\n\n_Net profit across all games_`, { parse_mode: 'Markdown' });
+  });
+
+  // ── Admin IDs (change these) ──
+  const ADMIN_IDS = [873158727]; // Telegram user IDs of admins
+
+  // ── /admin — Dashboard ──
+  bot.command('admin', async (ctx) => {
+    const userId = ctx.from.id;
+    if (!ADMIN_IDS.includes(userId)) { await ctx.reply('⛔ Unauthorized.'); return; }
+    const args = ctx.match?.split(/\s+/) || [];
+    const cmd = args[0]?.toLowerCase();
+
+    // ── /admin stats — Platform statistics ──
+    if (cmd === 'stats' || !cmd) {
+      const ps = await getPlatformStats();
+      await ctx.reply(
+        `📊 *Platform Stats*\n\n`
+        + `Users: \`${ps.user_count}\`\n`
+        + `Total Bets: \`${ps.total_bets}\`\n`
+        + `Total Wagered: \`${ps.total_wagered}\` ETH\n`
+        + `Total Payout: \`${ps.total_payout}\` ETH\n`
+        + `House Profit: \`${ps.house_profit}\` ETH\n`
+        + `House Edge: \`${ps.house_edge_actual}%\`\n`
+        + `Pending Withdrawals: \`${ps.pending_withdrawals}\`\n\n`
+        + `/admin withdrawals — Manage pending withdrawals`,
+        { parse_mode: 'Markdown' }
+      );
+      return;
+    }
+
+    // ── /admin withdrawals — List pending ──
+    if (cmd === 'withdrawals') {
+      const pending = await getPendingWithdrawals();
+      if (pending.length === 0) { await ctx.reply('✅ No pending withdrawals.'); return; }
+      let msg = `📋 *Pending Withdrawals (${pending.length})*\n\n`;
+      for (const w of pending.slice(0, 10)) {
+        const name = w.tg_users?.username ? `@${w.tg_users.username}` : w.tg_users?.first_name || `User ${w.user_id}`;
+        msg += `#${w.id} | ${name} | \`${w.amount}\` ETH → \`${w.to_address?.slice(0, 10)}...\`\n`;
+      }
+      msg += `\n*Commands:*\n/admin approve <id> <txHash> — Approve & mark sent\n/admin reject <id> — Reject & refund`;
+      await ctx.reply(msg, { parse_mode: 'Markdown' });
+      return;
+    }
+
+    // ── /admin approve <id> <txHash> ──
+    if (cmd === 'approve') {
+      const id = parseInt(args[1]);
+      const txHash = args[2];
+      if (!id || !txHash) { await ctx.reply('Usage: `/admin approve <id> <txHash>`'); return; }
+      try {
+        const w = await approveWithdrawal(id, txHash);
+        await ctx.reply(`✅ Withdrawal #${id} approved and marked completed.\nTx: \`${txHash}\``, { parse_mode: 'Markdown' });
+      } catch (e) { await ctx.reply(`❌ Error: ${e.message}`); }
+      return;
+    }
+
+    // ── /admin reject <id> ──
+    if (cmd === 'reject') {
+      const id = parseInt(args[1]);
+      if (!id) { await ctx.reply('Usage: `/admin reject <id>`'); return; }
+      try {
+        const w = await rejectWithdrawal(id);
+        const refund = Number(w.amount).toFixed(6);
+        await ctx.reply(`✅ Withdrawal #${id} rejected. Refunded \`${refund}\` ETH to user.`, { parse_mode: 'Markdown' });
+      } catch (e) { await ctx.reply(`❌ Error: ${e.message}`); }
+      return;
+    }
+
+    // ── Default admin help ──
+    await ctx.reply(
+      '*Admin Commands*\n\n'
+      + '/admin stats — Platform statistics\n'
+      + '/admin withdrawals — Pending withdrawals\n'
+      + '/admin approve <id> <tx> — Approve withdrawal\n'
+      + '/admin reject <id> — Reject & refund',
+      { parse_mode: 'Markdown' }
+    );
+  });
+
+  // ── Improved /verify ──
+  bot.command('verify', async (ctx) => {
+    const args = ctx.match?.split(/\s+/) || [];
+    const userId = ctx.from.id;
+
+    // If they provide a bet ID, look up that specific bet
+    if (args[0]) {
+      const betId = parseInt(args[0]);
+      if (isNaN(betId)) { await ctx.reply('❌ Invalid bet ID. Usage: `/verify <betId>`'); return; }
+      const bet = await getBetById(betId);
+      if (!bet) { await ctx.reply('❌ Bet not found.'); return; }
+      if (bet.user_id !== userId && !ADMIN_IDS.includes(userId)) { await ctx.reply('⛔ This bet is not yours.'); return; }
+
+      // Recompute the result to verify
+      const { diceRoll, coinflipResult, dicePayout, coinflipPayout, diceOutcome,
+              plinkoResult, slotsResult, rouletteResult, limboResult,
+              computeResult, bytesToFloat } = require("../src/provably-fair");
+
+      let verificationMsg = '';
+      try {
+        const hash = computeResult(bet.server_seed, bet.client_seed, bet.nonce);
+        verificationMsg = `🔐 *Provably Fair Verification*\n\nBet #\`${bet.id}\`\nGame: \`${bet.game}\`\n\n`;
+        verificationMsg += `Server Seed: \`${bet.server_seed.slice(0, 16)}...\`\n`;
+        verificationMsg += `Client Seed: \`${bet.client_seed.slice(0, 16)}...\`\n`;
+        verificationMsg += `Nonce: \`${bet.nonce}\`\n`;
+        verificationMsg += `Result Hash: \`${bet.result_hash.slice(0, 16)}...\`\n`;
+        verificationMsg += `HMAC Match: \`${hash.toString('hex') === bet.result_hash ? '✅ Verified' : '❌ MISMATCH'}\`\n\n`;
+        verificationMsg += `Bet: \`${bet.bet_amount}\` → Payout: \`${bet.payout}\`\n`;
+        verificationMsg += `Outcome: ${bet.player_won ? '✅ Won' : '❌ Lost'}\n\n`;
+        verificationMsg += `_Full server seed revealed after rotation._`;
+      } catch (e) {
+        verificationMsg = `❌ Verification error: ${e.message}`;
+      }
+      await ctx.reply(verificationMsg, { parse_mode: 'Markdown' });
+      return;
+    }
+
+    // No bet ID: show last 5 bets
+    const recent = await getRecentBets(userId, 5);
+    if (recent.length === 0) {
+      await ctx.reply('No recent bets. Use `/verify <betId>` to verify a specific bet.', { parse_mode: 'Markdown' });
+      return;
+    }
+    const lines = recent.map((b, i) =>
+      `#${b.id} | ${b.game} | \`${b.bet_amount}\` → \`${b.payout}\` | ${b.player_won ? '✅' : '❌'}`
+    );
+    await ctx.reply(
+      `📋 *Recent Bets*\n\n${lines.join('\n')}\n\nUse \`/verify <betId>\` for full provably fair proof.`,
       { parse_mode: 'Markdown' }
     );
   });

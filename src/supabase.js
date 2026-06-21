@@ -21,6 +21,14 @@ exports.enterJackpotRound = enterJackpotRound;
 exports.closeJackpotRound = closeJackpotRound;
 exports.finalizeJackpotRound = finalizeJackpotRound;
 exports.getJackpotEntries = getJackpotEntries;
+exports.getUserStats = getUserStats;
+exports.getLeaderboard = getLeaderboard;
+exports.getPlatformStats = getPlatformStats;
+exports.getPendingWithdrawals = getPendingWithdrawals;
+exports.approveWithdrawal = approveWithdrawal;
+exports.rejectWithdrawal = rejectWithdrawal;
+exports.getBetById = getBetById;
+exports.getRecentBets = getRecentBets;
 const supabase_js_1 = require("@supabase/supabase-js");
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
@@ -268,5 +276,137 @@ async function getJackpotEntries(roundId) {
         .select('*')
         .eq('round_id', roundId)
         .order('ticket_number', { ascending: true });
+    return data ?? [];
+}
+// ── User Stats ──
+async function getUserStats(userId) {
+    const { data: bets } = await exports.db
+        .from('tg_bets')
+        .select('bet_amount, payout, player_won, game, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+    if (!bets) return { total_bets: 0, wins: 0, losses: 0, profit: 0, total_wagered: 0, total_payout: 0, games: {} };
+    const stats = { total_bets: bets.length, wins: 0, losses: 0, profit: 0, total_wagered: 0, total_payout: 0, games: {} };
+    for (const b of bets) {
+        if (b.player_won) stats.wins++;
+        else stats.losses++;
+        stats.total_wagered += Number(b.bet_amount);
+        stats.total_payout += Number(b.payout);
+        if (!stats.games[b.game]) stats.games[b.game] = { plays: 0, wins: 0, profit: 0 };
+        stats.games[b.game].plays++;
+        if (b.player_won) stats.games[b.game].wins++;
+        stats.games[b.game].profit += Number(b.payout) - Number(b.bet_amount);
+    }
+    stats.profit = stats.total_payout - stats.total_wagered;
+    stats.win_rate = stats.total_bets > 0 ? (stats.wins / stats.total_bets * 100).toFixed(1) : '0.0';
+    return stats;
+}
+// ── Leaderboard ──
+async function getLeaderboard(limit = 10) {
+    // Top players by net profit from bets
+    const { data } = await exports.db
+        .from('tg_bets')
+        .select('user_id, bet_amount, payout, player_won');
+    if (!data) return [];
+    const profits = {};
+    for (const b of data) {
+        if (!profits[b.user_id]) profits[b.user_id] = 0;
+        profits[b.user_id] += Number(b.payout) - Number(b.bet_amount);
+    }
+    const sorted = Object.entries(profits)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, limit);
+    // Get usernames
+    const userIds = sorted.map(([id]) => id);
+    const { data: users } = await exports.db
+        .from('tg_users')
+        .select('id, username, first_name')
+        .in('id', userIds);
+    const userMap = {};
+    if (users) for (const u of users) userMap[u.id] = u;
+    return sorted.map(([id, profit], i) => ({
+        rank: i + 1,
+        user_id: parseInt(id),
+        username: userMap[parseInt(id)]?.username,
+        first_name: userMap[parseInt(id)]?.first_name,
+        profit: Math.round(profit * 1e8) / 1e8,
+    }));
+}
+// ── Platform Stats ──
+async function getPlatformStats() {
+    const { data: bets } = await exports.db.from('tg_bets').select('bet_amount, payout, player_won');
+    const { count: userCount } = await exports.db.from('tg_users').select('*', { count: 'exact', head: true });
+    const { count: withdrawalCount } = await exports.db.from('tg_withdrawals').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+    if (!bets) return { total_bets: 0, total_wagered: 0, total_payout: 0, house_profit: 0, user_count: userCount || 0, pending_withdrawals: withdrawalCount || 0 };
+    let totalWagered = 0, totalPayout = 0, houseWins = 0, playerWins = 0;
+    for (const b of bets) {
+        totalWagered += Number(b.bet_amount);
+        totalPayout += Number(b.payout);
+        if (b.player_won) playerWins++;
+        else houseWins++;
+    }
+    return {
+        total_bets: bets.length,
+        total_wagered: Math.round(totalWagered * 1e8) / 1e8,
+        total_payout: Math.round(totalPayout * 1e8) / 1e8,
+        house_profit: Math.round((totalWagered - totalPayout) * 1e8) / 1e8,
+        house_edge_actual: totalWagered > 0 ? ((totalWagered - totalPayout) / totalWagered * 100).toFixed(2) : '0.00',
+        user_count: userCount || 0,
+        pending_withdrawals: withdrawalCount || 0,
+    };
+}
+// ── Withdrawal Management ──
+async function getPendingWithdrawals() {
+    const { data } = await exports.db
+        .from('tg_withdrawals')
+        .select('*, tg_users!inner(username, first_name)')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true });
+    return data ?? [];
+}
+async function approveWithdrawal(id, txHash) {
+    const { data, error } = await exports.db
+        .from('tg_withdrawals')
+        .update({ status: 'completed', tx_hash: txHash, completed_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
+}
+async function rejectWithdrawal(id) {
+    const { data, error } = await exports.db
+        .from('tg_withdrawals')
+        .update({ status: 'rejected' })
+        .eq('id', id)
+        .select()
+        .single();
+    if (error) throw error;
+    // Refund the user
+    if (data) {
+        await exports.db.rpc('tg_update_balance', {
+            p_user_id: data.user_id,
+            p_chain_col: data.chain === 'evm' ? 'balance_evm' : data.chain === 'solana' ? 'balance_sol' : 'balance_ton',
+            p_delta: Number(data.amount),
+        });
+    }
+    return data;
+}
+// ── Bet Verification ──
+async function getBetById(betId) {
+    const { data } = await exports.db
+        .from('tg_bets')
+        .select('*')
+        .eq('id', betId)
+        .single();
+    return data;
+}
+async function getRecentBets(userId, limit = 10) {
+    const { data } = await exports.db
+        .from('tg_bets')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
     return data ?? [];
 }
