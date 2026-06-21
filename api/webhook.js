@@ -7,7 +7,9 @@ try {
   const {
     ensureUser, getBalance, createWithdrawal, completeWithdrawal,
     updateBalance, recordBet, getActiveSeed, createServerSeed,
-    incrementSeedNonce, getUserWallets
+    incrementSeedNonce, getUserWallets,
+    getOrCreateJackpotRound, enterJackpotRound, closeJackpotRound,
+    finalizeJackpotRound, getJackpotEntries
   } = require("../src/supabase");
   const { generateSeed, hashSeed } = require("../src/provably-fair");
   const { playDice } = require("../src/games/dice");
@@ -289,15 +291,98 @@ try {
     }
   });
 
+  // ── Jackpot: Provably fair lottery ──
+  const crypto = require("node:crypto");
+
+  // /jackpot — show round info, enter, spin
+  bot.command('jackpot', async (ctx) => {
+    const subcommand = ctx.match?.split(/\s+/) || [];
+    const cmd = subcommand[0]?.toLowerCase();
+
+    // ── Enter ──
+    if (cmd === 'enter') {
+      const amount = parseFloat(subcommand[1]);
+      if (isNaN(amount) || amount <= 0) { await ctx.reply('❌ Usage: `/jackpot enter <amount>`'); return; }
+      const MIN_ENTRY = 0.001;
+      if (amount < MIN_ENTRY) { await ctx.reply('❌ Minimum entry: ' + MIN_ENTRY + ' ETH'); return; }
+      const userId = ctx.from.id;
+      const bal = await getBalance(userId);
+      if (amount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance.'); return; }
+      const round = await getOrCreateJackpotRound();
+      await updateBalance(userId, 'evm', -amount);
+      const ticket = await enterJackpotRound(round.id, userId, amount, 'evm');
+      await ctx.reply('🎟️ *Jackpot Entry Accepted!*\n\nRound: #' + round.id + '\nAmount: `' + amount + '` ETH\nTicket #: `' + ticket + '`\n\nGood luck! 🍀', { parse_mode: 'Markdown' });
+      return;
+    }
+
+    // ── Spin ──
+    if (cmd === 'spin') {
+      const userId = ctx.from.id;
+      const round = await getOrCreateJackpotRound();
+      const entries = await getJackpotEntries(round.id);
+      if (entries.length < 2) { await ctx.reply('❌ Need at least 2 entries to spin!'); return; }
+      if (round.status !== 'open') { await ctx.reply('❌ Round already closed/spinning.'); return; }
+
+      const serverSeed = generateSeed();
+      const clientSeed = generateSeed();
+      const nonce = 0;
+      const hash = crypto.createHmac('sha256', serverSeed).update(clientSeed + nonce).digest();
+      const winningTicket = (hash.readUInt32BE(0) % entries.length) + 1;
+      const winner = entries.find(e => e.ticket_number === winningTicket);
+      if (!winner) { await ctx.reply('❌ Could not determine winner.'); return; }
+
+      const totalPool = Number(round.prize_pool);
+      const houseCut = Math.round(totalPool * 0.10 * 1e8) / 1e8;
+      const winnerPayout = totalPool - houseCut;
+
+      await closeJackpotRound(round.id, serverSeed, clientSeed);
+      await finalizeJackpotRound(round.id, winner.user_id, winningTicket, winnerPayout, houseCut, hash.toString('hex'));
+      await updateBalance(winner.user_id, 'evm', winnerPayout);
+
+      await ctx.reply(
+        '🎰 *Jackpot #' + round.id + ' — RESULT!*\n\n'
+        + 'Total Tickets: `' + entries.length + '`\n'
+        + 'Winning Ticket: #`' + winningTicket + '`\n'
+        + 'Winner: [' + winner.user_id + '](tg://user?id=' + winner.user_id + ')\n'
+        + 'Prize: `' + winnerPayout.toFixed(6) + '` ETH 🏆\n'
+        + 'House Cut: `' + houseCut.toFixed(6) + '` ETH\n\n'
+        + '*Congratulations!* 🎉\n\n'
+        + '_Provably fair: HMAC-SHA256 of server seed "' + serverSeed.slice(0, 12) + '..."_\n'
+        + '_Verify: `/verify`_',
+        { parse_mode: 'Markdown' }
+      );
+
+      await getOrCreateJackpotRound();
+      return;
+    }
+
+    // ── Default: show info ──
+    const round = await getOrCreateJackpotRound();
+    const entries = await getJackpotEntries(round.id);
+    const prizePool = Number(round.prize_pool).toFixed(6);
+    const houseCut = Math.round(Number(round.prize_pool) * 0.10 * 1e8) / 1e8;
+    const winnerPayout = Number(round.prize_pool) - houseCut;
+    await ctx.reply(
+      '🎰 *Jackpot #' + round.id + '*\n\n'
+      + '💰 Prize Pool: `' + prizePool + '` ETH\n'
+      + '🎟️ Entries: `' + entries.length + '`\n'
+      + '🏆 Winner gets: `' + winnerPayout.toFixed(6) + '` ETH (90%)\n'
+      + '🏠 House takes: `' + houseCut.toFixed(6) + '` ETH (10%)\n\n'
+      + 'Enter with: /jackpot enter <amount>',
+      { parse_mode: 'Markdown' }
+    );
+  });
+
   // ── /help ──
   bot.command('help', async (ctx) => {
     await ctx.reply(
       '*Commands*\n\n/start — Open the casino\n/balance — Check your balance\n/deposit — Deposit crypto\n'
       + '/withdraw — Withdraw crypto\n/connect — Connect your wallet\n'
       + '/dice <amount> <under|over> <target> — Play dice\n'
- + '/crash <amount> <multiplier> — Crash game (auto-cashout)\n'
- + '/mines <amount> <mines> <reveal> — Mines game\n'
- + '/flip <amount> <heads|tails> — Coinflip\n'
+      + '/crash <amount> <multiplier> — Crash game (auto-cashout)\n'
+      + '/mines <amount> <mines> <reveal> — Mines game\n'
+      + '/flip <amount> <heads|tails> — Coinflip\n'
+      + '/jackpot — Jackpot info & enter\n'
       + '/verify — Verify a bet (provably fair)\n'
       + '/help — This message',
       { parse_mode: 'Markdown' }

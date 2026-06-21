@@ -16,6 +16,11 @@ exports.getActiveSeed = getActiveSeed;
 exports.createServerSeed = createServerSeed;
 exports.incrementSeedNonce = incrementSeedNonce;
 exports.revealSeed = revealSeed;
+exports.getOrCreateJackpotRound = getOrCreateJackpotRound;
+exports.enterJackpotRound = enterJackpotRound;
+exports.closeJackpotRound = closeJackpotRound;
+exports.finalizeJackpotRound = finalizeJackpotRound;
+exports.getJackpotEntries = getJackpotEntries;
 const supabase_js_1 = require("@supabase/supabase-js");
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
@@ -181,4 +186,87 @@ async function revealSeed(seedId) {
     if (error)
         throw error;
     return data;
+}
+// ── Jackpot ──
+async function getOrCreateJackpotRound() {
+    // Get the latest open round or create one
+    let { data } = await exports.db
+        .from('tg_jackpot_rounds')
+        .select('*')
+        .eq('status', 'open')
+        .single();
+    if (!data) {
+        const { data: newRound, error } = await exports.db
+            .from('tg_jackpot_rounds')
+            .insert({ status: 'open' })
+            .select()
+            .single();
+        if (error)
+            throw error;
+        return newRound;
+    }
+    return data;
+}
+async function enterJackpotRound(roundId, userId, amount, chain) {
+    // Get current entry count and assign ticket number
+    const { count, error: countErr } = await exports.db
+        .from('tg_jackpot_entries')
+        .select('*', { count: 'exact', head: true })
+        .eq('round_id', roundId);
+    if (countErr) throw countErr;
+    const ticketNumber = (count || 0) + 1;
+    // Insert entry
+    const { error: insertErr } = await exports.db
+        .from('tg_jackpot_entries')
+        .insert({ round_id: roundId, user_id: userId, amount, ticket_number: ticketNumber, chain });
+    if (insertErr) throw insertErr;
+    // Update round prize pool and entry count atomically
+    const { error: updateErr } = await exports.db.rpc('tg_jackpot_add_entry', {
+        p_round_id: roundId,
+        p_amount: amount,
+    });
+    if (updateErr) {
+        // Fallback: direct update if RPC doesn't exist
+        const round = (await exports.db.from('tg_jackpot_rounds').select('prize_pool').eq('id', roundId).single()).data;
+        await exports.db.from('tg_jackpot_rounds').update({ prize_pool: Number(round?.prize_pool || 0) + amount, entry_count: ticketNumber }).eq('id', roundId);
+    }
+    return ticketNumber;
+}
+async function closeJackpotRound(roundId, serverSeed, clientSeed) {
+    const { data, error } = await exports.db
+        .from('tg_jackpot_rounds')
+        .update({ status: 'spinning', server_seed: serverSeed, client_seed: clientSeed })
+        .eq('id', roundId)
+        .select()
+        .single();
+    if (error)
+        throw error;
+    return data;
+}
+async function finalizeJackpotRound(roundId, winnerId, winningTicket, payout, houseCut, resultHash) {
+    const { data, error } = await exports.db
+        .from('tg_jackpot_rounds')
+        .update({
+            status: 'closed',
+            winner_id: winnerId,
+            winning_ticket: winningTicket,
+            winner_payout: payout,
+            house_cut: houseCut,
+            result_hash: resultHash,
+            closed_at: new Date().toISOString(),
+        })
+        .eq('id', roundId)
+        .select()
+        .single();
+    if (error)
+        throw error;
+    return data;
+}
+async function getJackpotEntries(roundId) {
+    const { data } = await exports.db
+        .from('tg_jackpot_entries')
+        .select('*')
+        .eq('round_id', roundId)
+        .order('ticket_number', { ascending: true });
+    return data ?? [];
 }
