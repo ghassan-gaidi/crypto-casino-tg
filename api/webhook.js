@@ -16,6 +16,10 @@ try {
   const { playCoinflip } = require("../src/games/coinflip");
   const { playCrash } = require("../src/games/crash");
   const { playMines } = require("../src/games/mines");
+  const { playPlinko } = require("../src/games/plinko");
+  const { playSlots } = require("../src/games/slots");
+  const { playRoulette } = require("../src/games/roulette");
+  const { playLimbo } = require("../src/games/limbo");
   const { JsonRpcProvider, Wallet, parseEther } = require("ethers");
 
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -291,6 +295,188 @@ try {
     }
   });
 
+  // ── /plinko <amount> <rows> <risk> ──
+  bot.command('plinko', async (ctx) => {
+    const args = ctx.match?.split(/\s+/) || [];
+    if (args.length < 3) {
+      await ctx.reply('Usage: `/plinko <amount> <rows> <risk>`\nExample: `/plinko 0.01 12 medium`\n\nRows: 8–16 | Risk: low, medium, high', { parse_mode: 'Markdown' });
+      return;
+    }
+    const userId = ctx.from.id;
+    const betAmount = parseFloat(args[0]);
+    const rows = parseInt(args[1]);
+    const risk = args[2].toLowerCase();
+    if (isNaN(betAmount) || betAmount <= 0) { await ctx.reply('❌ Invalid bet amount'); return; }
+    if (isNaN(rows) || rows < 8 || rows > 16) { await ctx.reply('❌ Rows must be 8–16'); return; }
+    if (!['low', 'medium', 'high'].includes(risk)) { await ctx.reply('❌ Risk must be: low, medium, or high'); return; }
+    const bal = await getBalance(userId);
+    if (betAmount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance. Use /deposit to add funds.'); return; }
+    let seed = await getActiveSeed();
+    if (!seed || seed.current_nonce >= seed.max_nonce) {
+      const newSeed = generateSeed();
+      seed = await createServerSeed(newSeed, hashSeed(newSeed));
+    }
+    const clientSeed = generateSeed();
+    const result = playPlinko({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, rows, risk, betAmount });
+    await recordBet({ userId, game: 'plinko', chain: 'evm', betAmount, payout: result.payout, outcome: { slot: result.slot, rows, risk, multiplier: result.multiplier }, serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, resultHash: result.resultHash, playerWon: result.playerWon });
+    const delta = result.payout - betAmount;
+    await updateBalance(userId, 'evm', delta);
+    await incrementSeedNonce(seed.id);
+    const emoji = result.playerWon ? '🟢' : '🔴';
+    const slotEmoji = result.slot < Math.floor(rows / 3) || result.slot > rows - Math.floor(rows / 3) ? '🔥' : result.multiplier >= 1 ? '⭐' : '💀';
+    await ctx.reply(
+      `${emoji} *Plinko Result*\n\n`
+      + `Rows: \`${rows}\` | Risk: \`${risk}\`\n`
+      + `Slot: \`#${result.slot}\` ${slotEmoji}\n`
+      + `Multiplier: \`${result.multiplier}x\`\n`
+      + `Bet: \`${betAmount}\`\n`
+      + `Payout: \`${result.payout}\`\n\n`
+      + `*${result.playerWon ? 'You won! 🎉' : 'You lost.'}*`,
+      { parse_mode: 'Markdown' }
+    );
+  });
+
+  // ── /slots <amount> ──
+  bot.command('slots', async (ctx) => {
+    const args = ctx.match?.split(/\s+/) || [];
+    if (args.length < 1) {
+      await ctx.reply('Usage: `/slots <amount>`\nExample: `/slots 0.01`', { parse_mode: 'Markdown' });
+      return;
+    }
+    const userId = ctx.from.id;
+    const betAmount = parseFloat(args[0]);
+    if (isNaN(betAmount) || betAmount <= 0) { await ctx.reply('❌ Invalid bet amount'); return; }
+    const bal = await getBalance(userId);
+    if (betAmount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance. Use /deposit to add funds.'); return; }
+    let seed = await getActiveSeed();
+    if (!seed || seed.current_nonce >= seed.max_nonce) {
+      const newSeed = generateSeed();
+      seed = await createServerSeed(newSeed, hashSeed(newSeed));
+    }
+    const clientSeed = generateSeed();
+    const result = playSlots({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, betAmount });
+    await recordBet({ userId, game: 'slots', chain: 'evm', betAmount, payout: result.payout, outcome: { reels: result.reels, combo: result.combo }, serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, resultHash: result.resultHash, playerWon: result.playerWon });
+    const delta = result.payout - betAmount;
+    await updateBalance(userId, 'evm', delta);
+    await incrementSeedNonce(seed.id);
+    const reelsDisplay = result.reels.join('  |  ');
+    const winMsg = result.playerWon ? `*${result.payoutMultiplier}x — You won! 🎉*` : '*No win this time.*';
+    await ctx.reply(
+      `🎰 *Slots Result*\n\n`
+      + `[ ${reelsDisplay} ]\n\n`
+      + `Bet: \`${betAmount}\`\n`
+      + `Payout: \`${result.payout}\`\n`
+      + `${winMsg}`,
+      { parse_mode: 'Markdown' }
+    );
+  });
+
+  // ── /roulette <amount> <betType> <betValue> ──
+  bot.command('roulette', async (ctx) => {
+    const args = ctx.match?.split(/\s+/) || [];
+    if (args.length < 3) {
+      await ctx.reply(
+        'Usage: `/roulette <amount> <type> <value>`\n\n'
+        + '*Types & Values:*\n'
+        + '• `number 0-36` — straight up (35x)\n'
+        + '• `color red|black` — color bet (1.96x)\n'
+        + '• `odd_even odd|even` — odd/even (1.96x)\n'
+        + '• `high_low low|high` — 1-18/19-36 (1.96x)\n'
+        + '• `dozen 1|2|3` — 1st/2nd/3rd 12 (2.94x)\n'
+        + '• `column 1|2|3` — 3 columns (2.94x)\n\n'
+        + 'Example: `/roulette 0.01 color red`',
+        { parse_mode: 'Markdown' }
+      );
+      return;
+    }
+    const userId = ctx.from.id;
+    const betAmount = parseFloat(args[0]);
+    const betType = args[1].toLowerCase();
+    let betValue = args[2].toLowerCase();
+    if (isNaN(betAmount) || betAmount <= 0) { await ctx.reply('❌ Invalid bet amount'); return; }
+    if (!['number', 'color', 'odd_even', 'high_low', 'dozen', 'column'].includes(betType)) {
+      await ctx.reply('❌ Invalid bet type. See usage.'); return;
+    }
+    if (betType === 'number') {
+      const num = parseInt(betValue);
+      if (isNaN(num) || num < 0 || num > 36) { await ctx.reply('❌ Number must be 0–36'); return; }
+      betValue = num;
+    } else if (betType === 'color') {
+      if (!['red', 'black', 'green'].includes(betValue)) { await ctx.reply('❌ Color must be red, black, or green'); return; }
+    } else if (betType === 'odd_even') {
+      if (!['odd', 'even'].includes(betValue)) { await ctx.reply('❌ Must be "odd" or "even"'); return; }
+    } else if (betType === 'high_low') {
+      if (!['low', 'high'].includes(betValue)) { await ctx.reply('❌ Must be "low" or "high"'); return; }
+    } else if (betType === 'dozen') {
+      if (!['1', '2', '3'].includes(betValue)) { await ctx.reply('❌ Dozen must be 1, 2, or 3'); return; }
+      betValue = parseInt(betValue);
+    } else if (betType === 'column') {
+      if (!['1', '2', '3'].includes(betValue)) { await ctx.reply('❌ Column must be 1, 2, or 3'); return; }
+      betValue = parseInt(betValue);
+    }
+    const bal = await getBalance(userId);
+    if (betAmount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance. Use /deposit to add funds.'); return; }
+    let seed = await getActiveSeed();
+    if (!seed || seed.current_nonce >= seed.max_nonce) {
+      const newSeed = generateSeed();
+      seed = await createServerSeed(newSeed, hashSeed(newSeed));
+    }
+    const clientSeed = generateSeed();
+    const result = playRoulette({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, betType, betValue, betAmount });
+    await recordBet({ userId, game: 'roulette', chain: 'evm', betAmount, payout: result.payout, outcome: { number: result.number, color: result.color, betType, betValue }, serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, resultHash: result.resultHash, playerWon: result.playerWon });
+    const delta = result.payout - betAmount;
+    await updateBalance(userId, 'evm', delta);
+    await incrementSeedNonce(seed.id);
+    const emoji = result.playerWon ? '🟢' : '🔴';
+    await ctx.reply(
+      `${emoji} *Roulette Result*\n\n`
+      + `Ball landed: \`${result.number}\` ${result.color === 'red' ? '🔴' : result.color === 'black' ? '⚫' : '🟢'}\n`
+      + `Your bet: \`${betType} ${betValue}\`\n`
+      + `Bet: \`${betAmount}\`\n`
+      + `Payout: \`${result.payout}\` (${result.payoutMultiplier.toFixed(2)}x)\n\n`
+      + `*${result.playerWon ? 'You won! 🎉' : 'You lost.'}*`,
+      { parse_mode: 'Markdown' }
+    );
+  });
+
+  // ── /limbo <amount> <targetMultiplier> ──
+  bot.command('limbo', async (ctx) => {
+    const args = ctx.match?.split(/\s+/) || [];
+    if (args.length < 2) {
+      await ctx.reply('Usage: `/limbo <amount> <targetMultiplier>`\nExample: `/limbo 0.01 2` (bet that multiplier goes >=2x)', { parse_mode: 'Markdown' });
+      return;
+    }
+    const userId = ctx.from.id;
+    const betAmount = parseFloat(args[0]);
+    const targetMultiplier = parseFloat(args[1]);
+    if (isNaN(betAmount) || betAmount <= 0) { await ctx.reply('❌ Invalid bet amount'); return; }
+    if (isNaN(targetMultiplier) || targetMultiplier < 1.01) { await ctx.reply('❌ Target multiplier must be at least 1.01x'); return; }
+    if (targetMultiplier > 10000) { await ctx.reply('❌ Max target multiplier is 10000x'); return; }
+    const bal = await getBalance(userId);
+    if (betAmount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance. Use /deposit to add funds.'); return; }
+    let seed = await getActiveSeed();
+    if (!seed || seed.current_nonce >= seed.max_nonce) {
+      const newSeed = generateSeed();
+      seed = await createServerSeed(newSeed, hashSeed(newSeed));
+    }
+    const clientSeed = generateSeed();
+    const result = playLimbo({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, targetMultiplier, betAmount });
+    await recordBet({ userId, game: 'limbo', chain: 'evm', betAmount, payout: result.payout, outcome: { multiplier: result.multiplier, targetMultiplier }, serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, resultHash: result.resultHash, playerWon: result.playerWon });
+    const delta = result.payout - betAmount;
+    await updateBalance(userId, 'evm', delta);
+    await incrementSeedNonce(seed.id);
+    const emoji = result.playerWon ? '🟢' : '🔴';
+    await ctx.reply(
+      `${emoji} *Limbo Result*\n\n`
+      + `Actual Multiplier: \`${result.multiplier}x\`\n`
+      + `Target: \`${targetMultiplier}x\`\n`
+      + `Bet: \`${betAmount}\`\n`
+      + `Payout: \`${result.payout}\` (${result.payoutMultiplier}x)\n\n`
+      + `*${result.playerWon ? 'Target reached! 🚀' : 'Did not reach target. 💨'}*`,
+      { parse_mode: 'Markdown' }
+    );
+  });
+
   // ── Jackpot: Provably fair lottery ──
   const crypto = require("node:crypto");
 
@@ -378,11 +564,15 @@ try {
     await ctx.reply(
       '*Commands*\n\n/start — Open the casino\n/balance — Check your balance\n/deposit — Deposit crypto\n'
       + '/withdraw — Withdraw crypto\n/connect — Connect your wallet\n'
-      + '/dice <amount> <under|over> <target> — Play dice\n'
-      + '/crash <amount> <multiplier> — Crash game (auto-cashout)\n'
+      + '/dice <amount> <under|over> <target> — Dice (2–98x)\n'
+      + '/crash <amount> <multiplier> — Crash game\n'
       + '/mines <amount> <mines> <reveal> — Mines game\n'
       + '/flip <amount> <heads|tails> — Coinflip\n'
-      + '/jackpot — Jackpot info & enter\n'
+      + '/plinko <amount> <rows> <risk> — Plinko (low/med/high)\n'
+      + '/slots <amount> — Slots machine\n'
+      + '/roulette <amount> <type> <bet> — European roulette\n'
+      + '/limbo <amount> <target> — Limbo multiplier\n'
+      + '/jackpot — Jackpot lottery (90/10 split)\n'
       + '/verify — Verify a bet (provably fair)\n'
       + '/help — This message',
       { parse_mode: 'Markdown' }
