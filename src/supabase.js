@@ -29,6 +29,10 @@ exports.approveWithdrawal = approveWithdrawal;
 exports.rejectWithdrawal = rejectWithdrawal;
 exports.getBetById = getBetById;
 exports.getRecentBets = getRecentBets;
+exports.trackReferral = trackReferral;
+exports.getReferralStats = getReferralStats;
+exports.getReferrer = getReferrer;
+exports.addReferralReward = addReferralReward;
 const supabase_js_1 = require("@supabase/supabase-js");
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
@@ -157,6 +161,16 @@ async function recordBet(params) {
         .single();
     if (error)
         throw error;
+    // Auto-reward referrer if house made profit
+    const houseProfit = params.betAmount - params.payout;
+    if (houseProfit > 0) {
+        const reward = Math.round(houseProfit * 0.20 * 1e8) / 1e8;
+        if (reward > 0) {
+            addReferralReward(params.userId, params.betAmount, params.payout).catch(e =>
+                console.error('Referral reward error:', e.message)
+            );
+        }
+    }
     return data;
 }
 // ── Server Seeds ──
@@ -409,4 +423,72 @@ async function getRecentBets(userId, limit = 10) {
         .order('created_at', { ascending: false })
         .limit(limit);
     return data ?? [];
+}
+// ── Referrals ──
+async function trackReferral(referrerId, referredId) {
+    // Don't allow self-referral
+    if (referrerId === referredId) return null;
+    // Check if already referred
+    const { data: existing } = await exports.db
+        .from('tg_referrals')
+        .select('id')
+        .eq('referred_id', referredId)
+        .single();
+    if (existing) return existing;
+    // Create referral
+    const { data, error } = await exports.db
+        .from('tg_referrals')
+        .insert({ referrer_id: referrerId, referred_id: referredId })
+        .select()
+        .single();
+    if (error && error.code !== '23505') throw error; // 23505 = unique violation
+    return data;
+}
+async function getReferralStats(userId) {
+    const { data: referrals } = await exports.db
+        .from('tg_referrals')
+        .select('id, reward_earned, created_at, tg_users!inner(username, first_name)')
+        .eq('referrer_id', userId)
+        .order('created_at', { ascending: false });
+    const list = (referrals || []).map(r => ({
+        id: r.id,
+        username: r.tg_users?.username,
+        first_name: r.tg_users?.first_name,
+        reward_earned: Number(r.reward_earned || 0),
+        created_at: r.created_at,
+    }));
+    const totalEarned = list.reduce((s, r) => s + r.reward_earned, 0);
+    return { count: list.length, total_earned: Math.round(totalEarned * 1e8) / 1e8, referrals: list };
+}
+async function getReferrer(userId) {
+    const { data } = await exports.db
+        .from('tg_referrals')
+        .select('referrer_id, tg_users!tg_referrals_referrer_id_fkey(username, first_name)')
+        .eq('referred_id', userId)
+        .single();
+    if (!data) return null;
+    return {
+        referrer_id: data.referrer_id,
+        username: data.tg_users?.username,
+        first_name: data.tg_users?.first_name,
+    };
+}
+async function addReferralReward(referredUserId, betAmount, payout) {
+    const houseProfit = betAmount - payout;
+    if (houseProfit <= 0) return; // No profit to share
+    const reward = Math.round(houseProfit * 0.20 * 1e8) / 1e8; // 20% of house edge
+    if (reward <= 0) return;
+    const { data: referral } = await exports.db
+        .from('tg_referrals')
+        .select('referrer_id')
+        .eq('referred_id', referredUserId)
+        .single();
+    if (!referral) return; // Not referred
+    // Atomically add reward using the RPC
+    const { error } = await exports.db.rpc('tg_add_referral_reward', {
+        p_referrer_id: referral.referrer_id,
+        p_amount: reward,
+    });
+    if (error) console.error('Referral reward error:', error);
+    return reward;
 }

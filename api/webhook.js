@@ -12,7 +12,8 @@ try {
     finalizeJackpotRound, getJackpotEntries,
     getUserStats, getLeaderboard, getPlatformStats,
     getPendingWithdrawals, approveWithdrawal, rejectWithdrawal,
-    getBetById, getRecentBets
+    getBetById, getRecentBets,
+    trackReferral, getReferralStats, getReferrer, addReferralReward
   } = require("../src/supabase");
   const { generateSeed, hashSeed } = require("../src/provably-fair");
   const { playDice } = require("../src/games/dice");
@@ -42,6 +43,17 @@ try {
 
   // ── /start ──
   bot.command('start', async (ctx) => {
+    // Parse referral code: /start ref_<userId>
+    const refMatch = ctx.match?.match(/^ref_(\d+)$/);
+    if (refMatch) {
+      const referrerId = parseInt(refMatch[1]);
+      const userId = ctx.from.id;
+      if (referrerId !== userId) {
+        try {
+          await trackReferral(referrerId, userId);
+        } catch (e) { console.error('Referral track error:', e.message); }
+      }
+    }
     await ctx.reply(
       '🎲 *Crypto Casino*\n\nWelcome to the most transparent casino on Telegram.\n\n'
       + '• Provably fair: Dice, Coinflip, Crash, Mines, Plinko, Slots, Roulette, Limbo\n'
@@ -580,6 +592,8 @@ try {
       + '/stats — Your betting stats\n'
       + '/top — Leaderboard\n'
       + '/verify <id> — Provably fair verification\n'
+      + '/ref — Your referral link\n'
+      + '/ref stats — Referral earnings\n'
       + '/help — This message',
       { parse_mode: 'Markdown' }
     );
@@ -622,6 +636,45 @@ try {
       return `${badge} ${name} — ${p.profit >= 0 ? '+' : ''}${p.profit.toFixed(6)} ETH`;
     });
     await ctx.reply(`🏆 *Leaderboard — Top Players*\n\n${lines.join('\n')}\n\n_Net profit across all games_`, { parse_mode: 'Markdown' });
+  });
+
+  // ── /ref — Referral link and stats ──
+  bot.command('ref', async (ctx) => {
+    const userId = ctx.from.id;
+    const args = ctx.match?.split(/\s+/) || [];
+
+    // /ref stats — show referral stats
+    if (args[0]?.toLowerCase() === 'stats') {
+      const stats = await getReferralStats(userId);
+      const lines = stats.count > 0
+        ? stats.referrals.slice(0, 10).map((r, i) =>
+            `${i + 1}. ${r.username ? `@${r.username}` : r.first_name || 'User'} — \`${r.reward_earned.toFixed(6)}\` ETH`
+          )
+        : ['No referrals yet. Share your link to earn!'];
+      await ctx.reply(
+        `👥 *Your Referrals*\n\n`
+        + `Total Referred: \`${stats.count}\`\n`
+        + `Total Earned: \`${stats.total_earned.toFixed(6)}\` ETH\n\n`
+        + `${lines.slice(0, 10).join('\n')}\n\n`
+        + `*How it works:*\n`
+        + `You earn **20% of the house edge** on every bet your referrals make.\n`
+        + `No cost to them — it's a bonus from the house!`,
+        { parse_mode: 'Markdown' }
+      );
+      return;
+    }
+
+    // /ref — show referral link
+    const refLink = `https://t.me/cr00k_bot?start=ref_${userId}`;
+    await ctx.reply(
+      `🔗 *Your Referral Link*\n\n\`${refLink}\`\n\n`
+      + `*How it works:*\n`
+      + `1. Share your link with friends\n`
+      + `2. They join and play\n`
+      + `3. You earn **20% of the house edge** on every bet they make\n\n`
+      + `Use /ref stats to see your earnings.`,
+      { parse_mode: 'Markdown' }
+    );
   });
 
   // ── Admin IDs (change these) ──
