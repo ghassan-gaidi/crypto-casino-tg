@@ -1,6 +1,6 @@
 {
   "installCommand": "npm install && cd app && npm install",
-  "buildCommand": "cd app && npm run build",
+  "buildCommand": "cd app && npx vite build",
   "outputDirectory": "app/dist",
   "rewrites": [
     { "source": "/api/(dice|coinflip|crash|mines|plinko|slots|roulette|limbo|jackpot|balance)", "destination": "/api/game" },
