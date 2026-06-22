@@ -22,282 +22,6 @@ interface JackpotEntryResult {
 const INITIAL_BALANCE = 10000;
 const QUICK_BETS = [100, 500, 1000, 2500, 5000];
 
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    minHeight: '100vh',
-    background: 'linear-gradient(135deg, #1a0a00, #2c1500, #1a0a00)',
-    color: '#e0e0e0',
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    padding: '20px',
-    boxSizing: 'border-box',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    maxWidth: '460px',
-    marginBottom: '20px',
-  },
-  backButton: {
-    background: 'rgba(255,255,255,0.08)',
-    border: '1px solid rgba(255,255,255,0.15)',
-    color: '#e0e0e0',
-    padding: '8px 16px',
-    borderRadius: '10px',
-    cursor: 'pointer',
-    fontSize: '14px',
-  },
-  title: {
-    fontSize: '22px',
-    fontWeight: '700',
-    background: 'linear-gradient(90deg, #f39c12, #e67e22, #f1c40f)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    margin: 0,
-    letterSpacing: '1px',
-  },
-  balanceBox: {
-    background: 'rgba(255,255,255,0.06)',
-    borderRadius: '12px',
-    padding: '8px 18px',
-    border: '1px solid rgba(255,255,255,0.1)',
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#f1c40f',
-  },
-  roundCard: {
-    width: '100%',
-    maxWidth: '460px',
-    background: 'linear-gradient(135deg, rgba(243,156,18,0.08), rgba(230,126,34,0.04))',
-    borderRadius: '16px',
-    padding: '20px',
-    border: '1px solid rgba(243,156,18,0.2)',
-    marginBottom: '16px',
-    boxSizing: 'border-box',
-  },
-  roundHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '16px',
-  },
-  roundTitle: {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#f39c12',
-    margin: 0,
-    letterSpacing: '0.5px',
-  },
-  roundStatus: {
-    padding: '4px 12px',
-    borderRadius: '20px',
-    fontSize: '12px',
-    fontWeight: '600',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px',
-  },
-  statusOpen: {
-    background: 'rgba(46,204,113,0.15)',
-    color: '#2ecc71',
-    border: '1px solid rgba(46,204,113,0.3)',
-  },
-  statusClosed: {
-    background: 'rgba(231,76,60,0.15)',
-    color: '#e74c3c',
-    border: '1px solid rgba(231,76,60,0.3)',
-  },
-  statusDrawing: {
-    background: 'rgba(241,196,15,0.15)',
-    color: '#f1c40f',
-    border: '1px solid rgba(241,196,15,0.3)',
-  },
-  statRow: {
-    display: 'flex',
-    justifyContent: 'space-around',
-    gap: '12px',
-  },
-  statBox: {
-    flex: 1,
-    textAlign: 'center' as const,
-    padding: '12px 8px',
-    background: 'rgba(255,255,255,0.04)',
-    borderRadius: '12px',
-    border: '1px solid rgba(255,255,255,0.06)',
-  },
-  statValue: {
-    fontSize: '22px',
-    fontWeight: '700',
-    color: '#fff',
-  },
-  statLabel: {
-    fontSize: '11px',
-    color: '#999',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px',
-    marginTop: '4px',
-  },
-  prizePoolValue: {
-    color: '#f1c40f',
-  },
-  entriesValue: {
-    color: '#3498db',
-  },
-  roundId: {
-    fontSize: '11px',
-    color: '#666',
-    textAlign: 'center' as const,
-    marginTop: '12px',
-    wordBreak: 'break-all' as const,
-  },
-  refreshButton: {
-    width: '100%',
-    padding: '10px',
-    borderRadius: '10px',
-    border: '1px solid rgba(255,255,255,0.12)',
-    background: 'rgba(255,255,255,0.06)',
-    color: '#aaa',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginTop: '12px',
-    transition: 'all 0.2s',
-  },
-  gameArea: {
-    width: '100%',
-    maxWidth: '460px',
-    background: 'rgba(255,255,255,0.04)',
-    borderRadius: '16px',
-    padding: '24px',
-    border: '1px solid rgba(255,255,255,0.08)',
-    boxSizing: 'border-box',
-  },
-  inputGroup: {
-    marginBottom: '16px',
-  },
-  label: {
-    fontSize: '13px',
-    color: '#aaa',
-    marginBottom: '6px',
-    display: 'block',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  input: {
-    width: '100%',
-    padding: '12px 14px',
-    borderRadius: '10px',
-    border: '1px solid rgba(255,255,255,0.15)',
-    background: 'rgba(0,0,0,0.35)',
-    color: '#fff',
-    fontSize: '16px',
-    outline: 'none',
-    boxSizing: 'border-box',
-  },
-  quickBets: {
-    display: 'flex',
-    gap: '8px',
-    flexWrap: 'wrap' as const,
-    marginBottom: '16px',
-  },
-  quickBetBtn: {
-    flex: '1 0 auto',
-    padding: '8px 10px',
-    borderRadius: '8px',
-    border: '1px solid rgba(255,255,255,0.12)',
-    background: 'rgba(255,255,255,0.06)',
-    color: '#ccc',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    minWidth: '60px',
-    textAlign: 'center' as const,
-    transition: 'all 0.2s',
-  },
-  enterButton: {
-    width: '100%',
-    padding: '14px',
-    borderRadius: '12px',
-    border: 'none',
-    background: 'linear-gradient(135deg, #f39c12, #e67e22)',
-    color: '#fff',
-    fontSize: '18px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    letterSpacing: '1px',
-    transition: 'opacity 0.2s',
-  },
-  enterButtonDisabled: {
-    opacity: 0.5,
-    cursor: 'not-allowed',
-  },
-  infoText: {
-    fontSize: '13px',
-    color: '#888',
-    textAlign: 'center' as const,
-    marginBottom: '16px',
-    lineHeight: '1.4',
-  },
-  resultOverlay: {
-    position: 'fixed' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0,0,0,0.75)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    backdropFilter: 'blur(6px)',
-  },
-  resultCard: {
-    background: 'linear-gradient(135deg, #2c1500, #4a2a00)',
-    borderRadius: '20px',
-    padding: '32px 28px',
-    width: '90%',
-    maxWidth: '380px',
-    textAlign: 'center' as const,
-    border: '1px solid rgba(243,156,18,0.2)',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-  },
-  resultEmoji: {
-    fontSize: '56px',
-    marginBottom: '12px',
-  },
-  resultTitle: {
-    fontSize: '24px',
-    fontWeight: '700',
-    marginBottom: '8px',
-    color: '#f1c40f',
-  },
-  resultDetail: {
-    fontSize: '16px',
-    color: '#bbb',
-    marginBottom: '6px',
-  },
-  resultHighlight: {
-    fontSize: '28px',
-    fontWeight: '800',
-    margin: '12px 0',
-    color: '#f1c40f',
-  },
-  closeButton: {
-    padding: '12px 40px',
-    borderRadius: '12px',
-    border: 'none',
-    background: 'linear-gradient(135deg, #e67e22, #f39c12)',
-    color: '#fff',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginTop: '8px',
-  },
-};
-
 const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
   const [betAmount, setBetAmount] = useState<number>(500);
   const [loading, setLoading] = useState<boolean>(false);
@@ -362,7 +86,6 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
       setEntryResult(data);
       if (data.success) {
         setBalance((prev) => prev - betAmount);
-        // Refresh round info
         fetchRound();
       }
     } catch (err) {
@@ -377,184 +100,174 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
     setEntryResult(null);
   }, []);
 
-  const getStatusStyle = (status: string): React.CSSProperties => {
+  const getStatusBadge = (status: string): { cls: string; label: string } => {
     switch (status?.toLowerCase()) {
       case 'open':
       case 'accepting':
-        return { ...styles.roundStatus, ...styles.statusOpen };
+        return { cls: 'result-label win', label: 'OPEN' };
       case 'drawing':
       case 'in_progress':
-        return { ...styles.roundStatus, ...styles.statusDrawing };
+        return { cls: 'result-label', label: 'DRAWING' };
       case 'closed':
       case 'completed':
-        return { ...styles.roundStatus, ...styles.statusClosed };
+        return { cls: 'result-label lose', label: 'CLOSED' };
       default:
-        return styles.roundStatus;
-    }
-  };
-
-  const getStatusLabel = (status: string): string => {
-    switch (status?.toLowerCase()) {
-      case 'open':
-      case 'accepting':
-        return '🟢 Open';
-      case 'drawing':
-      case 'in_progress':
-        return '🟡 Drawing';
-      case 'closed':
-      case 'completed':
-        return '🔴 Closed';
-      default:
-        return status || 'Unknown';
+        return { cls: 'result-label', label: status || 'UNKNOWN' };
     }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <button style={styles.backButton} onClick={onBack}>
-          ← Back
+    <div className="page">
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '16px' }}>
+        <button className="btn-back" onClick={onBack}>
+          ← BACK
         </button>
-        <h1 style={styles.title}>🎰 Jackpot</h1>
-        <div style={styles.balanceBox}>💰 {balance.toLocaleString()}</div>
+        <h1 className="s-title">🎰 JACKPOT</h1>
+        <div style={{ color: 'var(--green)', fontWeight: 700 }}>
+          {balance.toLocaleString()} COINS
+        </div>
       </div>
 
-      {/* Round Status Card */}
-      <div style={styles.roundCard}>
-        <div style={styles.roundHeader}>
-          <h3 style={styles.roundTitle}>📍 Current Round</h3>
-          {round && (
-            <span style={getStatusStyle(round.status)}>
-              {getStatusLabel(round.status)}
-            </span>
-          )}
+      {/* Jackpot Pool */}
+      <div className="jackpot-pool" style={{ marginBottom: '16px' }}>
+        <div className="jackpot-label">JACKPOT POOL</div>
+        <div className="jackpot-amount">
+          {round ? round.prize_pool.toLocaleString() : '—'}
         </div>
-
-        {loading && !round && (
-          <p style={{ textAlign: 'center', color: '#888', fontSize: '14px' }}>
-            Loading round info...
-          </p>
-        )}
-
-        {fetchError && (
-          <p style={{ textAlign: 'center', color: '#e74c3c', fontSize: '14px' }}>
-            {fetchError}
-          </p>
-        )}
-
         {round && (
-          <>
-            <div style={styles.statRow}>
-              <div style={styles.statBox}>
-                <div style={{ ...styles.statValue, ...styles.prizePoolValue }}>
-                  {round.prize_pool.toLocaleString()}
-                </div>
-                <div style={styles.statLabel}>Prize Pool</div>
-              </div>
-              <div style={styles.statBox}>
-                <div style={{ ...styles.statValue, ...styles.entriesValue }}>
-                  {round.entry_count}
-                </div>
-                <div style={styles.statLabel}>Entries</div>
-              </div>
-            </div>
-            <div style={styles.roundId}>
-              Round ID: {round.round_id}
-            </div>
-          </>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '8px', fontSize: '13px', color: 'var(--muted)' }}>
+            <span>ENTRIES: <span style={{ color: 'var(--cyan)' }}>{round.entry_count}</span></span>
+            <span>STATUS: <span style={{ color: getStatusBadge(round.status).label === 'OPEN' ? 'var(--green)' : getStatusBadge(round.status).label === 'CLOSED' ? 'var(--red)' : 'var(--yellow)' }}>{getStatusBadge(round.status).label}</span></span>
+          </div>
         )}
-
-        <button style={styles.refreshButton} onClick={fetchRound} disabled={loading}>
-          {loading ? '🔄 Refreshing...' : '🔄 Refresh Status'}
-        </button>
+        {round && (
+          <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--muted)', textAlign: 'center', wordBreak: 'break-all' }}>
+            ROUND: {round.round_id}
+          </div>
+        )}
       </div>
 
-      {/* Enter Round */}
-      <div style={styles.gameArea}>
-        <p style={styles.infoText}>
-          Buy entries into the current jackpot round. The more you bet, the higher your chance to win the entire prize pool!
+      {/* Refresh */}
+      <button className="btn btn-green" onClick={fetchRound} disabled={loading} style={{ width: '100%', marginBottom: '16px', opacity: loading ? 0.5 : 1 }}>
+        {loading ? 'REFRESHING...' : '⟳ REFRESH STATUS'}
+      </button>
+
+      {/* Loading / Error */}
+      {loading && !round && (
+        <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '14px' }}>
+          Loading round info...
         </p>
+      )}
 
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Entry Amount</label>
-          <input
-            style={styles.input}
-            type="number"
-            min={1}
-            max={balance}
-            value={betAmount}
-            onChange={(e) => setBetAmount(Math.max(1, parseInt(e.target.value) || 0))}
-            placeholder="Enter entry amount"
-          />
+      {fetchError && (
+        <p style={{ textAlign: 'center', color: 'var(--red)', fontSize: '14px' }}>
+          {fetchError}
+        </p>
+      )}
+
+      {/* Game Area */}
+      <div className="term-box" style={{ marginBottom: '16px' }}>
+        <div className="term-box-hd">
+          <span>ENTER ROUND</span>
         </div>
+        <div className="term-box-bd">
+          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '12px', lineHeight: '1.4' }}>
+            Buy entries into the current jackpot round. The more you bet, the higher your chance to win the entire prize pool.
+          </p>
 
-        <div style={styles.quickBets}>
-          {QUICK_BETS.map((amount) => (
-            <button
-              key={amount}
-              style={{
-                ...styles.quickBetBtn,
-                ...(betAmount === amount
-                  ? { background: 'rgba(243,156,18,0.25)', borderColor: '#f39c12', color: '#f39c12' }
-                  : {}),
-              }}
-              onClick={() => handleQuickBet(amount)}
-            >
-              {amount}
-            </button>
-          ))}
+          {/* Quick Bet Chips */}
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+            {QUICK_BETS.map((amount) => (
+              <button
+                key={amount}
+                className={"chip" + (betAmount === amount ? " active" : "")}
+                onClick={() => handleQuickBet(amount)}
+              >
+                {amount}
+              </button>
+            ))}
+          </div>
+
+          {/* Bet Input */}
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{ display: 'block', fontSize: '12px', color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase' }}>
+              ENTRY AMOUNT
+            </label>
+            <input
+              className="input"
+              type="number"
+              min={1}
+              max={balance}
+              value={betAmount}
+              onChange={(e) => setBetAmount(Math.max(1, parseInt(e.target.value) || 0))}
+              placeholder="Enter entry amount"
+            />
+          </div>
+
+          {/* Enter Button */}
+          <button
+            className="btn btn-green"
+            onClick={handleEnter}
+            disabled={enterLoading || betAmount <= 0 || betAmount > balance}
+            style={{ width: '100%', opacity: enterLoading || betAmount <= 0 || betAmount > balance ? 0.4 : 1 }}
+          >
+            {enterLoading ? '⟳ ENTERING...' : '🎰 ENTER ROUND'}
+          </button>
         </div>
-
-        <button
-          style={{
-            ...styles.enterButton,
-            ...(enterLoading || betAmount <= 0 || betAmount > balance
-              ? styles.enterButtonDisabled
-              : {}),
-          }}
-          onClick={handleEnter}
-          disabled={enterLoading || betAmount <= 0 || betAmount > balance}
-        >
-          {enterLoading ? '⏳ Entering...' : '🎰 Enter Round'}
-        </button>
       </div>
 
       {/* Entry Result Overlay */}
       {entryResult && (
-        <div style={styles.resultOverlay} onClick={handleCloseResult}>
-          <div style={styles.resultCard} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.resultEmoji}>
+        <div
+          className={"result " + (entryResult.success ? "result-win" : "result-lose")}
+          onClick={handleCloseResult}
+        >
+          <div onClick={(e) => e.stopPropagation()}>
+            <div className="result-number" style={{ fontSize: '40px', marginBottom: '8px' }}>
               {entryResult.success ? '🎉' : '❌'}
             </div>
-            <div style={styles.resultTitle}>
-              {entryResult.success ? 'Entry Confirmed!' : 'Entry Failed'}
-            </div>
 
-            {entryResult.success && (
+            {entryResult.success ? (
               <>
-                <div style={styles.resultHighlight}>
+                <div className="result-label win" style={{ fontSize: '18px', marginBottom: '12px' }}>
+                  ENTRY CONFIRMED
+                </div>
+                <div className="result-number">
                   🏆 {entryResult.prize_pool.toLocaleString()}
                 </div>
-                <div style={styles.resultDetail}>
-                  Prize Pool: {entryResult.prize_pool.toLocaleString()}
+                <div className="stat-row" style={{ marginTop: '12px', marginBottom: '12px' }}>
+                  <div className="stat-row" style={{ width: '100%', justifyContent: 'space-between' }}>
+                    <span className="stat-label">PRIZE POOL</span>
+                    <span className="stat-val" style={{ color: 'var(--yellow)' }}>{entryResult.prize_pool.toLocaleString()}</span>
+                  </div>
                 </div>
-                <div style={styles.resultDetail}>
-                  Total Entries: {entryResult.entries}
+                <div className="stat-row" style={{ marginBottom: '12px' }}>
+                  <div className="stat-row" style={{ width: '100%', justifyContent: 'space-between' }}>
+                    <span className="stat-label">TOTAL ENTRIES</span>
+                    <span className="stat-val" style={{ color: 'var(--cyan)' }}>{entryResult.entries}</span>
+                  </div>
                 </div>
-                <div style={{ ...styles.resultDetail, color: '#f39c12', marginTop: '8px' }}>
-                  Good luck! 🍀
+                <div style={{ color: 'var(--green)', fontSize: '14px', textAlign: 'center', marginBottom: '12px' }}>
+                  GOOD LUCK! 🍀
                 </div>
               </>
-            )}
-
-            {!entryResult.success && (
-              <div style={{ ...styles.resultDetail, color: '#e74c3c', marginTop: '8px' }}>
-                Could not process entry. The round may be closed or your balance insufficient.
+            ) : (
+              <div className="result-label lose" style={{ fontSize: '16px', marginBottom: '12px' }}>
+                COULD NOT PROCESS ENTRY.
+                <br />
+                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                  The round may be closed or your balance insufficient.
+                </span>
               </div>
             )}
 
-            <button style={styles.closeButton} onClick={handleCloseResult}>
-              {entryResult.success ? '🎯 Continue' : 'Try Again'}
+            <button
+              className="btn btn-green"
+              onClick={handleCloseResult}
+              style={{ width: '100%' }}
+            >
+              {entryResult.success ? '🎯 CONTINUE' : 'TRY AGAIN'}
             </button>
           </div>
         </div>

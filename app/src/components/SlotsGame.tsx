@@ -8,205 +8,6 @@ interface SlotsGameProps {
 const QUICK_BETS = [0.001, 0.01, 0.1, 1.0];
 
 const SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '💎', '7️⃣', '⭐', '🔔'];
-const REEL_HEIGHT = 3; // symbols visible per reel
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    backgroundColor: '#111',
-    color: '#fff',
-    minHeight: '100vh',
-    padding: '16px',
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    marginBottom: '20px',
-    width: '100%',
-  },
-  backBtn: {
-    background: '#1a1a2e',
-    color: '#fff',
-    border: '1px solid #333',
-    borderRadius: '8px',
-    padding: '8px 16px',
-    cursor: 'pointer',
-    fontSize: '14px',
-  },
-  title: {
-    fontSize: '22px',
-    fontWeight: 700,
-    margin: 0,
-  },
-  balanceRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '16px',
-    padding: '10px 14px',
-    backgroundColor: '#1a1a2e',
-    borderRadius: '10px',
-    border: '1px solid #2a2a3e',
-    width: '100%',
-    boxSizing: 'border-box',
-  },
-  label: { fontSize: '13px', color: '#888' },
-  value: { fontSize: '16px', fontWeight: 600 },
-  section: {
-    marginBottom: '20px',
-    width: '100%',
-  },
-  sectionTitle: {
-    fontSize: '14px',
-    color: '#aaa',
-    marginBottom: '8px',
-    fontWeight: 500,
-  },
-  input: {
-    width: '100%',
-    padding: '10px 12px',
-    borderRadius: '8px',
-    border: '1px solid #2a2a3e',
-    backgroundColor: '#1a1a2e',
-    color: '#fff',
-    fontSize: '16px',
-    boxSizing: 'border-box',
-    outline: 'none',
-  },
-  quickBetRow: {
-    display: 'flex',
-    gap: '8px',
-    marginTop: '8px',
-    flexWrap: 'wrap' as const,
-  },
-  quickBetBtn: {
-    flex: 1,
-    minWidth: '60px',
-    padding: '8px 10px',
-    borderRadius: '8px',
-    border: '1px solid #2a2a3e',
-    backgroundColor: '#1a1a2e',
-    color: '#aaa',
-    cursor: 'pointer',
-    fontSize: '13px',
-    textAlign: 'center' as const,
-  },
-  reelContainer: {
-    display: 'flex',
-    gap: '8px',
-    justifyContent: 'center',
-    margin: '24px 0',
-    padding: '16px',
-    backgroundColor: '#1a1a2e',
-    borderRadius: '12px',
-    border: '2px solid #2a2a3e',
-  },
-  reelColumn: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '4px',
-    alignItems: 'center',
-    backgroundColor: '#0a0a1a',
-    borderRadius: '8px',
-    padding: '8px 12px',
-    minWidth: '50px',
-  },
-  reelSymbol: {
-    fontSize: '36px',
-    lineHeight: 1.2,
-    width: '50px',
-    textAlign: 'center' as const,
-    transition: 'transform 0.15s ease',
-  },
-  spinBtn: {
-    width: '100%',
-    padding: '14px',
-    borderRadius: '10px',
-    border: 'none',
-    background: 'linear-gradient(135deg, #eab308, #f59e0b)',
-    color: '#fff',
-    fontSize: '18px',
-    fontWeight: 700,
-    cursor: 'pointer',
-    marginTop: '8px',
-    textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-  },
-  spinBtnDisabled: {
-    opacity: 0.4,
-    cursor: 'not-allowed',
-  },
-  comboName: {
-    fontSize: '16px',
-    fontWeight: 600,
-    marginTop: '12px',
-    padding: '8px 16px',
-    borderRadius: '8px',
-    backgroundColor: '#1a1a2e',
-    border: '1px solid #2a2a3e',
-  },
-  resultOverlay: {
-    position: 'fixed' as const,
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.85)',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    padding: '24px',
-    boxSizing: 'border-box' as const,
-  },
-  resultCard: {
-    backgroundColor: '#1a1a2e',
-    borderRadius: '16px',
-    border: '2px solid #2a2a3e',
-    padding: '32px 24px',
-    maxWidth: '340px',
-    width: '100%',
-    textAlign: 'center' as const,
-  },
-  resultWin: { borderColor: '#22c55e' },
-  resultLoss: { borderColor: '#ef4444' },
-  resultAmount: {
-    fontSize: '36px',
-    fontWeight: 700,
-    margin: '12px 0',
-  },
-  resultLabel: {
-    fontSize: '14px',
-    color: '#888',
-    marginBottom: '4px',
-  },
-  resultDetail: {
-    fontSize: '13px',
-    color: '#aaa',
-    margin: '4px 0',
-  },
-  resultHash: {
-    fontSize: '11px',
-    color: '#555',
-    wordBreak: 'break-all' as const,
-    marginTop: '12px',
-  },
-  overlayBtn: {
-    marginTop: '16px',
-    padding: '12px 32px',
-    borderRadius: '10px',
-    border: 'none',
-    background: '#eab308',
-    color: '#fff',
-    fontSize: '16px',
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
-};
 
 function formatPayout(amount: number): string {
   return amount.toFixed(6);
@@ -238,7 +39,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
       await new Promise((r) => setTimeout(r, 100 + phase * 30));
       setDisplayReels(
         finalReels.map((reel) =>
-          reel.map(() => SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)])
+          reel.map(() => SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]!)
         )
       );
       setSpinPhase(phase);
@@ -300,54 +101,56 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
   };
 
   return (
-    <div style={styles.container}>
+    <div className="page">
       {/* Header */}
-      <div style={styles.header}>
-        <button style={styles.backBtn} onClick={onBack}>← Back</button>
-        <h1 style={styles.title}>Slots</h1>
+      <button className="btn-back" onClick={onBack}>back</button>
+      <div className="header" style={{ marginBottom: '20px' }}>
+        <span className="header-title">⚡ SLOTS</span>
       </div>
 
       {/* Bet Amount */}
-      <div style={styles.section}>
-        <div style={styles.sectionTitle}>Bet Amount</div>
-        <input
-          style={styles.input}
-          type="number"
-          step="0.001"
-          min="0.001"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="0.00"
-        />
-        <div style={styles.quickBetRow}>
-          {QUICK_BETS.map((qb) => (
-            <button
-              key={qb}
-              style={{
-                ...styles.quickBetBtn,
-                ...(parseFloat(amount) === qb ? { borderColor: '#fff', color: '#fff' } : {}),
-              }}
-              onClick={() => handleQuickBet(qb)}
-            >
-              {qb}
-            </button>
-          ))}
-        </div>
+      <div className="s-title">BET AMOUNT</div>
+      <input
+        className="input"
+        type="number"
+        step="0.001"
+        min="0.001"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        placeholder="0.00"
+      />
+      <div className="chips" style={{ marginTop: '8px' }}>
+        {QUICK_BETS.map((qb) => (
+          <button
+            key={qb}
+            className={"chip" + (parseFloat(amount) === qb ? " active" : "")}
+            onClick={() => handleQuickBet(qb)}
+          >
+            {qb}
+          </button>
+        ))}
       </div>
 
       {/* Reels Display */}
-      <div style={styles.reelContainer}>
+      <div className="reels">
         {displayReels.map((reel, reelIdx) => (
-          <div key={reelIdx} style={styles.reelColumn}>
+          <div
+            key={reelIdx}
+            className={"reel" + (animating ? " spinning" : "")}
+            style={{
+              opacity: animating ? 0.6 + Math.random() * 0.4 : 1,
+            }}
+          >
             {reel.map((sym, symIdx) => (
               <div
                 key={symIdx}
                 style={{
-                  ...styles.reelSymbol,
-                  opacity: animating ? 0.6 + Math.random() * 0.4 : 1,
+                  fontSize: '28px',
+                  lineHeight: 1.2,
                   transform: animating
                     ? `translateY(${Math.sin(reelIdx + symIdx + spinPhase) * 4}px)`
                     : 'translateY(0)',
+                  transition: 'transform 0.15s ease',
                 }}
               >
                 {sym}
@@ -359,75 +162,115 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
 
       {/* Spin Button */}
       <button
-        style={{
-          ...styles.spinBtn,
-          ...(loading || animating ? styles.spinBtnDisabled : {}),
-        }}
+        className="btn btn-green"
         onClick={handleSpin}
         disabled={loading || animating}
+        style={{ marginTop: '8px' }}
       >
-        {loading ? 'Spinning...' : animating ? 'Spinning...' : '🎰 Spin'}
+        {loading ? 'SPINNING...' : animating ? 'SPINNING...' : '🎰 SPIN'}
       </button>
 
       {/* Combo display when result exists */}
       {result && !animating && result.combo && (
-        <div style={styles.comboName}>
-          {result.combo}
-          {result.payoutMultiplier && (
-            <span style={{ marginLeft: '8px', color: '#eab308' }}>
-              ×{result.payoutMultiplier}
+        <div className="stats" style={{ marginTop: '16px' }}>
+          <div className="stat-row">
+            <span className="stat-label">COMBO</span>
+            <span className="stat-val text-yellow">
+              {result.combo}
+              {result.payoutMultiplier && (
+                <> ×{result.payoutMultiplier}</>
+              )}
             </span>
-          )}
+          </div>
         </div>
       )}
 
       {error && (
-        <div style={{ color: '#ef4444', textAlign: 'center', marginTop: '8px', fontSize: '14px' }}>
+        <div className="text-red text-center mt-sm" style={{ fontSize: '12px' }}>
           {error}
         </div>
       )}
 
       {/* Result Overlay */}
       {result && !animating && (
-        <div style={styles.resultOverlay} onClick={closeResult}>
-          <div
-            style={{
-              ...styles.resultCard,
-              ...(result.playerWon ? styles.resultWin : styles.resultLoss),
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={styles.resultLabel}>
-              {result.playerWon ? '🎉 You Won!' : '😔 You Lost'}
-            </div>
-            <div
-              style={{
-                ...styles.resultAmount,
-                color: result.playerWon ? '#22c55e' : '#ef4444',
-              }}
-            >
-              {result.playerWon ? '+' : ''}{formatPayout(result.payout)}
-            </div>
-            {result.combo && (
-              <div style={styles.resultDetail}>
-                Combo: <strong>{result.combo}</strong>
-                {result.payoutMultiplier && (
-                  <span> ×{result.payoutMultiplier}</span>
-                )}
-              </div>
-            )}
-            <div style={styles.resultDetail}>
-              {result.reels?.join(' | ')}
-            </div>
-            <div style={styles.resultHash}>
-              Hash: {result.resultHash}
-            </div>
-            <button style={styles.overlayBtn} onClick={closeResult}>
-              OK
-            </button>
+        <div
+          className={"result" + (result.playerWon ? " result-win" : " result-lose")}
+          style={{ marginTop: '20px' }}
+          onClick={closeResult}
+        >
+          <div className={"result-label" + (result.playerWon ? " win" : " lose")}>
+            {result.playerWon ? '✓ YOU WON' : '✗ YOU LOST'}
           </div>
+          <div className="result-number">
+            {result.playerWon ? '+' : ''}{formatPayout(result.payout)}
+          </div>
+          {result.combo && (
+            <div className="result-detail" style={{ marginTop: '6px' }}>
+              COMBO: {result.combo}
+              {result.payoutMultiplier && (
+                <> ×{result.payoutMultiplier}</>
+              )}
+            </div>
+          )}
+          <div className="result-detail" style={{ marginTop: '4px' }}>
+            {result.reels?.join(' | ')}
+          </div>
+          <div className="result-hash">
+            HASH: {result.resultHash}
+          </div>
+          <button
+            className="btn btn-ghost mt-md"
+            onClick={(e) => { e.stopPropagation(); closeResult(); }}
+          >
+            CLOSE
+          </button>
         </div>
       )}
+
+      {/* Paytable */}
+      <div className="term-box" style={{ marginTop: '24px' }}>
+        <div className="term-box-hd">
+          <span>PAYTABLE</span>
+        </div>
+        <div className="term-box-bd">
+          <div className="stat-row">
+            <span className="stat-label">777</span>
+            <span className="stat-val text-green">×10</span>
+          </div>
+          <div className="stat-row">
+            <span className="stat-label">💎💎💎</span>
+            <span className="stat-val text-green">×8</span>
+          </div>
+          <div className="stat-row">
+            <span className="stat-label">🔔🔔🔔</span>
+            <span className="stat-val text-green">×6</span>
+          </div>
+          <div className="stat-row">
+            <span className="stat-label">⭐⭐⭐</span>
+            <span className="stat-val text-green">×5</span>
+          </div>
+          <div className="stat-row">
+            <span className="stat-label">🍒🍒🍒</span>
+            <span className="stat-val text-green">×4</span>
+          </div>
+          <div className="stat-row">
+            <span className="stat-label">🍋🍋🍋</span>
+            <span className="stat-val text-green">×3</span>
+          </div>
+          <div className="stat-row">
+            <span className="stat-label">🍊🍊🍊</span>
+            <span className="stat-val text-green">×3</span>
+          </div>
+          <div className="stat-row">
+            <span className="stat-label">🍇🍇🍇</span>
+            <span className="stat-val text-green">×3</span>
+          </div>
+          <div className="stat-row">
+            <span className="stat-label">ANY 2 MATCH</span>
+            <span className="stat-val text-yellow">×1.5</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -27,295 +27,6 @@ const INITIAL_BALANCE = 10000;
 const QUICK_BETS = [100, 250, 500, 1000, 2500];
 const GRID_SIZE = 25; // 5x5
 
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    minHeight: '100vh',
-    background: 'linear-gradient(135deg, #0a1628, #111d3a, #0f0c29)',
-    color: '#e0e0e0',
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    padding: '20px',
-    boxSizing: 'border-box',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    maxWidth: '460px',
-    marginBottom: '16px',
-  },
-  backButton: {
-    background: 'rgba(255,255,255,0.08)',
-    border: '1px solid rgba(255,255,255,0.15)',
-    color: '#e0e0e0',
-    padding: '8px 16px',
-    borderRadius: '10px',
-    cursor: 'pointer',
-    fontSize: '14px',
-  },
-  title: {
-    fontSize: '22px',
-    fontWeight: '700',
-    background: 'linear-gradient(90deg, #00b894, #00cec9)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    margin: 0,
-    letterSpacing: '1px',
-  },
-  balanceBox: {
-    background: 'rgba(255,255,255,0.06)',
-    borderRadius: '12px',
-    padding: '8px 18px',
-    border: '1px solid rgba(255,255,255,0.1)',
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#f1c40f',
-  },
-  controls: {
-    width: '100%',
-    maxWidth: '460px',
-    background: 'rgba(255,255,255,0.04)',
-    borderRadius: '16px',
-    padding: '20px',
-    border: '1px solid rgba(255,255,255,0.08)',
-    marginBottom: '16px',
-    boxSizing: 'border-box',
-  },
-  inputGroup: {
-    marginBottom: '14px',
-  },
-  label: {
-    fontSize: '13px',
-    color: '#aaa',
-    marginBottom: '6px',
-    display: 'block',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  input: {
-    width: '100%',
-    padding: '12px 14px',
-    borderRadius: '10px',
-    border: '1px solid rgba(255,255,255,0.15)',
-    background: 'rgba(0,0,0,0.35)',
-    color: '#fff',
-    fontSize: '16px',
-    outline: 'none',
-    boxSizing: 'border-box',
-  },
-  quickBets: {
-    display: 'flex',
-    gap: '8px',
-    flexWrap: 'wrap' as const,
-    marginBottom: '14px',
-  },
-  quickBetBtn: {
-    flex: '1 0 auto',
-    padding: '8px 10px',
-    borderRadius: '8px',
-    border: '1px solid rgba(255,255,255,0.12)',
-    background: 'rgba(255,255,255,0.06)',
-    color: '#ccc',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    minWidth: '60px',
-    textAlign: 'center' as const,
-    transition: 'all 0.2s',
-  },
-  minesRow: {
-    display: 'flex',
-    gap: '8px',
-    alignItems: 'center' as const,
-    marginBottom: '14px',
-  },
-  minesInput: {
-    flex: 1,
-    padding: '12px 14px',
-    borderRadius: '10px',
-    border: '1px solid rgba(255,255,255,0.15)',
-    background: 'rgba(0,0,0,0.35)',
-    color: '#fff',
-    fontSize: '16px',
-    outline: 'none',
-    boxSizing: 'border-box',
-  },
-  minesRangeValue: {
-    fontSize: '20px',
-    fontWeight: '700',
-    color: '#00b894',
-    minWidth: '36px',
-    textAlign: 'center' as const,
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(5, 1fr)',
-    gap: '8px',
-    width: '100%',
-    maxWidth: '400px',
-    margin: '0 auto',
-  },
-  tile: {
-    aspectRatio: '1',
-    borderRadius: '12px',
-    border: '2px solid rgba(255,255,255,0.1)',
-    background: 'rgba(255,255,255,0.04)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '24px',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-    fontWeight: '700',
-    minHeight: '60px',
-  },
-  tileHidden: {
-    background: 'linear-gradient(135deg, rgba(0,184,148,0.15), rgba(0,206,201,0.08))',
-    border: '2px solid rgba(0,184,148,0.25)',
-  },
-  tileGem: {
-    background: 'linear-gradient(135deg, #00b894, #00cec9)',
-    border: '2px solid rgba(0,206,201,0.6)',
-    color: '#fff',
-    boxShadow: '0 0 20px rgba(0,184,148,0.3)',
-  },
-  tileMine: {
-    background: 'linear-gradient(135deg, #e74c3c, #c0392b)',
-    border: '2px solid rgba(231,76,60,0.6)',
-    color: '#fff',
-    boxShadow: '0 0 20px rgba(231,76,60,0.3)',
-  },
-  tileDisabled: {
-    opacity: 0.6,
-    cursor: 'not-allowed',
-  },
-  infoText: {
-    fontSize: '13px',
-    color: '#888',
-    textAlign: 'center' as const,
-    marginBottom: '14px',
-    lineHeight: '1.4',
-  },
-  gridContainer: {
-    width: '100%',
-    maxWidth: '460px',
-    padding: '0 8px',
-    boxSizing: 'border-box',
-  },
-  actionRow: {
-    display: 'flex',
-    gap: '12px',
-    marginTop: '16px',
-    width: '100%',
-    maxWidth: '460px',
-  },
-  playButton: {
-    flex: 1,
-    padding: '14px',
-    borderRadius: '12px',
-    border: 'none',
-    background: 'linear-gradient(135deg, #00b894, #00cec9)',
-    color: '#fff',
-    fontSize: '16px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    letterSpacing: '1px',
-    transition: 'opacity 0.2s',
-  },
-  cashoutButton: {
-    flex: 1,
-    padding: '14px',
-    borderRadius: '12px',
-    border: '1px solid rgba(0,184,148,0.4)',
-    background: 'rgba(0,184,148,0.1)',
-    color: '#00b894',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-    cursor: 'not-allowed',
-  },
-  resultOverlay: {
-    position: 'fixed' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0,0,0,0.75)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    backdropFilter: 'blur(6px)',
-  },
-  resultCard: {
-    background: 'linear-gradient(135deg, #1a1a3e, #2c2c54)',
-    borderRadius: '20px',
-    padding: '32px 28px',
-    width: '90%',
-    maxWidth: '380px',
-    textAlign: 'center' as const,
-    border: '1px solid rgba(255,255,255,0.15)',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-  },
-  resultEmoji: {
-    fontSize: '56px',
-    marginBottom: '12px',
-  },
-  resultTitle: {
-    fontSize: '28px',
-    fontWeight: '700',
-    marginBottom: '8px',
-  },
-  resultWin: {
-    color: '#2ecc71',
-  },
-  resultLose: {
-    color: '#e74c3c',
-  },
-  resultDetail: {
-    fontSize: '16px',
-    color: '#bbb',
-    marginBottom: '6px',
-  },
-  resultMultiplier: {
-    fontSize: '32px',
-    fontWeight: '800',
-    margin: '12px 0',
-    color: '#f1c40f',
-  },
-  resultPayout: {
-    fontSize: '20px',
-    fontWeight: '700',
-    color: '#2ecc71',
-    marginBottom: '16px',
-  },
-  closeButton: {
-    padding: '12px 40px',
-    borderRadius: '12px',
-    border: 'none',
-    background: 'linear-gradient(135deg, #667eea, #764ba2)',
-    color: '#fff',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginTop: '8px',
-  },
-  hashRow: {
-    fontSize: '11px',
-    color: '#666',
-    wordBreak: 'break-all' as const,
-    marginTop: '10px',
-    lineHeight: '1.5',
-  },
-};
-
 const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
   const [betAmount, setBetAmount] = useState<number>(500);
   const [numMines, setNumMines] = useState<number>(3);
@@ -365,10 +76,10 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
       if (!data.safe) {
         const newTiles = initTiles();
         data.minePositions.forEach((pos) => {
-          newTiles[pos].isMine = true;
+          if (newTiles[pos]) newTiles[pos]!.isMine = true;
         });
         data.minePositions.slice(0, 1).forEach((pos) => {
-          newTiles[pos].revealed = true;
+          if (newTiles[pos]) newTiles[pos]!.revealed = true;
         });
         setTiles(newTiles);
         setGameActive(false);
@@ -376,8 +87,10 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
         setCurrentMultiplier(0);
       } else {
         const newTiles = initTiles();
-        newTiles[0].revealed = true;
-        newTiles[0].isMine = false;
+        if (newTiles[0]) {
+          newTiles[0]!.revealed = true;
+          newTiles[0]!.isMine = false;
+        }
         setTiles(newTiles);
         setGameActive(true);
         setBalance((prev) => prev - betAmount);
@@ -405,7 +118,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
 
   const revealTile = useCallback(
     async (index: number) => {
-      if (loading || !gameActive || tiles[index].revealed) return;
+      if (loading || !gameActive || !tiles[index] || tiles[index]!.revealed) return;
 
       setLoading(true);
       try {
@@ -427,16 +140,20 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
 
         if (data.safe) {
           const newTiles = [...tiles];
-          newTiles[index].revealed = true;
-          newTiles[index].isMine = false;
+          if (newTiles[index]) {
+            newTiles[index]!.revealed = true;
+            newTiles[index]!.isMine = false;
+          }
           setTiles(newTiles);
           setCurrentMultiplier(data.multiplier);
           setBalance((prev) => prev + data.payout);
         } else {
           const newTiles = [...tiles];
           data.minePositions.forEach((pos) => {
-            newTiles[pos].isMine = true;
-            newTiles[pos].revealed = true;
+            if (newTiles[pos]) {
+              newTiles[pos]!.isMine = true;
+              newTiles[pos]!.revealed = true;
+            }
           });
           setTiles(newTiles);
           setGameActive(false);
@@ -481,8 +198,10 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
 
       const newTiles = [...tiles];
       data.minePositions.forEach((pos) => {
-        newTiles[pos].isMine = true;
-        newTiles[pos].revealed = true;
+        if (newTiles[pos]) {
+          newTiles[pos]!.isMine = true;
+          newTiles[pos]!.revealed = true;
+        }
       });
       setTiles(newTiles);
     } catch (err) {
@@ -498,175 +217,165 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
     setTiles(initTiles());
   }, [initTiles]);
 
+  const revealedCount = tiles.filter((t) => t.revealed && !t.isMine).length;
+  const maxReveals = GRID_SIZE - numMines;
+  const multPercent = maxReveals > 0 ? (revealedCount / maxReveals) * 100 : 0;
+
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <button style={styles.backButton} onClick={onBack}>
-          ← Back
+    <div className="page">
+      <div className="header">
+        <button className="btn-back" onClick={onBack}>
+          Back
         </button>
-        <h1 style={styles.title}>⛏️ Mines</h1>
-        <div style={styles.balanceBox}>💰 {balance.toLocaleString()}</div>
+        <span className="header-title">MINES</span>
+        <span className="header-balance">{balance.toLocaleString()}</span>
       </div>
 
-      <div style={styles.controls}>
-        <p style={styles.infoText}>
-          Pick tiles to reveal gems. Hit a mine and you lose. Choose how many mines are hidden and try your luck!
-        </p>
-
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Bet Amount</label>
+      <div className="s-title">BET AMOUNT</div>
+      <div className="term-box mb-md">
+        <div className="term-box-bd">
           <input
-            style={styles.input}
+            className="input"
             type="number"
             min={1}
             max={balance}
             value={betAmount}
             onChange={(e) => setBetAmount(Math.max(1, parseInt(e.target.value) || 0))}
-            placeholder="Enter bet amount"
+            placeholder="Bet amount"
           />
-        </div>
-
-        <div style={styles.quickBets}>
-          {QUICK_BETS.map((amount) => (
-            <button
-              key={amount}
-              style={{
-                ...styles.quickBetBtn,
-                ...(betAmount === amount
-                  ? { background: 'rgba(0,184,148,0.25)', borderColor: '#00b894', color: '#00b894' }
-                  : {}),
-              }}
-              onClick={() => handleQuickBet(amount)}
-            >
-              {amount}
-            </button>
-          ))}
-        </div>
-
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Number of Mines (1-24)</label>
-          <div style={styles.minesRow}>
-            <input
-              style={styles.minesInput}
-              type="range"
-              min={1}
-              max={24}
-              value={numMines}
-              onChange={(e) => setNumMines(parseInt(e.target.value))}
-            />
-            <span style={styles.minesRangeValue}>{numMines}</span>
-          </div>
         </div>
       </div>
 
-      <div style={styles.gridContainer}>
-        <div style={styles.grid}>
-          {tiles.length > 0 &&
-            tiles.map((tile) => {
-              let tileStyle: React.CSSProperties = { ...styles.tile, ...styles.tileHidden };
-              let content = '💎';
+      <div className="chips">
+        {QUICK_BETS.map((amt) => (
+          <button
+            key={amt}
+            className={"chip" + (betAmount === amt ? " active" : "")}
+            onClick={() => handleQuickBet(amt)}
+          >
+            {amt}
+          </button>
+        ))}
+      </div>
+
+      <div className="s-title">MINES: {numMines}</div>
+      <div className="term-box mb-md">
+        <div className="term-box-bd">
+          <input
+            type="range"
+            min={1}
+            max={24}
+            value={numMines}
+            onChange={(e) => setNumMines(parseInt(e.target.value))}
+            className="input"
+          />
+        </div>
+      </div>
+
+      <div className="stats mb-md">
+        <div className="stat-row">
+          <span className="stat-label">MINES</span>
+          <span className="stat-val">{numMines}</span>
+        </div>
+        <div className="stat-row">
+          <span className="stat-label">SAFE TILES</span>
+          <span className="stat-val">{GRID_SIZE - numMines}</span>
+        </div>
+        <div className="stat-row">
+          <span className="stat-label">REVEALED</span>
+          <span className="stat-val green">{revealedCount}</span>
+        </div>
+        {currentMultiplier > 1 && (
+          <div className="stat-row">
+            <span className="stat-label">MULTIPLIER</span>
+            <span className="stat-val green">×{currentMultiplier.toFixed(2)}</span>
+          </div>
+        )}
+      </div>
+
+      {gameActive && (
+        <div className="mult-bar mb-md">
+          <div className="mult-fill" style={{ width: `${Math.min(multPercent, 100)}%` }} />
+        </div>
+      )}
+
+      <div className="grid-5 mb-md">
+        {tiles.length > 0
+          ? tiles.map((tile) => {
+              let tileClass = "tile";
+              let content = '';
 
               if (tile.revealed) {
                 if (tile.isMine) {
-                  tileStyle = { ...styles.tile, ...styles.tileMine };
+                  tileClass += " revealed-mine";
                   content = '💣';
                 } else {
-                  tileStyle = { ...styles.tile, ...styles.tileGem };
+                  tileClass += " revealed-safe";
                   content = '💎';
                 }
+              } else if (loading || !gameActive) {
+                tileClass += " disabled";
               }
 
               return (
                 <button
                   key={tile.index}
-                  style={{
-                    ...tileStyle,
-                    ...(loading || !gameActive ? styles.tileDisabled : {}),
-                  }}
+                  className={tileClass}
                   onClick={() => revealTile(tile.index)}
                   disabled={loading || !gameActive || tile.revealed}
                 >
-                  {tile.revealed ? content : ''}
+                  {content}
                 </button>
               );
-            })}
-          {tiles.length === 0 &&
-            Array.from({ length: GRID_SIZE }).map((_, i) => (
-              <div
-                key={i}
-                style={{ ...styles.tile, ...styles.tileHidden, cursor: 'default' }}
-              >
-                💎
+            })
+          : Array.from({ length: GRID_SIZE }).map((_, i) => (
+              <div key={i} className="tile disabled">
+                ·
               </div>
             ))}
-        </div>
       </div>
 
-      <div style={styles.actionRow}>
+      <button
+        className="btn btn-green"
+        onClick={startGame}
+        disabled={loading || betAmount <= 0 || betAmount > balance || gameActive}
+      >
+        {loading ? '⏳ PROCESSING...' : gameActive ? 'IN GAME' : '▶ START'}
+      </button>
+
+      {gameActive && (
         <button
-          style={{
-            ...styles.playButton,
-            ...(loading || betAmount <= 0 || betAmount > balance || gameActive
-              ? styles.buttonDisabled
-              : {}),
-          }}
-          onClick={startGame}
-          disabled={loading || betAmount <= 0 || betAmount > balance || gameActive}
+          className={"btn btn-ghost active mt-md"}
+          onClick={autoCashout}
+          disabled={loading}
         >
-          {loading ? '⏳ Playing...' : gameActive ? '🎮 In Game' : '⛏️ Start Game'}
+          CASH OUT ×{currentMultiplier.toFixed(2)}
         </button>
-        {gameActive && (
-          <button
-            style={{
-              ...styles.cashoutButton,
-              ...(loading ? styles.buttonDisabled : {}),
-            }}
-            onClick={autoCashout}
-            disabled={loading}
-          >
-            💰 Cash Out (×{currentMultiplier.toFixed(2)})
-          </button>
-        )}
-      </div>
+      )}
 
       {result && !gameActive && (
-        <div style={styles.resultOverlay} onClick={handleCloseResult}>
-          <div style={styles.resultCard} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.resultEmoji}>{result.safe ? '💰' : '💥'}</div>
-            <div
-              style={{
-                ...styles.resultTitle,
-                ...(result.safe ? styles.resultWin : styles.resultLose),
-              }}
-            >
-              {result.safe ? '🎉 YOU WON!' : '💣 HIT A MINE!'}
+        <>
+          <div className="divider">RESULT</div>
+          <div className={"result " + (result.safe ? 'result-win' : 'result-lose')}>
+            <div className={"result-label " + (result.safe ? 'win' : 'lose')}>
+              {result.safe ? 'WIN' : 'LOSE'}
             </div>
-
-            {result.safe && (
-              <>
-                <div style={styles.resultMultiplier}>
-                  ×{result.multiplier.toFixed(2)}
-                </div>
-                <div style={styles.resultPayout}>
-                  +{result.payout.toLocaleString()}
-                </div>
-              </>
-            )}
-
-            <div style={styles.resultDetail}>
-              Mines: {result.numMines} | Revealed: {result.revealCount}
+            <div className="result-number">
+              {result.safe ? `+${result.payout.toLocaleString()}` : `-${betAmount.toLocaleString()}`}
             </div>
-
-            <div style={styles.hashRow}>
+            <div className="result-detail">
+              Mines: {result.numMines} · Revealed: {result.revealCount} · Multiplier: ×{result.multiplier.toFixed(2)}
+            </div>
+            <div className="result-hash">
               Hash: {result.resultHash.slice(0, 20)}...<br />
-              Nonce: {result.nonce} | Seed: {result.clientSeed.slice(0, 12)}...
+              Nonce: {result.nonce} · Seed: {result.clientSeed.slice(0, 12)}...
             </div>
-
-            <button style={styles.closeButton} onClick={handleCloseResult}>
-              Play Again
-            </button>
           </div>
-        </div>
+
+          <button className="btn btn-ghost mt-md" onClick={handleCloseResult}>
+            NEW GAME
+          </button>
+        </>
       )}
     </div>
   );

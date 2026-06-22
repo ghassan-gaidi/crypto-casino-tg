@@ -10,304 +10,11 @@ const QUICK_BETS = [0.001, 0.01, 0.1, 1.0];
 type BetType = 'number' | 'color' | 'section';
 
 const RED_NUMBERS = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
-const BLACK_NUMBERS = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35];
 
 function numberColor(n: number): 'red' | 'black' | 'green' {
   if (n === 0) return 'green';
   return RED_NUMBERS.includes(n) ? 'red' : 'black';
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    backgroundColor: '#111',
-    color: '#fff',
-    minHeight: '100vh',
-    padding: '16px',
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    marginBottom: '20px',
-  },
-  backBtn: {
-    background: '#1a1a2e',
-    color: '#fff',
-    border: '1px solid #333',
-    borderRadius: '8px',
-    padding: '8px 16px',
-    cursor: 'pointer',
-    fontSize: '14px',
-  },
-  title: {
-    fontSize: '22px',
-    fontWeight: 700,
-    margin: 0,
-  },
-  section: {
-    marginBottom: '20px',
-  },
-  sectionTitle: {
-    fontSize: '14px',
-    color: '#aaa',
-    marginBottom: '8px',
-    fontWeight: 500,
-  },
-  input: {
-    width: '100%',
-    padding: '10px 12px',
-    borderRadius: '8px',
-    border: '1px solid #2a2a3e',
-    backgroundColor: '#1a1a2e',
-    color: '#fff',
-    fontSize: '16px',
-    boxSizing: 'border-box' as const,
-    outline: 'none',
-  },
-  quickBetRow: {
-    display: 'flex',
-    gap: '8px',
-    marginTop: '8px',
-    flexWrap: 'wrap' as const,
-  },
-  quickBetBtn: {
-    flex: 1,
-    minWidth: '60px',
-    padding: '8px 10px',
-    borderRadius: '8px',
-    border: '1px solid #2a2a3e',
-    backgroundColor: '#1a1a2e',
-    color: '#aaa',
-    cursor: 'pointer',
-    fontSize: '13px',
-    textAlign: 'center' as const,
-  },
-  betTypeRow: {
-    display: 'flex',
-    gap: '8px',
-    marginBottom: '16px',
-  },
-  betTypeBtn: {
-    flex: 1,
-    padding: '10px',
-    borderRadius: '8px',
-    border: '1px solid #2a2a3e',
-    backgroundColor: '#1a1a2e',
-    color: '#aaa',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: 500,
-    textAlign: 'center' as const,
-  },
-  betTypeActive: {
-    borderColor: '#fff',
-    color: '#fff',
-    backgroundColor: '#2a2a4e',
-  },
-  numberGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(6, 1fr)',
-    gap: '6px',
-    marginBottom: '12px',
-  },
-  numberCell: {
-    padding: '12px 0',
-    borderRadius: '8px',
-    border: '1px solid #2a2a3e',
-    backgroundColor: '#1a1a2e',
-    color: '#fff',
-    cursor: 'pointer',
-    fontSize: '15px',
-    fontWeight: 600,
-    textAlign: 'center' as const,
-    transition: 'all 0.15s ease',
-  },
-  numberCellRed: {
-    backgroundColor: '#3a1a1a',
-    borderColor: '#6b2a2a',
-    color: '#ef4444',
-  },
-  numberCellBlack: {
-    backgroundColor: '#1a1a2e',
-    borderColor: '#333',
-    color: '#fff',
-  },
-  numberCellGreen: {
-    backgroundColor: '#1a2a1a',
-    borderColor: '#2a4a2a',
-    color: '#22c55e',
-  },
-  numberCellSelected: {
-    borderColor: '#fff',
-    boxShadow: '0 0 8px rgba(255,255,255,0.3)',
-  },
-  colorRow: {
-    display: 'flex',
-    gap: '12px',
-    marginBottom: '12px',
-  },
-  colorBtn: {
-    flex: 1,
-    padding: '14px',
-    borderRadius: '10px',
-    border: '2px solid #2a2a3e',
-    fontSize: '16px',
-    fontWeight: 700,
-    cursor: 'pointer',
-    textAlign: 'center' as const,
-    transition: 'all 0.15s ease',
-  },
-  colorBtnRed: {
-    backgroundColor: '#3a1a1a',
-    color: '#ef4444',
-  },
-  colorBtnBlack: {
-    backgroundColor: '#1a1a2e',
-    color: '#fff',
-  },
-  colorBtnSelected: {
-    borderColor: '#fff',
-    boxShadow: '0 0 8px rgba(255,255,255,0.2)',
-  },
-  sectionRow: {
-    display: 'flex',
-    gap: '8px',
-    marginBottom: '12px',
-  },
-  sectionBtn: {
-    flex: 1,
-    padding: '14px',
-    borderRadius: '10px',
-    border: '2px solid #2a2a3e',
-    backgroundColor: '#1a1a2e',
-    color: '#fff',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: 600,
-    textAlign: 'center' as const,
-  },
-  sectionBtnActive: {
-    borderColor: '#fff',
-    backgroundColor: '#2a2a4e',
-  },
-  spinBtn: {
-    width: '100%',
-    padding: '14px',
-    borderRadius: '10px',
-    border: 'none',
-    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-    color: '#fff',
-    fontSize: '18px',
-    fontWeight: 700,
-    cursor: 'pointer',
-    marginTop: '12px',
-  },
-  spinBtnDisabled: {
-    opacity: 0.4,
-    cursor: 'not-allowed',
-  },
-  wheelDisplay: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '24px 0',
-    padding: '24px',
-    backgroundColor: '#1a1a2e',
-    borderRadius: '16px',
-    border: '2px solid #2a2a3e',
-    minHeight: '120px',
-  },
-  wheelNumber: {
-    fontSize: '56px',
-    fontWeight: 800,
-    lineHeight: 1.2,
-    transition: 'all 0.3s ease',
-  },
-  wheelColor: {
-    fontSize: '16px',
-    fontWeight: 500,
-    marginTop: '4px',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '2px',
-  },
-  wheelLabel: {
-    fontSize: '13px',
-    color: '#888',
-    marginBottom: '8px',
-  },
-  spinAnimation: {
-    fontSize: '48px',
-    fontWeight: 800,
-    animation: 'none',
-    color: '#eab308',
-  },
-  errorText: {
-    color: '#ef4444',
-    textAlign: 'center' as const,
-    marginTop: '8px',
-    fontSize: '14px',
-  },
-  resultOverlay: {
-    position: 'fixed' as const,
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.85)',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    padding: '24px',
-    boxSizing: 'border-box' as const,
-  },
-  resultCard: {
-    backgroundColor: '#1a1a2e',
-    borderRadius: '16px',
-    border: '2px solid #2a2a3e',
-    padding: '32px 24px',
-    maxWidth: '340px',
-    width: '100%',
-    textAlign: 'center' as const,
-  },
-  resultWin: { borderColor: '#22c55e' },
-  resultLoss: { borderColor: '#ef4444' },
-  resultAmount: {
-    fontSize: '36px',
-    fontWeight: 700,
-    margin: '12px 0',
-  },
-  resultLabel: {
-    fontSize: '14px',
-    color: '#888',
-    marginBottom: '4px',
-  },
-  resultDetail: {
-    fontSize: '13px',
-    color: '#aaa',
-    margin: '4px 0',
-  },
-  resultHash: {
-    fontSize: '11px',
-    color: '#555',
-    wordBreak: 'break-all' as const,
-    marginTop: '12px',
-  },
-  overlayBtn: {
-    marginTop: '16px',
-    padding: '12px 32px',
-    borderRadius: '10px',
-    border: 'none',
-    background: '#22c55e',
-    color: '#fff',
-    fontSize: '16px',
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
-};
 
 function formatPayout(amount: number): string {
   return amount.toFixed(6);
@@ -350,17 +57,14 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
     for (let i = 0; i < 15; i++) {
       await new Promise((r) => setTimeout(r, 80 + i * 20));
       setSpinIndex(i);
-      // Show random numbers
       setShowSpinNumber(Math.floor(Math.random() * 37));
     }
 
-    // Snap to final
     setShowSpinNumber(finalNumber);
     setAnimating(false);
   };
 
   const handleSpin = async () => {
-    // Validate
     if (betType === 'number' && selectedNumber === null) {
       setError('Pick a number');
       return;
@@ -419,23 +123,6 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
     setResult(null);
   };
 
-  const getNumberStyle = (n: number): React.CSSProperties => {
-    const base: React.CSSProperties = { ...styles.numberCell };
-    const col = numberColor(n);
-    if (col === 'red') Object.assign(base, styles.numberCellRed);
-    else if (col === 'black') Object.assign(base, styles.numberCellBlack);
-    else Object.assign(base, styles.numberCellGreen);
-    if (selectedNumber === n) Object.assign(base, styles.numberCellSelected);
-    return base;
-  };
-
-  const getColorForNumber = (n: number): string => {
-    const col = numberColor(n);
-    if (col === 'red') return '#ef4444';
-    if (col === 'black') return '#fff';
-    return '#22c55e';
-  };
-
   // Build number grid: 0 then 1-36 in rows of 6
   const numberGridRows: number[][] = [];
   for (let i = 1; i <= 36; i += 6) {
@@ -443,18 +130,17 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
   }
 
   return (
-    <div style={styles.container}>
+    <div className="page">
       {/* Header */}
-      <div style={styles.header}>
-        <button style={styles.backBtn} onClick={onBack}>← Back</button>
-        <h1 style={styles.title}>Roulette</h1>
-      </div>
+      <button className="btn-back" onClick={onBack}>&larr; BACK</button>
+
+      <h1 className="s-title">ROULETTE</h1>
 
       {/* Bet Amount */}
-      <div style={styles.section}>
-        <div style={styles.sectionTitle}>Bet Amount</div>
+      <div>
+        <div className="s-title">BET AMOUNT</div>
         <input
-          style={styles.input}
+          className="input"
           type="number"
           step="0.001"
           min="0.001"
@@ -462,14 +148,11 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
           onChange={(e) => setAmount(e.target.value)}
           placeholder="0.00"
         />
-        <div style={styles.quickBetRow}>
+        <div className="chips">
           {QUICK_BETS.map((qb) => (
             <button
               key={qb}
-              style={{
-                ...styles.quickBetBtn,
-                ...(parseFloat(amount) === qb ? { borderColor: '#fff', color: '#fff' } : {}),
-              }}
+              className={"chip" + (parseFloat(amount) === qb ? " active" : "")}
               onClick={() => handleQuickBet(qb)}
             >
               {qb}
@@ -479,16 +162,13 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
       </div>
 
       {/* Bet Type Selector */}
-      <div style={styles.section}>
-        <div style={styles.sectionTitle}>Bet Type</div>
-        <div style={styles.betTypeRow}>
+      <div>
+        <div className="s-title">BET TYPE</div>
+        <div className="chips">
           {(['number', 'color', 'section'] as BetType[]).map((bt) => (
             <button
               key={bt}
-              style={{
-                ...styles.betTypeBtn,
-                ...(betType === bt ? styles.betTypeActive : {}),
-              }}
+              className={"chip" + (betType === bt ? " active" : "")}
               onClick={() => setBetType(bt)}
             >
               {bt.charAt(0).toUpperCase() + bt.slice(1)}
@@ -499,33 +179,40 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
 
       {/* Number Picker */}
       {betType === 'number' && (
-        <div style={styles.section}>
-          <div style={styles.sectionTitle}>Pick a Number</div>
+        <div>
+          <div className="s-title">PICK A NUMBER</div>
           {/* Zero */}
           <div
-            style={{
-              ...getNumberStyle(0),
-              marginBottom: '6px',
-            }}
+            className={"chip" + (selectedNumber === 0 ? " active" : "")}
+            style={{ marginBottom: '6px', textAlign: 'center' }}
             onClick={() => setSelectedNumber(0)}
           >
             0
           </div>
           {/* Grid 1-36 */}
-          <div style={styles.numberGrid}>
-            {numberGridRows.flat().map((n) => (
-              <div
-                key={n}
-                style={getNumberStyle(n)}
-                onClick={() => setSelectedNumber(n)}
-              >
-                {n}
-              </div>
-            ))}
+          <div className="chips" style={{ flexWrap: 'wrap' }}>
+            {numberGridRows.flat().map((n) => {
+              const col = numberColor(n);
+              return (
+                <button
+                  key={n}
+                  className={"chip" + (selectedNumber === n ? " active" : "")}
+                  style={{
+                    color: col === 'red' ? '#ef4444' : col === 'green' ? '#22c55e' : undefined,
+                  }}
+                  onClick={() => setSelectedNumber(n)}
+                >
+                  {n}
+                </button>
+              );
+            })}
           </div>
           {selectedNumber !== null && (
-            <div style={{ textAlign: 'center', fontSize: '13px', color: '#888' }}>
-              Selected: <strong style={{ color: getColorForNumber(selectedNumber) }}>{selectedNumber}</strong>
+            <div style={{ textAlign: 'center', fontSize: '13px', color: '#888', marginTop: '8px' }}>
+              Selected: <strong style={{
+                color: numberColor(selectedNumber) === 'red' ? '#ef4444'
+                  : numberColor(selectedNumber) === 'green' ? '#22c55e' : '#fff'
+              }}>{selectedNumber}</strong>
             </div>
           )}
         </div>
@@ -533,28 +220,21 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
 
       {/* Color Selector */}
       {betType === 'color' && (
-        <div style={styles.section}>
-          <div style={styles.sectionTitle}>Pick a Color</div>
-          <div style={styles.colorRow}>
+        <div>
+          <div className="s-title">PICK A COLOR</div>
+          <div className="chips">
             <button
-              style={{
-                ...styles.colorBtn,
-                ...styles.colorBtnRed,
-                ...(selectedColor === 'red' ? styles.colorBtnSelected : {}),
-              }}
+              className={"chip" + (selectedColor === 'red' ? " active" : "")}
+              style={{ color: '#ef4444' }}
               onClick={() => setSelectedColor('red')}
             >
-              🔴 RED
+              RED
             </button>
             <button
-              style={{
-                ...styles.colorBtn,
-                ...styles.colorBtnBlack,
-                ...(selectedColor === 'black' ? styles.colorBtnSelected : {}),
-              }}
+              className={"chip" + (selectedColor === 'black' ? " active" : "")}
               onClick={() => setSelectedColor('black')}
             >
-              ⚫ BLACK
+              BLACK
             </button>
           </div>
         </div>
@@ -562,128 +242,156 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
 
       {/* Section Selector */}
       {betType === 'section' && (
-        <div style={styles.section}>
-          <div style={styles.sectionTitle}>Pick a Section</div>
-          <div style={styles.sectionRow}>
+        <div>
+          <div className="s-title">PICK A SECTION</div>
+          <div className="chips">
             <button
-              style={{
-                ...styles.sectionBtn,
-                ...(selectedSection === '1-12' ? styles.sectionBtnActive : {}),
-              }}
+              className={"chip" + (selectedSection === '1-12' ? " active" : "")}
               onClick={() => setSelectedSection('1-12')}
             >
-              1st 12<br /><span style={{ fontSize: '11px', color: '#888' }}>1–12</span>
+              1ST 12 (1-12)
             </button>
             <button
-              style={{
-                ...styles.sectionBtn,
-                ...(selectedSection === '13-24' ? styles.sectionBtnActive : {}),
-              }}
+              className={"chip" + (selectedSection === '13-24' ? " active" : "")}
               onClick={() => setSelectedSection('13-24')}
             >
-              2nd 12<br /><span style={{ fontSize: '11px', color: '#888' }}>13–24</span>
+              2ND 12 (13-24)
             </button>
             <button
-              style={{
-                ...styles.sectionBtn,
-                ...(selectedSection === '25-36' ? styles.sectionBtnActive : {}),
-              }}
+              className={"chip" + (selectedSection === '25-36' ? " active" : "")}
               onClick={() => setSelectedSection('25-36')}
             >
-              3rd 12<br /><span style={{ fontSize: '11px', color: '#888' }}>25–36</span>
+              3RD 12 (25-36)
             </button>
           </div>
         </div>
       )}
 
       {/* Wheel / Spin Display */}
-      <div style={styles.wheelDisplay}>
-        {showSpinNumber !== null ? (
-          <>
-            <div style={styles.wheelLabel}>Result</div>
-            <div
-              style={{
-                ...styles.wheelNumber,
-                color: getColorForNumber(showSpinNumber),
-              }}
-            >
-              {showSpinNumber}
+      <div className="term-box">
+        <div className="term-box-hd"><span>WHEEL</span></div>
+        <div className="term-box-bd">
+          {showSpinNumber !== null ? (
+            <div className="roulette-display">
+              <div
+                className={"roulette-number " + numberColor(showSpinNumber)}
+              >
+                {showSpinNumber}
+              </div>
+              <div style={{
+                fontSize: '14px',
+                fontWeight: 700,
+                marginTop: '4px',
+                textTransform: 'uppercase',
+                letterSpacing: '2px',
+                color: numberColor(showSpinNumber) === 'red' ? '#ef4444'
+                  : numberColor(showSpinNumber) === 'green' ? '#22c55e' : '#fff',
+              }}>
+                {numberColor(showSpinNumber).toUpperCase()}
+              </div>
             </div>
-            <div
-              style={{
-                ...styles.wheelColor,
-                color: getColorForNumber(showSpinNumber),
-              }}
-            >
-              {numberColor(showSpinNumber).toUpperCase()}
+          ) : (
+            <div className="roulette-display">
+              <div style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>
+                {loading || animating ? 'SPINNING...' : 'PLACE YOUR BET & SPIN'}
+              </div>
+              <div
+                className="roulette-number"
+                style={{
+                  color: '#555',
+                  fontSize: animating ? '48px' : '56px',
+                }}
+              >
+                {loading || animating ? SPINNING_STATES[spinIndex % SPINNING_STATES.length] : '—'}
+              </div>
             </div>
-          </>
-        ) : (
-          <>
-            <div style={styles.wheelLabel}>
-              {loading || animating ? 'Spinning...' : 'Place your bet & spin'}
-            </div>
-            <div
-              style={{
-                ...styles.wheelNumber,
-                color: '#555',
-                fontSize: animating ? '48px' : '56px',
-              }}
-            >
-              {loading || animating ? SPINNING_STATES[spinIndex % SPINNING_STATES.length] : '🎯'}
-            </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Spin Button */}
       <button
-        style={{
-          ...styles.spinBtn,
-          ...(loading || animating ? styles.spinBtnDisabled : {}),
-        }}
+        className={"btn btn-green" + (loading || animating ? " disabled" : "")}
         onClick={handleSpin}
         disabled={loading || animating}
       >
-        {loading ? 'Sending...' : animating ? 'Spinning...' : '🎡 Spin'}
+        {loading ? 'SENDING...' : animating ? 'SPINNING...' : 'SPIN'}
       </button>
 
-      {error && <div style={styles.errorText}>{error}</div>}
+      {error && <div style={{ color: '#ef4444', textAlign: 'center', marginTop: '8px', fontSize: '14px' }}>{error}</div>}
+
+      {/* Stats */}
+      <div className="stats">
+        <div className="stat-row">
+          <span className="stat-label">BET</span>
+          <span className="stat-val">{amount} TON</span>
+        </div>
+        <div className="stat-row">
+          <span className="stat-label">TYPE</span>
+          <span className="stat-val">
+            {betType === 'number' && selectedNumber !== null
+              ? `Number ${selectedNumber}`
+              : betType === 'color' && selectedColor
+              ? selectedColor.toUpperCase()
+              : betType === 'section' && selectedSection
+              ? selectedSection
+              : '—'}
+          </span>
+        </div>
+      </div>
 
       {/* Result Overlay */}
       {result && !animating && (
-        <div style={styles.resultOverlay} onClick={closeResult}>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '16px',
+          boxSizing: 'border-box',
+        }} onClick={closeResult}>
           <div
-            style={{
-              ...styles.resultCard,
-              ...(result.playerWon ? styles.resultWin : styles.resultLoss),
-            }}
+            className={"result " + (result.playerWon ? "result-win" : "result-lose")}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={styles.resultLabel}>
-              {result.playerWon ? '🎉 You Won!' : '😔 You Lost'}
+            <div className={"result-label " + (result.playerWon ? "win" : "lose")}>
+              {result.playerWon ? 'YOU WON' : 'YOU LOST'}
             </div>
             <div
+              className="result-number"
               style={{
-                ...styles.resultAmount,
-                color: result.playerWon ? '#22c55e' : '#ef4444',
+                color: numberColor(result.spin) === 'red' ? '#ef4444'
+                  : numberColor(result.spin) === 'green' ? '#22c55e' : '#fff',
               }}
             >
+              {result.spin}
+            </div>
+            <div style={{ fontSize: '13px', color: '#aaa', margin: '4px 0' }}>
+              {numberColor(result.spin).toUpperCase()}
+            </div>
+            <div style={{
+              fontSize: '28px',
+              fontWeight: 700,
+              margin: '12px 0',
+              color: result.playerWon ? '#22c55e' : '#ef4444',
+            }}>
               {result.playerWon ? '+' : ''}{formatPayout(result.payout)}
             </div>
-            <div style={styles.resultDetail}>
-              Number: <strong style={{ color: getColorForNumber(result.spin) }}>{result.spin}</strong>
-              {' '}({numberColor(result.spin).toUpperCase()})
-            </div>
             {result.payoutMultiplier && (
-              <div style={styles.resultDetail}>
-                Payout: ×{result.payoutMultiplier}
+              <div style={{ fontSize: '13px', color: '#aaa', margin: '4px 0' }}>
+                Payout: x{result.payoutMultiplier}
               </div>
             )}
-            <div style={styles.resultHash}>
-              Hash: {result.resultHash}
+            <div className="result-hash">
+              {result.resultHash}
             </div>
-            <button style={styles.overlayBtn} onClick={closeResult}>
+            <button className="btn btn-green" onClick={closeResult} style={{ marginTop: '16px' }}>
               OK
             </button>
           </div>

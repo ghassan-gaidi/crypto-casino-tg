@@ -9,6 +9,7 @@ import RouletteGame from './components/RouletteGame'
 import LimboGame from './components/LimboGame'
 import JackpotGame from './components/JackpotGame'
 import BalancePage from './components/BalancePage'
+import './design.css'
 
 type Page = 'home' | 'dice' | 'coinflip' | 'crash' | 'mines' | 'plinko' | 'slots' | 'roulette' | 'limbo' | 'jackpot' | 'balance'
 
@@ -37,12 +38,23 @@ declare global {
   }
 }
 
+const GAMES = [
+  { id: 'dice' as const,    icon: '◆', title: 'DICE',    desc: 'Roll over/under  ·  99% win chance' },
+  { id: 'coinflip' as const,icon: '◑', title: 'COINFLIP',desc: 'Heads or tails  ·  50% win chance' },
+  { id: 'crash' as const,   icon: '↗', title: 'CRASH',   desc: 'Cash out before rocket crashes' },
+  { id: 'mines' as const,   icon: '⛏', title: 'MINES',   desc: 'Pick gems, avoid bombs  ·  5×5' },
+  { id: 'plinko' as const,  icon: '▼', title: 'PLINKO',  desc: 'Drop ball  ·  low/med/high risk' },
+  { id: 'slots' as const,   icon: '≡', title: 'SLOTS',   desc: 'Match 3 symbols  ·  classic reels' },
+  { id: 'roulette' as const,icon: '◎', title: 'ROULETTE', desc: 'European  ·  number/color/section' },
+  { id: 'limbo' as const,   icon: '↑', title: 'LIMBO',   desc: 'Target multiplier  ·  fly high' },
+  { id: 'jackpot' as const, icon: '★', title: 'JACKPOT', desc: 'Progressive pool  ·  highest wins' },
+]
+
 export default function App() {
   const [page, setPage] = useState<Page>('home')
   const [user, setUser] = useState<{ id: number; username?: string } | null>(null)
 
   useEffect(() => {
-    // Init Telegram Mini App
     const tg = window.Telegram?.WebApp
     if (tg) {
       tg.ready()
@@ -66,147 +78,49 @@ export default function App() {
   if (page === 'balance') return <BalancePage onBack={nav('home')} userId={user?.id} username={user?.username} />
 
   return (
-    <div style={{ padding: '16px', maxWidth: 480, margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{
-        textAlign: 'center',
-        padding: '24px 0 32px',
-        borderBottom: '1px solid #1a1a2e',
-      }}>
-        <h1 style={{ fontSize: 32, fontWeight: 700, color: '#fff', letterSpacing: 2 }}>
-          🎰 CASINO
-        </h1>
-        <p style={{ color: '#666', fontSize: 13, marginTop: 4 }}>
-          Provably fair · 2% edge · Multi-chain
-        </p>
+    <div className="page">
+      {/* HEADER */}
+      <div className="header">
+        <div>
+          <div className="t-display">CASINO</div>
+          <div className="t-small text-dim" style={{letterSpacing:3,marginTop:2}}>
+            PROVABLY FAIR · 2% EDGE · MULTI-CHAIN
+          </div>
+        </div>
+        <div className="header-balance" onClick={nav('balance')} style={{cursor:'pointer'}}>
+          ◆ BALANCE
+        </div>
       </div>
 
-      {/* Game cards */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24 }}>
-        <GameCard
-          emoji="🎲"
-          title="Dice"
-          subtitle="Roll over/under — 99% win chance"
-          onClick={nav('dice')}
-        />
-        <GameCard
-          emoji="🪙"
-          title="Coinflip"
-          subtitle="Heads or tails — 50% win chance"
-          onClick={nav('coinflip')}
-        />
-        <GameCard
-          emoji="🚀"
-          title="Crash"
-          subtitle="Cash out before the rocket crashes"
-          onClick={nav('crash')}
-        />
-        <GameCard
-          emoji="⛏️"
-          title="Mines"
-          subtitle="Pick gems, avoid bombs — 5×5 grid"
-          onClick={nav('mines')}
-        />
-        <GameCard
-          emoji="📍"
-          title="Plinko"
-          subtitle="Drop the ball — low/medium/high risk"
-          onClick={nav('plinko')}
-        />
-        <GameCard
-          emoji="🎰"
-          title="Slots"
-          subtitle="Classic slot machine — match 3 symbols"
-          onClick={nav('slots')}
-        />
-        <GameCard
-          emoji="🎡"
-          title="Roulette"
-          subtitle="European roulette — number, color, section bets"
-          onClick={nav('roulette')}
-        />
-        <GameCard
-          emoji="🚀"
-          title="Limbo"
-          subtitle="Rocket multiplier — set a target and fly!"
-          onClick={nav('limbo')}
-        />
-        <GameCard
-          emoji="🎰"
-          title="Jackpot"
-          subtitle="Progressive pool — highest wins!"
-          onClick={nav('jackpot')}
-        />
+      {/* DIVIDER */}
+      <div className="divider">GAMES</div>
+
+      {/* GAME LIST */}
+      <div style={{display:'flex',flexDirection:'column',gap:6}}>
+        {GAMES.map(g => (
+          <button key={g.id} className="game-card" onClick={nav(g.id)}>
+            <div className="game-card-icon">{g.icon}</div>
+            <div>
+              <div className="game-card-title">{g.title}</div>
+              <div className="game-card-desc">{g.desc}</div>
+            </div>
+          </button>
+        ))}
       </div>
 
-      {/* Quick links */}
-      <div style={{
-        display: 'flex',
-        gap: 8,
-        marginTop: 32,
-        padding: '16px 0',
-        borderTop: '1px solid #1a1a2e',
-      }}>
-        <QuickLink label="💰 Balance" onClick={nav('balance')} />
-        <QuickLink label="🔍 Verify" onClick={() => {}} />
-        <QuickLink label="❓ Help" onClick={() => window.open('https://t.me/' + (window as any).BOT_USERNAME, '_blank')} />
+      {/* BOTTOM LINKS */}
+      <div style={{marginTop:24,borderTop:'1px solid var(--border)',paddingTop:16}}>
+        <div className="flex gap-sm">
+          <button className="btn btn-ghost btn-sm" onClick={nav('balance')} style={{flex:1}}>◆ BALANCE</button>
+          <button className="btn btn-ghost btn-sm" onClick={() => {}} style={{flex:1}}>◇ VERIFY</button>
+          <button className="btn btn-ghost btn-sm" onClick={() => window.open('https://t.me/' + (window as any).BOT_USERNAME, '_blank')} style={{flex:1}}>◇ HELP</button>
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <div className="text-center text-muted mt-lg" style={{fontSize:9,letterSpacing:3}}>
+        ─── END TRANSMISSION ───
       </div>
     </div>
-  )
-}
-
-function GameCard({ emoji, title, subtitle, onClick }: {
-  emoji: string
-  title: string
-  subtitle: string
-  onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 16,
-        padding: '20px 24px',
-        background: '#111',
-        border: '1px solid #1a1a2e',
-        borderRadius: 12,
-        color: '#e0e0e0',
-        cursor: 'pointer',
-        fontSize: 16,
-        textAlign: 'left',
-        width: '100%',
-        transition: 'background 0.2s',
-      }}
-      onMouseEnter={e => (e.currentTarget.style.background = '#1a1a2e')}
-      onMouseLeave={e => (e.currentTarget.style.background = '#111')}
-    >
-      <span style={{ fontSize: 32 }}>{emoji}</span>
-      <div>
-        <div style={{ fontWeight: 600, color: '#fff' }}>{title}</div>
-        <div style={{ fontSize: 13, color: '#666', marginTop: 2 }}>{subtitle}</div>
-      </div>
-    </button>
-  )
-}
-
-function QuickLink({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        flex: 1,
-        padding: '10px 0',
-        background: 'transparent',
-        border: '1px solid #1a1a2e',
-        borderRadius: 8,
-        color: '#888',
-        cursor: 'pointer',
-        fontSize: 13,
-      }}
-    >
-      {label}
-    </button>
   )
 }
