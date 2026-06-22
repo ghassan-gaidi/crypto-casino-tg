@@ -4,6 +4,8 @@ const {
   ensureUser, getBalance, updateBalance, recordBet,
   getActiveSeed, createServerSeed, incrementSeedNonce,
   getOrCreateJackpotRound, enterJackpotRound,
+  getLeaderboard, getUserStats, getRecentBets, getPlatformStats,
+  getReferralStats, getReferrer, trackReferral,
 } = require("../src/supabase");
 const { generateSeed, hashSeed } = require("../src/provably-fair");
 const { validateTelegramInitData } = require("../src/supabase");
@@ -70,6 +72,40 @@ module.exports = async (req, res) => {
         withdrawals,
       });
       return;
+    }
+
+    // ── GET /api/leaderboard ──
+    if (game === 'leaderboard') {
+      if (req.method !== 'GET') { res.status(405).json({ error: 'GET required' }); return; }
+      const leaderboard = await getLeaderboard(20);
+      return res.json({ leaderboard });
+    }
+
+    // ── GET /api/history ──
+    if (game === 'history') {
+      if (req.method !== 'GET') { res.status(405).json({ error: 'GET required' }); return; }
+      const userId = parseInt(req.headers['x-user-id']);
+      if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+      const stats = await getUserStats(userId);
+      const bets = await getRecentBets(userId, 20);
+      return res.json({ stats, bets });
+    }
+
+    // ── GET /api/refs ──
+    if (game === 'refs') {
+      if (req.method !== 'GET') { res.status(405).json({ error: 'GET required' }); return; }
+      const userId = parseInt(req.headers['x-user-id']);
+      if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+      const refStats = await getReferralStats(userId);
+      const referrer = await getReferrer(userId);
+      return res.json({ ...refStats, referrer });
+    }
+
+    // ── GET /api/stats ──
+    if (game === 'stats') {
+      if (req.method !== 'GET') { res.status(405).json({ error: 'GET required' }); return; }
+      const stats = await getPlatformStats();
+      return res.json(stats);
     }
 
     if (req.method !== 'POST') { res.status(405).json({ error: 'POST required' }); return; }

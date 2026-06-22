@@ -9,9 +9,12 @@ import RouletteGame from './components/RouletteGame'
 import LimboGame from './components/LimboGame'
 import JackpotGame from './components/JackpotGame'
 import BalancePage from './components/BalancePage'
+import LeaderboardPage from './components/LeaderboardPage'
+import ReferralsPage from './components/ReferralsPage'
+import GameHistoryPage from './components/GameHistoryPage'
 import './design.css'
 
-type Page = 'home' | 'dice' | 'coinflip' | 'crash' | 'mines' | 'plinko' | 'slots' | 'roulette' | 'limbo' | 'jackpot' | 'balance'
+type Page = 'home' | 'dice' | 'coinflip' | 'crash' | 'mines' | 'plinko' | 'slots' | 'roulette' | 'limbo' | 'jackpot' | 'balance' | 'leaderboard' | 'refs' | 'history'
 
 const GAMES = [
   { id: 'dice' as const,    icon: '◆', title: 'DICE',    desc: 'Roll over/under  ·  99% win chance' },
@@ -51,6 +54,9 @@ export default function App() {
   if (page === 'limbo') return <LimboGame onBack={nav('home')} userId={user?.id} />
   if (page === 'jackpot') return <JackpotGame onBack={nav('home')} userId={user?.id} />
   if (page === 'balance') return <BalancePage onBack={nav('home')} userId={user?.id} username={user?.username} />
+  if (page === 'leaderboard') return <LeaderboardPage onBack={nav('home')} userId={user?.id} />
+  if (page === 'refs') return <ReferralsPage onBack={nav('home')} userId={user?.id} username={user?.username} />
+  if (page === 'history') return <GameHistoryPage onBack={nav('home')} userId={user?.id} />
 
   return (
     <div className="page">
@@ -83,12 +89,16 @@ export default function App() {
         ))}
       </div>
 
-      {/* BOTTOM LINKS */}
+      {/* BOTTOM NAV */}
       <div style={{marginTop:24,borderTop:'1px solid var(--border)',paddingTop:16}}>
-        <div className="flex gap-sm">
-          <button className="btn btn-ghost btn-sm" onClick={nav('balance')} style={{flex:1}}>◆ BALANCE</button>
-          <button className="btn btn-ghost btn-sm" onClick={() => {}} style={{flex:1}}>◇ VERIFY</button>
-          <button className="btn btn-ghost btn-sm" onClick={() => window.open('https://t.me/' + (window as any).BOT_USERNAME, '_blank')} style={{flex:1}}>◇ HELP</button>
+        <div className="flex gap-sm" style={{flexWrap:'wrap'}}>
+          <button className="btn btn-ghost btn-sm" onClick={nav('balance')} style={{flex:'1 1 30%'}}>◆ WALLET</button>
+          <button className="btn btn-ghost btn-sm" onClick={nav('history')} style={{flex:'1 1 30%'}}>◇ HISTORY</button>
+          <button className="btn btn-ghost btn-sm" onClick={nav('leaderboard')} style={{flex:'1 1 30%'}}>▲ RANK</button>
+        </div>
+        <div className="flex gap-sm" style={{marginTop:6}}>
+          <button className="btn btn-ghost btn-sm" onClick={nav('refs')} style={{flex:'1 1 50%'}}>◇ REFER</button>
+          <button className="btn btn-ghost btn-sm" onClick={() => window.open('https://t.me/' + (window as any).BOT_USERNAME, '_blank')} style={{flex:'1 1 50%'}}>◇ HELP</button>
         </div>
       </div>
 
