@@ -37,7 +37,7 @@ export default function DiceGame({ onBack }: Props) {
           amount: parseFloat(betAmount),
           direction,
           target,
-          initData: window.Telegram?.WebApp?.initDataUnsafe,
+          initData: window.Telegram?.WebApp?.initData,
         }),
       })
       const data = await res.json()

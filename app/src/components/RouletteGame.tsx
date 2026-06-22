@@ -90,7 +90,7 @@ export default function RouletteGame({ onBack }: RouletteGameProps) {
     setShowSpinNumber(null);
 
     try {
-      const initData = (window as any).Telegram?.WebApp?.initDataUnsafe || '';
+      const initData = (window as any).Telegram?.WebApp?.initData || '';
       const payload = {
         amount: amt,
         initData,

@@ -60,7 +60,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
     setResult(null);
 
     try {
-      const initData = (window as any).Telegram?.WebApp?.initDataUnsafe || '';
+      const initData = (window as any).Telegram?.WebApp?.initData || '';
       const res = await fetch('/api/slots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

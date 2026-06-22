@@ -14,6 +14,7 @@ exports.completeWithdrawal = completeWithdrawal;
 exports.recordBet = recordBet;
 exports.getActiveSeed = getActiveSeed;
 exports.createServerSeed = createServerSeed;
+exports.validateTelegramInitData = validateTelegramInitData;
 exports.incrementSeedNonce = incrementSeedNonce;
 exports.revealSeed = revealSeed;
 exports.getOrCreateJackpotRound = getOrCreateJackpotRound;
@@ -182,10 +183,10 @@ async function getActiveSeed() {
         .single();
     return data;
 }
-async function createServerSeed(seed, seedHash) {
+async function createServerSeed(userId, seed, seedHash) {
     const { data, error } = await exports.db
         .from('tg_server_seeds')
-        .insert({ seed, seed_hash: seedHash, max_nonce: 10000 })
+        .insert({ user_id: userId, seed, seed_hash: seedHash, max_nonce: 10000 })
         .select()
         .single();
     if (error)

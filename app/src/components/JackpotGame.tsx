@@ -45,7 +45,7 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
     setLoading(true);
     setFetchError(null);
     try {
-      const initData = (window as any).Telegram?.WebApp?.initDataUnsafe || {};
+      const initData = (window as any).Telegram?.WebApp?.initData || '';
       const res = await fetch('/api/jackpot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,7 +81,7 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
     setEnterLoading(true);
     setEntryResult(null);
     try {
-      const initData = (window as any).Telegram?.WebApp?.initDataUnsafe || {};
+      const initData = (window as any).Telegram?.WebApp?.initData || '';
       const res = await fetch('/api/jackpot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

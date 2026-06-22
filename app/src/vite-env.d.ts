@@ -10,6 +10,7 @@ interface TelegramWebApp {
     hide: () => void
     onClick: (fn: () => void) => void
   }
+  initData?: string
   initDataUnsafe?: {
     user?: {
       id: number

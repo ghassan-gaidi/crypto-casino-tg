@@ -45,7 +45,7 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
     setLoading(true);
     setError('');
     try {
-      const initData = (window as any).Telegram?.WebApp?.initDataUnsafe || {};
+      const initData = (window as any).Telegram?.WebApp?.initData || '';
       const res = await fetch('/api/limbo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

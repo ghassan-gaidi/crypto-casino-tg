@@ -32,7 +32,7 @@ export default function CoinflipGame({ onBack }: Props) {
         body: JSON.stringify({
           amount: parseFloat(betAmount),
           pick,
-          initData: window.Telegram?.WebApp?.initDataUnsafe,
+          initData: window.Telegram?.WebApp?.initData,
         }),
       })
       const data = await res.json()

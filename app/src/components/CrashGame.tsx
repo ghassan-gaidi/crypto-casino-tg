@@ -82,7 +82,7 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
     if (animRef.current) clearInterval(animRef.current)
 
     try {
-      const initData = (window as any).Telegram?.WebApp?.initDataUnsafe || {}
+      const initData = (window as any).Telegram?.WebApp?.initData || ''
       const res = await fetch('/api/crash', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

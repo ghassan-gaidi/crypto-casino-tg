@@ -49,7 +49,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
     setDropSlot(null);
 
     try {
-      const initData = (window as any).Telegram?.WebApp?.initDataUnsafe || '';
+      const initData = (window as any).Telegram?.WebApp?.initData || '';
       const res = await fetch('/api/plinko', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

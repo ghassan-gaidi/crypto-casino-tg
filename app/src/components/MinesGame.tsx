@@ -67,7 +67,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
     setCurrentMultiplier(1.0);
 
     try {
-      const initData = (window as any).Telegram?.WebApp?.initDataUnsafe || {};
+      const initData = (window as any).Telegram?.WebApp?.initData || '';
       const res = await fetch('/api/mines', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -132,7 +132,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
 
       setLoading(true);
       try {
-        const initData = (window as any).Telegram?.WebApp?.initDataUnsafe || {};
+        const initData = (window as any).Telegram?.WebApp?.initData || '';
         const res = await fetch('/api/mines', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -183,7 +183,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
 
     setLoading(true);
     try {
-      const initData = (window as any).Telegram?.WebApp?.initDataUnsafe || {};
+      const initData = (window as any).Telegram?.WebApp?.initData || '';
       const revealedSoFar = tiles.filter((t) => t.revealed && !t.isMine).length;
       const res = await fetch('/api/mines', {
         method: 'POST',

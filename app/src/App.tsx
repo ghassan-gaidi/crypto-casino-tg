@@ -13,31 +13,6 @@ import './design.css'
 
 type Page = 'home' | 'dice' | 'coinflip' | 'crash' | 'mines' | 'plinko' | 'slots' | 'roulette' | 'limbo' | 'jackpot' | 'balance'
 
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp?: {
-        ready: () => void
-        expand: () => void
-        close: () => void
-        MainButton: {
-          setText: (text: string) => void
-          show: () => void
-          hide: () => void
-          onClick: (fn: () => void) => void
-        }
-        initDataUnsafe?: {
-          user?: {
-            id: number
-            username?: string
-            first_name?: string
-          }
-        }
-      }
-    }
-  }
-}
-
 const GAMES = [
   { id: 'dice' as const,    icon: '◆', title: 'DICE',    desc: 'Roll over/under  ·  99% win chance' },
   { id: 'coinflip' as const,icon: '◑', title: 'COINFLIP',desc: 'Heads or tails  ·  50% win chance' },

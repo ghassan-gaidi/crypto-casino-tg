@@ -195,10 +195,10 @@ try {
     if (direction !== 'under' && direction !== 'over') { await ctx.reply('❌ Direction must be "under" or "over"'); return; }
     const bal = await getBalance(userId);
     if (betAmount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance. Use /deposit to add funds.'); return; }
-    let seed = await getActiveSeed();
+    let seed = await getActiveSeed(userId);
     if (!seed || seed.current_nonce >= seed.max_nonce) {
       const newSeed = generateSeed();
-      seed = await createServerSeed(newSeed, hashSeed(newSeed));
+      seed = await createServerSeed(userId, newSeed, hashSeed(newSeed));
     }
     const clientSeed = generateSeed();
     const result = playDice({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, target, direction, betAmount });
@@ -224,10 +224,10 @@ try {
     if (pick !== 'heads' && pick !== 'tails') { await ctx.reply('❌ Pick "heads" or "tails"'); return; }
     const bal = await getBalance(userId);
     if (betAmount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance.'); return; }
-    let seed = await getActiveSeed();
+    let seed = await getActiveSeed(userId);
     if (!seed || seed.current_nonce >= seed.max_nonce) {
       const newSeed = generateSeed();
-      seed = await createServerSeed(newSeed, hashSeed(newSeed));
+      seed = await createServerSeed(userId, newSeed, hashSeed(newSeed));
     }
     const clientSeed = generateSeed();
     const result = playCoinflip({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, pick, betAmount });
@@ -252,10 +252,10 @@ try {
     if (autoCashout > 1000) { await ctx.reply('❌ Max auto cashout is 1000x'); return; }
     const bal = await getBalance(userId);
     if (betAmount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance. Use /deposit to add funds.'); return; }
-    let seed = await getActiveSeed();
+    let seed = await getActiveSeed(userId);
     if (!seed || seed.current_nonce >= seed.max_nonce) {
       const newSeed = generateSeed();
-      seed = await createServerSeed(newSeed, hashSeed(newSeed));
+      seed = await createServerSeed(userId, newSeed, hashSeed(newSeed));
     }
     const clientSeed = generateSeed();
     const roundId = seed.current_nonce;
@@ -287,10 +287,10 @@ try {
     if (isNaN(revealCount) || revealCount < 1 || revealCount > 25 - numMines) { await ctx.reply('❌ Reveal count must be 1–' + (25 - numMines)); return; }
     const bal = await getBalance(userId);
     if (betAmount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance. Use /deposit to add funds.'); return; }
-    let seed = await getActiveSeed();
+    let seed = await getActiveSeed(userId);
     if (!seed || seed.current_nonce >= seed.max_nonce) {
       const newSeed = generateSeed();
-      seed = await createServerSeed(newSeed, hashSeed(newSeed));
+      seed = await createServerSeed(userId, newSeed, hashSeed(newSeed));
     }
     const clientSeed = generateSeed();
     const result = playMines({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, numMines, revealCount });
@@ -327,10 +327,10 @@ try {
     if (!['low', 'medium', 'high'].includes(risk)) { await ctx.reply('❌ Risk must be: low, medium, or high'); return; }
     const bal = await getBalance(userId);
     if (betAmount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance. Use /deposit to add funds.'); return; }
-    let seed = await getActiveSeed();
+    let seed = await getActiveSeed(userId);
     if (!seed || seed.current_nonce >= seed.max_nonce) {
       const newSeed = generateSeed();
-      seed = await createServerSeed(newSeed, hashSeed(newSeed));
+      seed = await createServerSeed(userId, newSeed, hashSeed(newSeed));
     }
     const clientSeed = generateSeed();
     const result = playPlinko({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, rows, risk, betAmount });
@@ -364,10 +364,10 @@ try {
     if (isNaN(betAmount) || betAmount <= 0) { await ctx.reply('❌ Invalid bet amount'); return; }
     const bal = await getBalance(userId);
     if (betAmount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance. Use /deposit to add funds.'); return; }
-    let seed = await getActiveSeed();
+    let seed = await getActiveSeed(userId);
     if (!seed || seed.current_nonce >= seed.max_nonce) {
       const newSeed = generateSeed();
-      seed = await createServerSeed(newSeed, hashSeed(newSeed));
+      seed = await createServerSeed(userId, newSeed, hashSeed(newSeed));
     }
     const clientSeed = generateSeed();
     const result = playSlots({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, betAmount });
@@ -432,10 +432,10 @@ try {
     }
     const bal = await getBalance(userId);
     if (betAmount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance. Use /deposit to add funds.'); return; }
-    let seed = await getActiveSeed();
+    let seed = await getActiveSeed(userId);
     if (!seed || seed.current_nonce >= seed.max_nonce) {
       const newSeed = generateSeed();
-      seed = await createServerSeed(newSeed, hashSeed(newSeed));
+      seed = await createServerSeed(userId, newSeed, hashSeed(newSeed));
     }
     const clientSeed = generateSeed();
     const result = playRoulette({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, betType, betValue, betAmount });
@@ -470,10 +470,10 @@ try {
     if (targetMultiplier > 10000) { await ctx.reply('❌ Max target multiplier is 10000x'); return; }
     const bal = await getBalance(userId);
     if (betAmount > Number(bal.balance_evm)) { await ctx.reply('❌ Insufficient balance. Use /deposit to add funds.'); return; }
-    let seed = await getActiveSeed();
+    let seed = await getActiveSeed(userId);
     if (!seed || seed.current_nonce >= seed.max_nonce) {
       const newSeed = generateSeed();
-      seed = await createServerSeed(newSeed, hashSeed(newSeed));
+      seed = await createServerSeed(userId, newSeed, hashSeed(newSeed));
     }
     const clientSeed = generateSeed();
     const result = playLimbo({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, targetMultiplier, betAmount });

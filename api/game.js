@@ -6,6 +6,7 @@ const {
   getOrCreateJackpotRound, enterJackpotRound,
 } = require("../src/supabase");
 const { generateSeed, hashSeed } = require("../src/provably-fair");
+const { validateTelegramInitData } = require("../src/supabase");
 const { playDice } = require("../src/games/dice");
 const { playCoinflip } = require("../src/games/coinflip");
 const { playCrash } = require("../src/games/crash");
@@ -16,6 +17,12 @@ const { playRoulette } = require("../src/games/roulette");
 const { playLimbo } = require("../src/games/limbo");
 
 function parseInitData(initData) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  // If it's a string, validate HMAC (proper Mini App flow)
+  if (typeof initData === 'string') {
+    return validateTelegramInitData(initData, botToken);
+  }
+  // Fallback: accept object (initDataUnsafe) — validates via auth_date check only
   if (!initData || typeof initData !== 'object') return null;
   const user = initData.user;
   if (!user || !user.id) return null;
@@ -27,7 +34,7 @@ async function getOrCreateSeed(userId) {
   if (!seed) {
     const newSeed = generateSeed();
     const hashed = hashSeed(newSeed);
-    seed = await createServerSeed(userId, hashed);
+    seed = await createServerSeed(userId, newSeed, hashed);
     if (!seed) throw new Error('Failed to create seed');
     seed.seed = newSeed;
   }
