@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 interface RouletteGameProps {
   onBack: () => void;
@@ -22,7 +22,7 @@ function formatPayout(amount: number): string {
 
 const SPINNING_STATES = ['●', '◎', '◉', '○'];
 
-const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
+export default function RouletteGame({ onBack }: RouletteGameProps) {
   const [amount, setAmount] = useState('0.01');
   const [betType, setBetType] = useState<BetType>('number');
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
@@ -123,7 +123,6 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
     setResult(null);
   };
 
-  // Build number grid: 0 then 1-36 in rows of 6
   const numberGridRows: number[][] = [];
   for (let i = 1; i <= 36; i += 6) {
     numberGridRows.push([i, i + 1, i + 2, i + 3, i + 4, i + 5]);
@@ -132,137 +131,143 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
   return (
     <div className="page">
       {/* Header */}
-      <button className="btn-back" onClick={onBack}>&larr; BACK</button>
-
-      <h1 className="s-title">ROULETTE</h1>
+      <div className="header">
+        <button className="btn-back" onClick={onBack}>BACK</button>
+        <span className="header-title">ROULETTE</span>
+        <span className="header-balance"></span>
+      </div>
 
       {/* Bet Amount */}
-      <div>
-        <div className="s-title">BET AMOUNT</div>
-        <input
-          className="input"
-          type="number"
-          step="0.001"
-          min="0.001"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="0.00"
-        />
-        <div className="chips">
-          {QUICK_BETS.map((qb) => (
-            <button
-              key={qb}
-              className={"chip" + (parseFloat(amount) === qb ? " active" : "")}
-              onClick={() => handleQuickBet(qb)}
-            >
-              {qb}
-            </button>
-          ))}
+      <div className="term-box">
+        <div className="term-box-hd"><span>AMOUNT</span></div>
+        <div className="term-box-bd">
+          <input
+            className="input"
+            type="number"
+            step="0.001"
+            min="0.001"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0.00"
+          />
+          <div className="chips">
+            {QUICK_BETS.map((qb) => (
+              <button
+                key={qb}
+                className={"chip" + (parseFloat(amount) === qb ? " active" : "")}
+                onClick={() => handleQuickBet(qb)}
+              >
+                {qb}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Bet Type Selector */}
-      <div>
-        <div className="s-title">BET TYPE</div>
-        <div className="chips">
-          {(['number', 'color', 'section'] as BetType[]).map((bt) => (
-            <button
-              key={bt}
-              className={"chip" + (betType === bt ? " active" : "")}
-              onClick={() => setBetType(bt)}
-            >
-              {bt.charAt(0).toUpperCase() + bt.slice(1)}
-            </button>
-          ))}
+      <div className="term-box">
+        <div className="term-box-hd"><span>BET TYPE</span></div>
+        <div className="term-box-bd">
+          <div className="chips">
+            {(['number', 'color', 'section'] as BetType[]).map((bt) => (
+              <button
+                key={bt}
+                className={"chip" + (betType === bt ? " active" : "")}
+                onClick={() => setBetType(bt)}
+              >
+                {bt.charAt(0).toUpperCase() + bt.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Number Picker */}
       {betType === 'number' && (
-        <div>
-          <div className="s-title">PICK A NUMBER</div>
-          {/* Zero */}
-          <div
-            className={"chip" + (selectedNumber === 0 ? " active" : "")}
-            style={{ marginBottom: '6px', textAlign: 'center' }}
-            onClick={() => setSelectedNumber(0)}
-          >
-            0
-          </div>
-          {/* Grid 1-36 */}
-          <div className="chips" style={{ flexWrap: 'wrap' }}>
-            {numberGridRows.flat().map((n) => {
-              const col = numberColor(n);
-              return (
-                <button
-                  key={n}
-                  className={"chip" + (selectedNumber === n ? " active" : "")}
-                  style={{
-                    color: col === 'red' ? '#ef4444' : col === 'green' ? '#22c55e' : undefined,
-                  }}
-                  onClick={() => setSelectedNumber(n)}
-                >
-                  {n}
-                </button>
-              );
-            })}
-          </div>
-          {selectedNumber !== null && (
-            <div style={{ textAlign: 'center', fontSize: '13px', color: '#888', marginTop: '8px' }}>
-              Selected: <strong style={{
-                color: numberColor(selectedNumber) === 'red' ? '#ef4444'
-                  : numberColor(selectedNumber) === 'green' ? '#22c55e' : '#fff'
-              }}>{selectedNumber}</strong>
+        <div className="term-box">
+          <div className="term-box-hd"><span>PICK A NUMBER</span></div>
+          <div className="term-box-bd">
+            <div
+              className={"chip text-center mb-sm" + (selectedNumber === 0 ? " active" : "")}
+              onClick={() => setSelectedNumber(0)}
+            >
+              0
             </div>
-          )}
+            <div className="chips number-grid">
+              {numberGridRows.flat().map((n) => {
+                const col = numberColor(n);
+                return (
+                  <button
+                    key={n}
+                    className={
+                      "chip" +
+                      (selectedNumber === n ? " active" : "") +
+                      (col === 'red' ? " chip-red" : col === 'green' ? " chip-green" : "")
+                    }
+                    onClick={() => setSelectedNumber(n)}
+                  >
+                    {n}
+                  </button>
+                );
+              })}
+            </div>
+            {selectedNumber !== null && (
+              <div className="text-center text-dim t-small mt-sm">
+                Selected: <span className={"stat-val" + (numberColor(selectedNumber) === 'red' ? " red" : numberColor(selectedNumber) === 'green' ? " green" : "")}>{selectedNumber}</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* Color Selector */}
       {betType === 'color' && (
-        <div>
-          <div className="s-title">PICK A COLOR</div>
-          <div className="chips">
-            <button
-              className={"chip" + (selectedColor === 'red' ? " active" : "")}
-              style={{ color: '#ef4444' }}
-              onClick={() => setSelectedColor('red')}
-            >
-              RED
-            </button>
-            <button
-              className={"chip" + (selectedColor === 'black' ? " active" : "")}
-              onClick={() => setSelectedColor('black')}
-            >
-              BLACK
-            </button>
+        <div className="term-box">
+          <div className="term-box-hd"><span>PICK A COLOR</span></div>
+          <div className="term-box-bd">
+            <div className="chips">
+              <button
+                className={"chip chip-red" + (selectedColor === 'red' ? " active" : "")}
+                onClick={() => setSelectedColor('red')}
+              >
+                RED
+              </button>
+              <button
+                className={"chip" + (selectedColor === 'black' ? " active" : "")}
+                onClick={() => setSelectedColor('black')}
+              >
+                BLACK
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Section Selector */}
       {betType === 'section' && (
-        <div>
-          <div className="s-title">PICK A SECTION</div>
-          <div className="chips">
-            <button
-              className={"chip" + (selectedSection === '1-12' ? " active" : "")}
-              onClick={() => setSelectedSection('1-12')}
-            >
-              1ST 12 (1-12)
-            </button>
-            <button
-              className={"chip" + (selectedSection === '13-24' ? " active" : "")}
-              onClick={() => setSelectedSection('13-24')}
-            >
-              2ND 12 (13-24)
-            </button>
-            <button
-              className={"chip" + (selectedSection === '25-36' ? " active" : "")}
-              onClick={() => setSelectedSection('25-36')}
-            >
-              3RD 12 (25-36)
-            </button>
+        <div className="term-box">
+          <div className="term-box-hd"><span>PICK A SECTION</span></div>
+          <div className="term-box-bd">
+            <div className="chips">
+              <button
+                className={"chip" + (selectedSection === '1-12' ? " active" : "")}
+                onClick={() => setSelectedSection('1-12')}
+              >
+                1ST 12 (1-12)
+              </button>
+              <button
+                className={"chip" + (selectedSection === '13-24' ? " active" : "")}
+                onClick={() => setSelectedSection('13-24')}
+              >
+                2ND 12 (13-24)
+              </button>
+              <button
+                className={"chip" + (selectedSection === '25-36' ? " active" : "")}
+                onClick={() => setSelectedSection('25-36')}
+              >
+                3RD 12 (25-36)
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -273,35 +278,19 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
         <div className="term-box-bd">
           {showSpinNumber !== null ? (
             <div className="roulette-display">
-              <div
-                className={"roulette-number " + numberColor(showSpinNumber)}
-              >
+              <div className={"roulette-number " + numberColor(showSpinNumber)}>
                 {showSpinNumber}
               </div>
-              <div style={{
-                fontSize: '14px',
-                fontWeight: 700,
-                marginTop: '4px',
-                textTransform: 'uppercase',
-                letterSpacing: '2px',
-                color: numberColor(showSpinNumber) === 'red' ? '#ef4444'
-                  : numberColor(showSpinNumber) === 'green' ? '#22c55e' : '#fff',
-              }}>
+              <div className={"roulette-color-label " + numberColor(showSpinNumber)}>
                 {numberColor(showSpinNumber).toUpperCase()}
               </div>
             </div>
           ) : (
             <div className="roulette-display">
-              <div style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>
+              <div className="text-dim mb-sm">
                 {loading || animating ? 'SPINNING...' : 'PLACE YOUR BET & SPIN'}
               </div>
-              <div
-                className="roulette-number"
-                style={{
-                  color: '#555',
-                  fontSize: animating ? '48px' : '56px',
-                }}
-              >
+              <div className={"roulette-number" + (loading || animating ? "" : " text-muted")}>
                 {loading || animating ? SPINNING_STATES[spinIndex % SPINNING_STATES.length] : '—'}
               </div>
             </div>
@@ -318,7 +307,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
         {loading ? 'SENDING...' : animating ? 'SPINNING...' : 'SPIN'}
       </button>
 
-      {error && <div style={{ color: '#ef4444', textAlign: 'center', marginTop: '8px', fontSize: '14px' }}>{error}</div>}
+      {error && <div className="overlay-error">{error}</div>}
 
       {/* Stats */}
       <div className="stats">
@@ -342,20 +331,7 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
 
       {/* Result Overlay */}
       {result && !animating && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.85)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '16px',
-          boxSizing: 'border-box',
-        }} onClick={closeResult}>
+        <div className="overlay" onClick={closeResult}>
           <div
             className={"result " + (result.playerWon ? "result-win" : "result-lose")}
             onClick={(e) => e.stopPropagation()}
@@ -363,35 +339,24 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
             <div className={"result-label " + (result.playerWon ? "win" : "lose")}>
               {result.playerWon ? 'YOU WON' : 'YOU LOST'}
             </div>
-            <div
-              className="result-number"
-              style={{
-                color: numberColor(result.spin) === 'red' ? '#ef4444'
-                  : numberColor(result.spin) === 'green' ? '#22c55e' : '#fff',
-              }}
-            >
+            <div className={"result-number roulette-number " + numberColor(result.spin)}>
               {result.spin}
             </div>
-            <div style={{ fontSize: '13px', color: '#aaa', margin: '4px 0' }}>
+            <div className={"roulette-color-label " + numberColor(result.spin)}>
               {numberColor(result.spin).toUpperCase()}
             </div>
-            <div style={{
-              fontSize: '28px',
-              fontWeight: 700,
-              margin: '12px 0',
-              color: result.playerWon ? '#22c55e' : '#ef4444',
-            }}>
+            <div className={"t-display text-center mt-sm mb-sm " + (result.playerWon ? "text-green" : "text-red")}>
               {result.playerWon ? '+' : ''}{formatPayout(result.payout)}
             </div>
             {result.payoutMultiplier && (
-              <div style={{ fontSize: '13px', color: '#aaa', margin: '4px 0' }}>
+              <div className="result-detail">
                 Payout: x{result.payoutMultiplier}
               </div>
             )}
             <div className="result-hash">
               {result.resultHash}
             </div>
-            <button className="btn btn-green" onClick={closeResult} style={{ marginTop: '16px' }}>
+            <button className="btn btn-green mt-md" onClick={closeResult}>
               OK
             </button>
           </div>
@@ -399,6 +364,4 @@ const RouletteGame: React.FC<RouletteGameProps> = ({ onBack }) => {
       )}
     </div>
   );
-};
-
-export default RouletteGame;
+}

@@ -19,7 +19,6 @@ interface JackpotEntryResult {
   entries: number;
 }
 
-const INITIAL_BALANCE = 10000;
 const QUICK_BETS = [100, 500, 1000, 2500, 5000];
 
 const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
@@ -28,8 +27,19 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
   const [enterLoading, setEnterLoading] = useState<boolean>(false);
   const [round, setRound] = useState<JackpotRound | null>(null);
   const [entryResult, setEntryResult] = useState<JackpotEntryResult | null>(null);
-  const [balance, setBalance] = useState<number>(INITIAL_BALANCE);
+  const [balance, setBalance] = useState<number>(0);
   const [fetchError, setFetchError] = useState<string | null>(null);
+
+  // Fetch real balance from API
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`/api/balance?userId=${userId}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.evm !== undefined) setBalance(Number(data.evm));
+      })
+      .catch(() => {});
+  }, [userId]);
 
   const fetchRound = useCallback(async () => {
     setLoading(true);
@@ -100,100 +110,95 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
     setEntryResult(null);
   }, []);
 
-  const getStatusBadge = (status: string): { cls: string; label: string } => {
+  const getStatusLabel = (status: string): { label: string; colorClass: string } => {
     switch (status?.toLowerCase()) {
       case 'open':
       case 'accepting':
-        return { cls: 'result-label win', label: 'OPEN' };
+        return { label: 'OPEN', colorClass: 'text-green' };
       case 'drawing':
       case 'in_progress':
-        return { cls: 'result-label', label: 'DRAWING' };
+        return { label: 'DRAWING', colorClass: 'text-yellow' };
       case 'closed':
       case 'completed':
-        return { cls: 'result-label lose', label: 'CLOSED' };
+        return { label: 'CLOSED', colorClass: 'text-red' };
       default:
-        return { cls: 'result-label', label: status || 'UNKNOWN' };
+        return { label: status || 'UNKNOWN', colorClass: 'text-dim' };
     }
   };
 
   return (
     <div className="page">
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '16px' }}>
+      <div className="header">
         <button className="btn-back" onClick={onBack}>
-          ← BACK
+          Back
         </button>
-        <h1 className="s-title">🎰 JACKPOT</h1>
-        <div style={{ color: 'var(--green)', fontWeight: 700 }}>
-          {balance.toLocaleString()} COINS
-        </div>
+        <span className="header-title">JACKPOT</span>
+        <span className="header-balance">{balance.toLocaleString()}</span>
       </div>
 
       {/* Jackpot Pool */}
-      <div className="jackpot-pool" style={{ marginBottom: '16px' }}>
+      <div className="jackpot-pool">
         <div className="jackpot-label">JACKPOT POOL</div>
         <div className="jackpot-amount">
           {round ? round.prize_pool.toLocaleString() : '—'}
         </div>
         {round && (
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '8px', fontSize: '13px', color: 'var(--muted)' }}>
-            <span>ENTRIES: <span style={{ color: 'var(--cyan)' }}>{round.entry_count}</span></span>
-            <span>STATUS: <span style={{ color: getStatusBadge(round.status).label === 'OPEN' ? 'var(--green)' : getStatusBadge(round.status).label === 'CLOSED' ? 'var(--red)' : 'var(--yellow)' }}>{getStatusBadge(round.status).label}</span></span>
+          <div className="jackpot-info">
+            <span>ENTRIES: <span className="text-cyan">{round.entry_count}</span></span>
+            <span>STATUS: <span className={getStatusLabel(round.status).colorClass}>{getStatusLabel(round.status).label}</span></span>
           </div>
         )}
         {round && (
-          <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--muted)', textAlign: 'center', wordBreak: 'break-all' }}>
+          <div className="jackpot-round-id">
             ROUND: {round.round_id}
           </div>
         )}
       </div>
 
       {/* Refresh */}
-      <button className="btn btn-green" onClick={fetchRound} disabled={loading} style={{ width: '100%', marginBottom: '16px', opacity: loading ? 0.5 : 1 }}>
-        {loading ? 'REFRESHING...' : '⟳ REFRESH STATUS'}
+      <button className="btn btn-green mb-md" onClick={fetchRound} disabled={loading}>
+        {loading ? 'REFRESHING...' : 'REFRESH STATUS'}
       </button>
 
       {/* Loading / Error */}
       {loading && !round && (
-        <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '14px' }}>
+        <div className="text-center text-dim mb-md">
           Loading round info...
-        </p>
+        </div>
       )}
 
       {fetchError && (
-        <p style={{ textAlign: 'center', color: 'var(--red)', fontSize: '14px' }}>
+        <div className="text-center text-red mb-md">
           {fetchError}
-        </p>
+        </div>
       )}
 
       {/* Game Area */}
-      <div className="term-box" style={{ marginBottom: '16px' }}>
+      <div className="term-box">
         <div className="term-box-hd">
           <span>ENTER ROUND</span>
         </div>
         <div className="term-box-bd">
-          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '12px', lineHeight: '1.4' }}>
+          <div className="text-dim mb-md" style={{ fontSize: '13px', lineHeight: 1.4 }}>
             Buy entries into the current jackpot round. The more you bet, the higher your chance to win the entire prize pool.
-          </p>
+          </div>
 
           {/* Quick Bet Chips */}
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
-            {QUICK_BETS.map((amount) => (
+          <div className="chips">
+            {QUICK_BETS.map((amt) => (
               <button
-                key={amount}
-                className={"chip" + (betAmount === amount ? " active" : "")}
-                onClick={() => handleQuickBet(amount)}
+                key={amt}
+                className={"chip" + (betAmount === amt ? " active" : "")}
+                onClick={() => handleQuickBet(amt)}
               >
-                {amount}
+                {amt}
               </button>
             ))}
           </div>
 
           {/* Bet Input */}
-          <div style={{ marginBottom: '12px' }}>
-            <label style={{ display: 'block', fontSize: '12px', color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase' }}>
-              ENTRY AMOUNT
-            </label>
+          <div className="s-title">ENTRY AMOUNT</div>
+          <div className="mb-md">
             <input
               className="input"
               type="number"
@@ -210,64 +215,58 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
             className="btn btn-green"
             onClick={handleEnter}
             disabled={enterLoading || betAmount <= 0 || betAmount > balance}
-            style={{ width: '100%', opacity: enterLoading || betAmount <= 0 || betAmount > balance ? 0.4 : 1 }}
           >
-            {enterLoading ? '⟳ ENTERING...' : '🎰 ENTER ROUND'}
+            {enterLoading ? 'ENTERING...' : 'ENTER ROUND'}
           </button>
         </div>
       </div>
 
       {/* Entry Result Overlay */}
       {entryResult && (
-        <div
-          className={"result " + (entryResult.success ? "result-win" : "result-lose")}
-          onClick={handleCloseResult}
-        >
-          <div onClick={(e) => e.stopPropagation()}>
+        <div className="overlay" onClick={handleCloseResult}>
+          <div
+            className={"result " + (entryResult.success ? "result-win" : "result-lose") + " animate-in"}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="result-number" style={{ fontSize: '40px', marginBottom: '8px' }}>
-              {entryResult.success ? '🎉' : '❌'}
+              {entryResult.success ? 'WIN' : 'LOSE'}
             </div>
 
             {entryResult.success ? (
               <>
-                <div className="result-label win" style={{ fontSize: '18px', marginBottom: '12px' }}>
+                <div className="result-label win">
                   ENTRY CONFIRMED
                 </div>
                 <div className="result-number">
-                  🏆 {entryResult.prize_pool.toLocaleString()}
+                  {entryResult.prize_pool.toLocaleString()}
                 </div>
-                <div className="stat-row" style={{ marginTop: '12px', marginBottom: '12px' }}>
-                  <div className="stat-row" style={{ width: '100%', justifyContent: 'space-between' }}>
-                    <span className="stat-label">PRIZE POOL</span>
-                    <span className="stat-val" style={{ color: 'var(--yellow)' }}>{entryResult.prize_pool.toLocaleString()}</span>
-                  </div>
+                <div className="jackpot-result-info">
+                  <span className="stat-label">PRIZE POOL</span>
+                  <span className="stat-val text-yellow">{entryResult.prize_pool.toLocaleString()}</span>
                 </div>
-                <div className="stat-row" style={{ marginBottom: '12px' }}>
-                  <div className="stat-row" style={{ width: '100%', justifyContent: 'space-between' }}>
-                    <span className="stat-label">TOTAL ENTRIES</span>
-                    <span className="stat-val" style={{ color: 'var(--cyan)' }}>{entryResult.entries}</span>
-                  </div>
+                <div className="jackpot-result-info">
+                  <span className="stat-label">TOTAL ENTRIES</span>
+                  <span className="stat-val text-cyan">{entryResult.entries}</span>
                 </div>
-                <div style={{ color: 'var(--green)', fontSize: '14px', textAlign: 'center', marginBottom: '12px' }}>
-                  GOOD LUCK! 🍀
+                <div className="text-center text-green mt-sm mb-sm">
+                  GOOD LUCK
                 </div>
               </>
             ) : (
-              <div className="result-label lose" style={{ fontSize: '16px', marginBottom: '12px' }}>
+              <div className="result-label lose">
                 COULD NOT PROCESS ENTRY.
                 <br />
-                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                <span className="text-dim" style={{ fontSize: '12px' }}>
                   The round may be closed or your balance insufficient.
                 </span>
               </div>
             )}
 
             <button
-              className="btn btn-green"
+              className="btn btn-green mt-md"
               onClick={handleCloseResult}
-              style={{ width: '100%' }}
             >
-              {entryResult.success ? '🎯 CONTINUE' : 'TRY AGAIN'}
+              {entryResult.success ? 'CONTINUE' : 'TRY AGAIN'}
             </button>
           </div>
         </div>

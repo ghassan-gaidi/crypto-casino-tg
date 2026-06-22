@@ -34,7 +34,6 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
     setAnimating(true);
     setSpinPhase(0);
 
-    // Animate through several random states
     for (let phase = 0; phase < 8; phase++) {
       await new Promise((r) => setTimeout(r, 100 + phase * 30));
       setDisplayReels(
@@ -45,7 +44,6 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
       setSpinPhase(phase);
     }
 
-    // Snap to final
     setDisplayReels(finalReels);
     setAnimating(false);
   };
@@ -66,10 +64,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
       const res = await fetch('/api/slots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: amt,
-          initData,
-        }),
+        body: JSON.stringify({ amount: amt, initData }),
       });
 
       if (!res.ok) {
@@ -80,10 +75,8 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
       const data = await res.json();
       setResult(data);
 
-      // Parse reels from API (3 strings)
       const reels = data.reels || ['🍒🍒🍒', '🍋🍋🍋', '🍊🍊🍊'];
       const parsedReels = reels.map((r: string) => r.split(''));
-      // Ensure each reel has exactly 3 symbols
       const paddedReels = parsedReels.map((r: string[]) =>
         r.length >= 3 ? r.slice(0, 3) : [...r, ...Array(3 - r.length).fill('🍒')]
       );
@@ -103,9 +96,10 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
   return (
     <div className="page">
       {/* Header */}
-      <button className="btn-back" onClick={onBack}>back</button>
-      <div className="header" style={{ marginBottom: '20px' }}>
-        <span className="header-title">⚡ SLOTS</span>
+      <div className="header">
+        <button className="btn-back" onClick={onBack}>Back</button>
+        <span className="header-title">SLOTS</span>
+        <span className="header-balance" />
       </div>
 
       {/* Bet Amount */}
@@ -119,7 +113,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
         onChange={(e) => setAmount(e.target.value)}
         placeholder="0.00"
       />
-      <div className="chips" style={{ marginTop: '8px' }}>
+      <div className="chips mt-sm">
         {QUICK_BETS.map((qb) => (
           <button
             key={qb}
@@ -144,6 +138,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
             {reel.map((sym, symIdx) => (
               <div
                 key={symIdx}
+                className="reel-shadow"
                 style={{
                   fontSize: '28px',
                   lineHeight: 1.2,
@@ -162,23 +157,22 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
 
       {/* Spin Button */}
       <button
-        className="btn btn-green"
+        className="btn btn-green mt-sm"
         onClick={handleSpin}
         disabled={loading || animating}
-        style={{ marginTop: '8px' }}
       >
-        {loading ? 'SPINNING...' : animating ? 'SPINNING...' : '🎰 SPIN'}
+        {loading ? 'SPINNING...' : animating ? 'SPINNING...' : 'SPIN'}
       </button>
 
-      {/* Combo display when result exists */}
+      {/* Combo display */}
       {result && !animating && result.combo && (
-        <div className="stats" style={{ marginTop: '16px' }}>
+        <div className="stats mt-md">
           <div className="stat-row">
             <span className="stat-label">COMBO</span>
             <span className="stat-val text-yellow">
               {result.combo}
               {result.payoutMultiplier && (
-                <> ×{result.payoutMultiplier}</>
+                <> x{result.payoutMultiplier}</>
               )}
             </span>
           </div>
@@ -186,33 +180,30 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
       )}
 
       {error && (
-        <div className="text-red text-center mt-sm" style={{ fontSize: '12px' }}>
-          {error}
-        </div>
+        <div className="overlay-error mt-sm">{error}</div>
       )}
 
-      {/* Result Overlay */}
+      {/* Result */}
       {result && !animating && (
         <div
-          className={"result" + (result.playerWon ? " result-win" : " result-lose")}
-          style={{ marginTop: '20px' }}
+          className={"result " + (result.playerWon ? "result-win" : "result-lose")}
           onClick={closeResult}
         >
-          <div className={"result-label" + (result.playerWon ? " win" : " lose")}>
-            {result.playerWon ? '✓ YOU WON' : '✗ YOU LOST'}
+          <div className={"result-label " + (result.playerWon ? "win" : "lose")}>
+            {result.playerWon ? 'YOU WON' : 'YOU LOST'}
           </div>
           <div className="result-number">
             {result.playerWon ? '+' : ''}{formatPayout(result.payout)}
           </div>
           {result.combo && (
-            <div className="result-detail" style={{ marginTop: '6px' }}>
+            <div className="result-detail">
               COMBO: {result.combo}
               {result.payoutMultiplier && (
-                <> ×{result.payoutMultiplier}</>
+                <> x{result.payoutMultiplier}</>
               )}
             </div>
           )}
-          <div className="result-detail" style={{ marginTop: '4px' }}>
+          <div className="result-detail">
             {result.reels?.join(' | ')}
           </div>
           <div className="result-hash">
@@ -228,46 +219,46 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
       )}
 
       {/* Paytable */}
-      <div className="term-box" style={{ marginTop: '24px' }}>
+      <div className="term-box mt-lg">
         <div className="term-box-hd">
           <span>PAYTABLE</span>
         </div>
         <div className="term-box-bd">
           <div className="stat-row">
             <span className="stat-label">777</span>
-            <span className="stat-val text-green">×10</span>
+            <span className="stat-val text-green">x10</span>
           </div>
           <div className="stat-row">
-            <span className="stat-label">💎💎💎</span>
-            <span className="stat-val text-green">×8</span>
+            <span className="stat-label">DIAMOND DIAMOND DIAMOND</span>
+            <span className="stat-val text-green">x8</span>
           </div>
           <div className="stat-row">
-            <span className="stat-label">🔔🔔🔔</span>
-            <span className="stat-val text-green">×6</span>
+            <span className="stat-label">BELL BELL BELL</span>
+            <span className="stat-val text-green">x6</span>
           </div>
           <div className="stat-row">
-            <span className="stat-label">⭐⭐⭐</span>
-            <span className="stat-val text-green">×5</span>
+            <span className="stat-label">STAR STAR STAR</span>
+            <span className="stat-val text-green">x5</span>
           </div>
           <div className="stat-row">
-            <span className="stat-label">🍒🍒🍒</span>
-            <span className="stat-val text-green">×4</span>
+            <span className="stat-label">CHERRY CHERRY CHERRY</span>
+            <span className="stat-val text-green">x4</span>
           </div>
           <div className="stat-row">
-            <span className="stat-label">🍋🍋🍋</span>
-            <span className="stat-val text-green">×3</span>
+            <span className="stat-label">LEMON LEMON LEMON</span>
+            <span className="stat-val text-green">x3</span>
           </div>
           <div className="stat-row">
-            <span className="stat-label">🍊🍊🍊</span>
-            <span className="stat-val text-green">×3</span>
+            <span className="stat-label">ORANGE ORANGE ORANGE</span>
+            <span className="stat-val text-green">x3</span>
           </div>
           <div className="stat-row">
-            <span className="stat-label">🍇🍇🍇</span>
-            <span className="stat-val text-green">×3</span>
+            <span className="stat-label">GRAPE GRAPE GRAPE</span>
+            <span className="stat-val text-green">x3</span>
           </div>
           <div className="stat-row">
             <span className="stat-label">ANY 2 MATCH</span>
-            <span className="stat-val text-yellow">×1.5</span>
+            <span className="stat-val text-yellow">x1.5</span>
           </div>
         </div>
       </div>

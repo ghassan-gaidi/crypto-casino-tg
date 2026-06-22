@@ -9,12 +9,6 @@ const QUICK_BETS = [0.001, 0.01, 0.1, 1.0];
 const ROWS_OPTIONS = [8, 12, 16] as const;
 const RISK_OPTIONS = ['low', 'medium', 'high'] as const;
 
-const RISK_COLORS: Record<string, string> = {
-  low: '#0f0',
-  medium: '#ff0',
-  high: '#f00',
-};
-
 function formatPayout(amount: number): string {
   return amount.toFixed(6);
 }
@@ -148,11 +142,9 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
             {RISK_OPTIONS.map((r) => (
               <button
                 key={r}
-                className={"pick-btn" + (risk === r ? " active" : "")}
-                style={
-                  risk === r
-                    ? { borderColor: RISK_COLORS[r], color: RISK_COLORS[r], background: RISK_COLORS[r] + '0a' }
-                    : {}
+                className={
+                  "pick-btn risk-" + r +
+                  (risk === r ? " active" : "")
                 }
                 onClick={() => setRisk(r)}
               >
@@ -166,31 +158,16 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
       {/* Plinko Board Visualization */}
       <div className="term-box">
         <div className="term-box-hd"><span>BOARD</span></div>
-        <div className="term-box-bd" style={{ padding: '16px 0', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div className="term-box-bd plinko-board">
+          <div className="flex flex-col items-center">
             {pegRows.map((row, rowIdx) => (
-              <div
-                key={rowIdx}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  gap: '20px',
-                  marginBottom: '6px',
-                }}
-              >
+              <div key={rowIdx} className="plinko-row">
                 {row.map((peg) => {
                   const isActive = dropSlot !== null && rowIdx === rows - 1 && peg.col === dropSlot;
                   return (
                     <div
                       key={peg.key}
-                      style={{
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: '50%',
-                        backgroundColor: isActive ? '#0f0' : '#1a1a1a',
-                        boxShadow: isActive ? '0 0 8px rgba(0,255,0,.4)' : 'none',
-                        transition: 'all .3s',
-                      }}
+                      className={"plinko-peg" + (isActive ? " active" : "")}
                     />
                   );
                 })}
@@ -198,26 +175,11 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
             ))}
 
             {/* Slot labels */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                gap: '24px',
-                marginTop: '8px',
-                padding: '0 8px',
-              }}
-            >
+            <div className="plinko-slots">
               {Array.from({ length: rows + 1 }, (_, i) => (
                 <div
                   key={i}
-                  style={{
-                    width: '28px',
-                    height: '20px',
-                    textAlign: 'center',
-                    fontSize: dropSlot === i ? '18px' : '14px',
-                    fontWeight: 600,
-                    color: dropSlot === i ? '#0f0' : '#2a2a2a',
-                  }}
+                  className={"plinko-slot" + (dropSlot === i ? " active" : "")}
                 >
                   {dropSlot === i ? '●' : '○'}
                 </div>
@@ -237,29 +199,14 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
       </button>
 
       {error && (
-        <div className="text-red text-center mt-sm" style={{ fontSize: '11px' }}>
+        <div className="overlay-error">
           {error}
         </div>
       )}
 
       {/* Result Overlay */}
       {result && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0,.85)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '16px',
-          }}
-          onClick={closeResult}
-        >
+        <div className="overlay" onClick={closeResult}>
           <div
             className={"result " + (result.playerWon ? "result-win" : "result-lose")}
             onClick={(e) => e.stopPropagation()}

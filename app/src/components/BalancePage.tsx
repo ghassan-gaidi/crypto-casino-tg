@@ -23,17 +23,22 @@ export default function BalancePage({ onBack, userId, username }: Props) {
 
   return (
     <div className="page">
-      <button className="btn-back" onClick={onBack}>Back</button>
-      <div className="s-title" style={{marginTop:12}}>BALANCE</div>
+      <div className="header">
+        <button className="btn-back" onClick={onBack}>Back</button>
+        <span className="header-title">BALANCE</span>
+        <span className="header-balance">
+          {balance ? `${Number(balance.evm).toFixed(4)}` : '—'}
+        </span>
+      </div>
 
       <div className="divider">WALLETS</div>
 
       {loading ? (
-        <div className="text-center text-dim" style={{padding:'40px 0'}}>
+        <div className="text-center text-dim mt-lg mb-lg">
           ▌ LOADING ▐
         </div>
       ) : balance ? (
-        <div style={{display:'flex',flexDirection:'column',gap:6}}>
+        <div className="flex flex-col gap-sm">
           {/* ETH */}
           <div className="term-box">
             <div className="term-box-hd"><span>ETH · BASE</span></div>
@@ -42,7 +47,7 @@ export default function BalancePage({ onBack, userId, username }: Props) {
                 <div>
                   <div className="t-label">BALANCE</div>
                 </div>
-                <div style={{fontSize:20,fontWeight:700,color:'var(--yellow)',fontVariantNumeric:'tabular-nums'}}>
+                <div className="stat-val text-yellow">
                   {Number(balance.evm).toFixed(6)}
                 </div>
               </div>
@@ -50,14 +55,14 @@ export default function BalancePage({ onBack, userId, username }: Props) {
           </div>
 
           {/* SOL */}
-          <div className="term-box" style={{opacity:.5}}>
+          <div className="term-box" style={{ opacity: 0.5 }}>
             <div className="term-box-hd"><span>SOL · SOLANA</span></div>
             <div className="term-box-bd">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="t-label">BALANCE</div>
                 </div>
-                <div style={{fontSize:20,fontWeight:700,color:'var(--white)',fontVariantNumeric:'tabular-nums'}}>
+                <div className="stat-val">
                   {Number(balance.sol).toFixed(6)}
                 </div>
               </div>
@@ -65,14 +70,14 @@ export default function BalancePage({ onBack, userId, username }: Props) {
           </div>
 
           {/* TON */}
-          <div className="term-box" style={{opacity:.5}}>
+          <div className="term-box" style={{ opacity: 0.5 }}>
             <div className="term-box-hd"><span>TON · TELEGRAM</span></div>
             <div className="term-box-bd">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="t-label">BALANCE</div>
                 </div>
-                <div style={{fontSize:20,fontWeight:700,color:'var(--white)',fontVariantNumeric:'tabular-nums'}}>
+                <div className="stat-val">
                   {Number(balance.ton).toFixed(6)}
                 </div>
               </div>
@@ -80,14 +85,14 @@ export default function BalancePage({ onBack, userId, username }: Props) {
           </div>
         </div>
       ) : (
-        <div className="text-center text-dim" style={{padding:'40px 0'}}>
+        <div className="text-center text-dim mt-lg mb-lg">
           COULD NOT LOAD BALANCE<br/>
           <span className="t-small text-muted">ENSURE TELEGRAM LOGIN</span>
         </div>
       )}
 
-      <div className="text-center text-muted mt-lg" style={{fontSize:9,letterSpacing:3}}>
-        ─── END TRANSMISSION ───
+      <div className="divider mt-lg">
+        END TRANSMISSION
       </div>
     </div>
   )

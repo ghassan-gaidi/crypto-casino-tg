@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
 interface MinesGameProps {
   onBack: () => void;
@@ -23,7 +23,6 @@ interface TileState {
   isMine: boolean;
 }
 
-const INITIAL_BALANCE = 10000;
 const QUICK_BETS = [100, 250, 500, 1000, 2500];
 const GRID_SIZE = 25; // 5x5
 
@@ -34,7 +33,18 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
   const [gameActive, setGameActive] = useState<boolean>(false);
   const [tiles, setTiles] = useState<TileState[]>([]);
   const [result, setResult] = useState<MinesResult | null>(null);
-  const [balance, setBalance] = useState<number>(INITIAL_BALANCE);
+  const [balance, setBalance] = useState<number>(0);
+
+  // Fetch real balance
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`/api/balance?userId=${userId}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.evm !== undefined) setBalance(Number(data.evm));
+      })
+      .catch(() => {});
+  }, [userId]);
   const [currentMultiplier, setCurrentMultiplier] = useState<number>(1.0);
 
   const initTiles = useCallback(() => {
