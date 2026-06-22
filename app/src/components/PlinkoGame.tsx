@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface PlinkoGameProps {
   onBack: () => void;
@@ -204,6 +205,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
         </div>
       )}
 
+      {isRateLimited(result) && <RateLimitBanner data={result} />}
       {/* Result Overlay */}
       {result && (
         <div className="overlay" onClick={closeResult}>

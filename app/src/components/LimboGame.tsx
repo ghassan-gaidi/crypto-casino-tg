@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface LimboGameProps {
   onBack: () => void;
@@ -175,6 +176,7 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
         {loading ? 'FLYING...' : 'PLAY'}
       </button>
 
+      {isRateLimited(result) && <RateLimitBanner data={result} />}
       {/* Result */}
       {result && (
         <div

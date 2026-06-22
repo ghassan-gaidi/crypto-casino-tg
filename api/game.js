@@ -17,6 +17,7 @@ const { playPlinko } = require("../src/games/plinko");
 const { playSlots } = require("../src/games/slots");
 const { playRoulette } = require("../src/games/roulette");
 const { playLimbo } = require("../src/games/limbo");
+const { rateLimit, getClientIp } = require("../src/rate-limit");
 
 function parseInitData(initData) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -47,6 +48,10 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // ── Rate limit: general per IP ──
+  const ip = getClientIp(req);
+  if (!rateLimit(res, `g:${ip}`, 60, 60_000)) return;
 
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
@@ -121,6 +126,9 @@ module.exports = async (req, res) => {
     if (!userInfo) { res.status(401).json({ error: 'Invalid initData' }); return; }
     const userId = userInfo.id;
     await ensureUser(userId, userInfo.username, userInfo.first_name);
+
+    // ── Rate limit: game plays per user (10/min) ──
+    if (!rateLimit(res, `gp:${userId}`, 10, 60_000)) return;
 
     const balance = await getBalance(userId);
     const amount = parseFloat(body.amount);

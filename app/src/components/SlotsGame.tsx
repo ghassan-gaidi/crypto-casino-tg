@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface SlotsGameProps {
   onBack: () => void;
@@ -183,6 +184,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
         <div className="overlay-error mt-sm">{error}</div>
       )}
 
+      {isRateLimited(result) && <RateLimitBanner data={result} />}
       {/* Result */}
       {result && !animating && (
         <div

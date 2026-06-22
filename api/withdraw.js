@@ -1,4 +1,5 @@
 const { getBalance, createWithdrawal, updateBalance, validateTelegramInitData } = require('../src/supabase');
+const { rateLimit, getClientIp } = require('../src/rate-limit');
 
 /**
  * POST /api/withdraw — request a withdrawal
@@ -10,6 +11,9 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
   if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
+
+  // ── Rate limit: financial per IP (5/min) ──
+  if (!rateLimit(res, `fin:${getClientIp(req)}`, 5, 60_000)) return;
 
   try {
     const { initData, amount, toAddress, chain = 'evm' } = req.body;

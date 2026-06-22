@@ -1,5 +1,6 @@
 const { getOrCreateDepositAddress, getBalance, createDeposit, confirmDeposit, updateBalance, validateTelegramInitData, db } = require('../src/supabase');
 const { generateDepositAddress, verifyDepositTx, checkEvmTxConfirmations } = require('../src/wallet');
+const { rateLimit, getClientIp } = require('../src/rate-limit');
 
 /**
  * GET /api/deposit — return user's deposit address
@@ -10,6 +11,9 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
+
+  // ── Rate limit: financial per IP (5/min) ──
+  if (!rateLimit(res, `fin:${getClientIp(req)}`, 5, 60_000)) return;
 
   try {
     const initData = req.method === 'GET' ? req.query.initData : req.body?.initData;

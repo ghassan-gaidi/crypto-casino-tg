@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface RouletteGameProps {
   onBack: () => void;
@@ -329,6 +330,7 @@ export default function RouletteGame({ onBack }: RouletteGameProps) {
         </div>
       </div>
 
+      {isRateLimited(result) && <RateLimitBanner data={result} />}
       {/* Result Overlay */}
       {result && !animating && (
         <div className="overlay" onClick={closeResult}>

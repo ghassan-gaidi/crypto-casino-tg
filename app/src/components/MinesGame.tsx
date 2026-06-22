@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface MinesGameProps {
   onBack: () => void;
@@ -363,6 +364,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
         </button>
       )}
 
+      {isRateLimited(result) && <RateLimitBanner data={result} />}
       {result && !gameActive && (
         <>
           <div className="divider">RESULT</div>

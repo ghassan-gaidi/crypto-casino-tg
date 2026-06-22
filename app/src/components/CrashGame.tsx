@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface CrashGameProps {
   onBack: () => void
@@ -202,6 +203,7 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
         {loading ? "🚀 LAUNCHING..." : animating ? `×${currentMultiplier.toFixed(2)}` : "🚀 LAUNCH"}
       </button>
 
+      {isRateLimited(result) && <RateLimitBanner data={result} />}
       {/* Result Modal — .overlay / .result / .result-win / .result-lose */}
       {result && !animating && (
         <div className="overlay" onClick={() => setResult(null)}>

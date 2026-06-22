@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface JackpotGameProps {
   onBack: () => void;
@@ -221,6 +222,7 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
         </div>
       </div>
 
+      {isRateLimited(entryResult) && <RateLimitBanner data={entryResult} />}
       {/* Entry Result Overlay */}
       {entryResult && (
         <div className="overlay" onClick={handleCloseResult}>

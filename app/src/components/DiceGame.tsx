@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface Props {
   onBack: () => void
@@ -133,6 +134,7 @@ export default function DiceGame({ onBack }: Props) {
         {loading ? 'ROLLING...' : 'ROLL DICE'}
       </button>
 
+      {isRateLimited(result) && <RateLimitBanner data={result} />}
       {result && (
         <div className={"result " + (result.playerWon ? 'result-win' : 'result-lose')}>
           <div className="result-number">{result.roll.toFixed(2)}</div>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface Props {
   onBack: () => void
@@ -123,6 +124,7 @@ export default function CoinflipGame({ onBack }: Props) {
         {loading ? 'FLIPPING...' : 'FLIP COIN'}
       </button>
 
+      {isRateLimited(result) && <RateLimitBanner data={result} />}
       {/* Result */}
       {result && !flipping && (
         <div className={"result " + (result.playerWon ? 'result-win' : 'result-lose')}>
