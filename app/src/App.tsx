@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react'
+import Streak from './components/Streak'
+import XpBar from './components/XpBar'
+import LiveFeed from './components/LiveFeed'
 import DiceGame from './components/DiceGame'
 import CoinflipGame from './components/CoinflipGame'
 import CrashGame from './components/CrashGame'
@@ -73,6 +76,19 @@ export default function App() {
         </div>
       </div>
 
+      {/* XP BAR */}
+      <div style={{marginBottom:12}}>
+        <XpBar xp={12400} />
+      </div>
+
+      {/* STREAK */}
+      <Streak userId={user?.id} />
+
+      {/* LIVE FEED */}
+      <div style={{marginBottom:16}}>
+        <LiveFeed />
+      </div>
+
       {/* DIVIDER */}
       <div className="divider">GAMES</div>
 
@@ -103,8 +119,8 @@ export default function App() {
       </div>
 
       {/* FOOTER */}
-      <div className="text-center text-muted mt-lg" style={{fontSize:9,letterSpacing:3}}>
-        ─── END TRANSMISSION ───
+      <div className="text-center mt-lg" style={{fontSize:9,letterSpacing:3,color:'var(--text-dim)'}}>
+        ═══ NEON NIGHT CASINO ═══
       </div>
     </div>
   )
