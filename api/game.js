@@ -58,7 +58,17 @@ module.exports = async (req, res) => {
       const userId = parseInt(req.headers['x-user-id']);
       if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
       const bal = await getBalance(userId);
-      res.json({ balance: bal.balance, balance_evm: bal.balance_evm, balance_sol: bal.balance_sol, balance_ton: bal.balance_ton });
+      const { getUserDeposits, getUserWithdrawals } = require('../src/supabase');
+      const deposits = await getUserDeposits(userId, 10);
+      const withdrawals = await getUserWithdrawals(userId, 10);
+      res.json({
+        evm: bal.balance_evm,
+        sol: bal.balance_sol,
+        ton: bal.balance_ton,
+        balance: bal.balance,
+        deposits,
+        withdrawals,
+      });
       return;
     }
 

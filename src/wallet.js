@@ -6,6 +6,7 @@ exports.checkEvmTxConfirmations = checkEvmTxConfirmations;
 exports.verifyDepositTx = verifyDepositTx;
 exports.sendEvmTx = sendEvmTx;
 exports.detectEvmDeposits = detectEvmDeposits;
+exports.generateDepositAddress = generateDepositAddress;
 const ethers_1 = require("ethers");
 const supabase_1 = require("./supabase");
 // ── EVM (Base) ──
@@ -70,6 +71,18 @@ async function sendEvmTx(to, valueWei) {
         value: valueWei,
     });
     return tx.hash;
+}
+/**
+ * Derive a unique deposit address per user deterministically.
+ * Uses keccak256(hotWalletPk + userId) as a seed for a deterministic wallet.
+ */
+function generateDepositAddress(userId) {
+    const pk = process.env.HOT_WALLET_PK;
+    if (!pk)
+        throw new Error('HOT_WALLET_PK not set');
+    const seed = ethers_1.keccak256(ethers_1.solidityPacked(['bytes', 'uint256'], [pk, userId]));
+    const wallet = new ethers_1.Wallet(seed);
+    return wallet.address;
 }
 // ── Deposit polling ──
 const HOT_WALLET_CACHE = { address: '' };

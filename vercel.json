@@ -2,6 +2,12 @@
   "installCommand": "npm install && cd app && npm install",
   "buildCommand": "cd app && npx vite build",
   "outputDirectory": "app/dist",
+  "crons": [
+    {
+      "path": "/api/cron",
+      "schedule": "*/3 * * * *"
+    }
+  ],
   "rewrites": [
     { "source": "/api/(dice|coinflip|crash|mines|plinko|slots|roulette|limbo|jackpot|balance)", "destination": "/api/game" },
     { "source": "/api/(.*)", "destination": "/api/$1" },

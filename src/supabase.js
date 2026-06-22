@@ -9,6 +9,10 @@ exports.getBalance = getBalance;
 exports.updateBalance = updateBalance;
 exports.createDeposit = createDeposit;
 exports.confirmDeposit = confirmDeposit;
+exports.getOrCreateDepositAddress = getOrCreateDepositAddress;
+exports.getDepositAddressByAddress = getDepositAddressByAddress;
+exports.getUserDeposits = getUserDeposits;
+exports.getUserWithdrawals = getUserWithdrawals;
 exports.createWithdrawal = createWithdrawal;
 exports.completeWithdrawal = completeWithdrawal;
 exports.recordBet = recordBet;
@@ -117,6 +121,52 @@ async function confirmDeposit(txHash) {
     if (error)
         throw error;
     return data;
+}
+// ── Deposit Addresses ──
+async function getOrCreateDepositAddress(userId, chain, address) {
+    const { data: existing } = await exports.db
+        .from('tg_deposit_addresses')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('chain', chain)
+        .single();
+    if (existing)
+        return existing;
+    const { data, error } = await exports.db
+        .from('tg_deposit_addresses')
+        .insert({ user_id: userId, chain, address })
+        .select()
+        .single();
+    if (error)
+        throw error;
+    return data;
+}
+async function getDepositAddressByAddress(address) {
+    const { data } = await exports.db
+        .from('tg_deposit_addresses')
+        .select('*')
+        .ilike('address', address)
+        .single();
+    return data;
+}
+// ── User History ──
+async function getUserDeposits(userId, limit = 20) {
+    const { data } = await exports.db
+        .from('tg_deposits')
+        .select('*')
+        .eq('user_id', userId)
+        .order('detected_at', { ascending: false })
+        .limit(limit);
+    return data || [];
+}
+async function getUserWithdrawals(userId, limit = 20) {
+    const { data } = await exports.db
+        .from('tg_withdrawals')
+        .select('*')
+        .eq('user_id', userId)
+        .order('requested_at', { ascending: false })
+        .limit(limit);
+    return data || [];
 }
 // ── Withdrawals ──
 async function createWithdrawal(userId, chain, toAddress, amount) {
