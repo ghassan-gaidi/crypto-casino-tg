@@ -1,7 +1,5 @@
-const { getOrCreateDepositAddress, getBalance, createDeposit, confirmDeposit } = require('../src/supabase');
+const { getOrCreateDepositAddress, getBalance, createDeposit, confirmDeposit, updateBalance, validateTelegramInitData, db } = require('../src/supabase');
 const { generateDepositAddress, verifyDepositTx, checkEvmTxConfirmations } = require('../src/wallet');
-const { updateBalance } = require('../src/supabase');
-const { validateTelegramInitData } = require('../src/supabase');
 
 /**
  * GET /api/deposit — return user's deposit address
@@ -14,7 +12,6 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
   try {
-    // Parse user from initData
     const initData = req.method === 'GET' ? req.query.initData : req.body?.initData;
     if (!initData) { res.status(401).json({ error: 'Missing initData' }); return; }
 
@@ -28,7 +25,6 @@ module.exports = async function handler(req, res) {
     const userId = user.id;
 
     if (req.method === 'GET') {
-      // Generate and return deposit address
       const address = generateDepositAddress(userId);
       await getOrCreateDepositAddress(userId, 'evm', address);
       const bal = await getBalance(userId);
@@ -39,16 +35,11 @@ module.exports = async function handler(req, res) {
     const { txHash } = req.body;
     if (!txHash) { res.status(400).json({ error: 'Missing txHash' }); return; }
 
-    // Check not already processed
-    const existing = await createDeposit(userId, 'evm', txHash, 'pending', 'pending', 0).catch(() => null);
-    // Actually check if tx already exists
-    const { db } = require('../src/supabase');
-    const { data: dup } = await db.from('tg_deposits').select('id,status').eq('tx_hash', txHash).single();
-    if (dup && dup.status === 'confirmed') {
+    // Check if already processed
+    const { data: existing } = await db
+      .from('tg_deposits').select('id,status').eq('tx_hash', txHash).single();
+    if (existing?.status === 'confirmed') {
       return res.json({ success: true, message: 'Already credited', status: 'confirmed' });
-    }
-    if (dup && dup.status === 'pending') {
-      // Already recorded, just wait for confirmation
     }
 
     // Verify on-chain
@@ -58,13 +49,12 @@ module.exports = async function handler(req, res) {
     }
 
     const amountEth = parseFloat(verification.value) / 1e18;
-    const minDeposit = 0.0001;
-    if (amountEth < minDeposit) {
-      return res.status(400).json({ error: `Minimum deposit is ${minDeposit} ETH` });
+    if (amountEth < 0.0001) {
+      return res.status(400).json({ error: 'Minimum deposit is 0.0001 ETH' });
     }
 
-    // Record deposit if not exists
-    if (!dup) {
+    // Record if new
+    if (!existing) {
       await createDeposit(userId, 'evm', txHash, verification.from.toLowerCase(), verification.to.toLowerCase(), amountEth);
     }
 
@@ -74,9 +64,8 @@ module.exports = async function handler(req, res) {
       await confirmDeposit(txHash);
       await updateBalance(userId, 'evm', amountEth);
       return res.json({ success: true, amount: amountEth, confirmations, status: 'confirmed' });
-    } else {
-      return res.json({ success: true, amount: amountEth, confirmations, required: 3, status: 'pending' });
     }
+    return res.json({ success: true, amount: amountEth, confirmations, required: 3, status: 'pending' });
   } catch (e) {
     console.error('Deposit error:', e.message);
     res.status(500).json({ error: e.message });

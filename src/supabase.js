@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.db = void 0;
+const crypto = require('crypto');
 exports.ensureUser = ensureUser;
 exports.connectWallet = connectWallet;
 exports.getWalletConnection = getWalletConnection;
@@ -42,6 +43,37 @@ const supabase_js_1 = require("@supabase/supabase-js");
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 exports.db = (0, supabase_js_1.createClient)(supabaseUrl, supabaseKey);
+// ── Telegram InitData Validation ──
+function validateTelegramInitData(rawInitData, botToken) {
+    if (!rawInitData || !botToken)
+        return null;
+    try {
+        const url = new URLSearchParams(rawInitData);
+        const hash = url.get('hash');
+        url.delete('hash');
+        url.sort();
+        const dataCheck = Array.from(url.entries())
+            .map(([k, v]) => `${k}=${v}`)
+            .join('\n');
+        const hmac = crypto.createHmac('sha256', botToken)
+            .update(dataCheck)
+            .digest('hex');
+        if (hmac !== hash)
+            return null;
+        const authDate = parseInt(url.get('auth_date') || '0');
+        const now = Math.floor(Date.now() / 1000);
+        if (now - authDate > 600)
+            return null;
+        const userStr = url.get('user');
+        if (!userStr)
+            return null;
+        const user = JSON.parse(userStr);
+        return { id: user.id, username: user.username, first_name: user.first_name };
+    }
+    catch {
+        return null;
+    }
+}
 // ── Users ──
 async function ensureUser(telegramId, username, firstName) {
     const { data, error } = await exports.db

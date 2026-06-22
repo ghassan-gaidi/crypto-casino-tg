@@ -1,6 +1,4 @@
-const { getBalance, createWithdrawal } = require('../src/supabase');
-const { updateBalance } = require('../src/supabase');
-const { validateTelegramInitData } = require('../src/supabase');
+const { getBalance, createWithdrawal, updateBalance, validateTelegramInitData } = require('../src/supabase');
 
 /**
  * POST /api/withdraw — request a withdrawal
@@ -26,7 +24,6 @@ module.exports = async function handler(req, res) {
     if (!user) { res.status(401).json({ error: 'Invalid initData' }); return; }
     const userId = user.id;
 
-    // Validate inputs
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
       return res.status(400).json({ error: 'Invalid amount' });
     }
@@ -34,22 +31,17 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid EVM address' });
     }
     const withdrawAmount = parseFloat(amount);
-    const minWithdraw = 0.0005;
-    if (withdrawAmount < minWithdraw) {
-      return res.status(400).json({ error: `Minimum withdrawal is ${minWithdraw} ETH` });
+    if (withdrawAmount < 0.0005) {
+      return res.status(400).json({ error: 'Minimum withdrawal is 0.0005 ETH' });
     }
 
-    // Check balance
     const bal = await getBalance(userId);
     const balance = parseFloat(bal.balance_evm || '0');
     if (balance < withdrawAmount) {
       return res.status(400).json({ error: 'Insufficient balance', balance });
     }
 
-    // Deduct balance immediately (hold)
     await updateBalance(userId, 'evm', -withdrawAmount);
-
-    // Create withdrawal record (pending — admin approves or auto-processes)
     const withdrawal = await createWithdrawal(userId, chain, toAddress.toLowerCase(), withdrawAmount);
 
     return res.json({
