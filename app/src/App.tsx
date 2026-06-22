@@ -3,11 +3,14 @@ import DiceGame from './components/DiceGame'
 import CoinflipGame from './components/CoinflipGame'
 import CrashGame from './components/CrashGame'
 import MinesGame from './components/MinesGame'
+import PlinkoGame from './components/PlinkoGame'
+import SlotsGame from './components/SlotsGame'
+import RouletteGame from './components/RouletteGame'
 import LimboGame from './components/LimboGame'
 import JackpotGame from './components/JackpotGame'
 import BalancePage from './components/BalancePage'
 
-type Page = 'home' | 'dice' | 'coinflip' | 'crash' | 'mines' | 'limbo' | 'jackpot' | 'balance'
+type Page = 'home' | 'dice' | 'coinflip' | 'crash' | 'mines' | 'plinko' | 'slots' | 'roulette' | 'limbo' | 'jackpot' | 'balance'
 
 declare global {
   interface Window {
@@ -55,6 +58,9 @@ export default function App() {
   if (page === 'coinflip') return <CoinflipGame onBack={nav('home')} userId={user?.id} />
   if (page === 'crash') return <CrashGame onBack={nav('home')} userId={user?.id} />
   if (page === 'mines') return <MinesGame onBack={nav('home')} userId={user?.id} />
+  if (page === 'plinko') return <PlinkoGame onBack={nav('home')} userId={user?.id} />
+  if (page === 'slots') return <SlotsGame onBack={nav('home')} userId={user?.id} />
+  if (page === 'roulette') return <RouletteGame onBack={nav('home')} userId={user?.id} />
   if (page === 'limbo') return <LimboGame onBack={nav('home')} userId={user?.id} />
   if (page === 'jackpot') return <JackpotGame onBack={nav('home')} userId={user?.id} />
   if (page === 'balance') return <BalancePage onBack={nav('home')} userId={user?.id} username={user?.username} />
@@ -100,6 +106,24 @@ export default function App() {
           title="Mines"
           subtitle="Pick gems, avoid bombs — 5×5 grid"
           onClick={nav('mines')}
+        />
+        <GameCard
+          emoji="📍"
+          title="Plinko"
+          subtitle="Drop the ball — low/medium/high risk"
+          onClick={nav('plinko')}
+        />
+        <GameCard
+          emoji="🎰"
+          title="Slots"
+          subtitle="Classic slot machine — match 3 symbols"
+          onClick={nav('slots')}
+        />
+        <GameCard
+          emoji="🎡"
+          title="Roulette"
+          subtitle="European roulette — number, color, section bets"
+          onClick={nav('roulette')}
         />
         <GameCard
           emoji="🚀"

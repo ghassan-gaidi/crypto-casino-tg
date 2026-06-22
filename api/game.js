@@ -172,9 +172,10 @@ module.exports = async (req, res) => {
           const rows = parseInt(body.rows) || 8;
           const risk = body.risk || 'low';
           if (![8, 12, 16].includes(rows)) { res.status(400).json({ error: 'Rows must be 8, 12, or 16' }); return; }
-          if (!['low', 'med', 'high'].includes(risk)) { res.status(400).json({ error: 'Risk must be low, med, or high' }); return; }
+          const normalizedRisk = risk === 'medium' ? 'med' : risk;
+          if (!['low', 'med', 'high'].includes(normalizedRisk)) { res.status(400).json({ error: 'Risk must be low, medium, or high' }); return; }
           clientSeed = generateSeed();
-          result = playPlinko({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, rows, risk, betAmount: amount });
+          result = playPlinko({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, rows, risk: normalizedRisk, betAmount: amount });
           await recordBet({ userId, game: 'plinko', chain: 'evm', betAmount: amount, payout: result.payout, outcome: { slot: result.slot, rows, risk, multiplier: result.multiplier }, serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, resultHash: result.resultHash, playerWon: result.playerWon });
           const deltaP = result.payout - amount;
           await updateBalance(userId, 'evm', deltaP);
