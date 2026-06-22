@@ -1,18 +1,15 @@
 const { getOrCreateDepositAddress, getBalance, createDeposit, confirmDeposit, updateBalance, validateTelegramInitData, db } = require('../src/supabase');
-const { generateDepositAddress, verifyDepositTx, checkEvmTxConfirmations } = require('../src/wallet');
+const { generateDepositAddress, verifyDepositTx, checkEvmTxConfirmations, generateSolDepositAddress, verifySolDepositTx, generateTonDepositAddress, verifyTonDepositTx } = require('../src/wallet');
 const { rateLimit, getClientIp } = require('../src/rate-limit');
 
-/**
- * GET /api/deposit — return user's deposit address
- * POST /api/deposit — verify a TX hash and credit balance
- */
+const CHAINS = ['evm', 'sol', 'ton'];
+const MIN_DEPOSIT = { evm: 0.0001, sol: 0.001, ton: 0.1 };
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
-
-  // ── Rate limit: financial per IP (5/min) ──
   if (!rateLimit(res, `fin:${getClientIp(req)}`, 5, 60_000)) return;
 
   try {
@@ -28,16 +25,28 @@ module.exports = async function handler(req, res) {
     if (!user) { res.status(401).json({ error: 'Invalid initData' }); return; }
     const userId = user.id;
 
+    // ── GET: return deposit addresses for all chains ──
     if (req.method === 'GET') {
-      const address = generateDepositAddress(userId);
-      await getOrCreateDepositAddress(userId, 'evm', address);
+      const addresses = {};
+      for (const chain of CHAINS) {
+        let addr;
+        if (chain === 'evm') addr = generateDepositAddress(userId);
+        else if (chain === 'sol') addr = generateSolDepositAddress(userId);
+        else addr = generateTonDepositAddress(userId);
+        await getOrCreateDepositAddress(userId, chain, addr);
+        addresses[chain] = addr;
+      }
       const bal = await getBalance(userId);
-      return res.json({ address, chain: 'evm', balance: bal.balance_evm });
+      return res.json({
+        addresses,
+        balance: { evm: bal.balance_evm, sol: bal.balance_sol, ton: bal.balance_ton }
+      });
     }
 
-    // POST — verify TX and credit
-    const { txHash } = req.body;
+    // ── POST: verify TX and credit ──
+    const { txHash, chain = 'evm' } = req.body;
     if (!txHash) { res.status(400).json({ error: 'Missing txHash' }); return; }
+    if (!CHAINS.includes(chain)) { res.status(400).json({ error: 'Invalid chain. Use evm, sol, or ton' }); return; }
 
     // Check if already processed
     const { data: existing } = await db
@@ -46,30 +55,57 @@ module.exports = async function handler(req, res) {
       return res.json({ success: true, message: 'Already credited', status: 'confirmed' });
     }
 
-    // Verify on-chain
-    const verification = await verifyDepositTx(txHash);
+    // Verify on-chain per chain
+    let verification;
+    if (chain === 'evm') {
+      verification = await verifyDepositTx(txHash);
+    } else if (chain === 'sol') {
+      verification = await verifySolDepositTx(txHash, userId);
+    } else {
+      verification = await verifyTonDepositTx(txHash, userId);
+    }
+
     if (!verification.valid) {
       return res.status(400).json({ error: verification.error });
     }
 
-    const amountEth = parseFloat(verification.value) / 1e18;
-    if (amountEth < 0.0001) {
-      return res.status(400).json({ error: 'Minimum deposit is 0.0001 ETH' });
+    // Parse amount based on chain
+    let amount;
+    if (chain === 'evm') {
+      amount = parseFloat(verification.value) / 1e18;
+    } else if (chain === 'sol') {
+      amount = parseFloat(verification.value) / 1e9;
+    } else {
+      amount = parseFloat(verification.value) / 1e9; // TON nanoton
+    }
+
+    const min = MIN_DEPOSIT[chain];
+    const symbol = { evm: 'ETH', sol: 'SOL', ton: 'TON' }[chain];
+    if (amount < min) {
+      return res.status(400).json({ error: `Minimum deposit is ${min} ${symbol}` });
     }
 
     // Record if new
     if (!existing) {
-      await createDeposit(userId, 'evm', txHash, verification.from.toLowerCase(), verification.to.toLowerCase(), amountEth);
+      await createDeposit(userId, chain, txHash, verification.from?.toLowerCase(), verification.to?.toLowerCase(), amount);
     }
 
-    // Check confirmations
-    const { confirmed, confirmations } = await checkEvmTxConfirmations(txHash, 3);
-    if (confirmed) {
-      await confirmDeposit(txHash);
-      await updateBalance(userId, 'evm', amountEth);
-      return res.json({ success: true, amount: amountEth, confirmations, status: 'confirmed' });
+    // Auto-confirm (simplified — skip confirmation count for SOL/TON)
+    if (chain === 'evm') {
+      const { confirmed, confirmations } = await checkEvmTxConfirmations(txHash, 3);
+      if (confirmed) {
+        await confirmDeposit(txHash);
+        await updateBalance(userId, chain, amount);
+        return res.json({ success: true, amount, chain, confirmations, status: 'confirmed' });
+      }
+      return res.json({ success: true, amount, chain, confirmations, required: 3, status: 'pending' });
     }
-    return res.json({ success: true, amount: amountEth, confirmations, required: 3, status: 'pending' });
+
+    // SOL/TON: confirm immediately (fast finality)
+    await confirmDeposit(txHash);
+    await updateBalance(userId, chain, amount);
+    return res.json({ success: true, amount, chain, confirmations: 1, status: 'confirmed' });
+
   } catch (e) {
     console.error('Deposit error:', e.message);
     res.status(500).json({ error: e.message });

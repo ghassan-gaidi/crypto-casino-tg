@@ -139,6 +139,126 @@ async function detectEvmDeposits() {
     return deposits;
 }
 // ── Solana ──
-// Placeholder — will use @solana/web3.js + @solana/spl-token
+const { Connection, Keypair, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } = require("@solana/web3.js");
+const tweetnacl = require("tweetnacl");
+const crypto_1 = require("crypto");
+function getSolConnection() {
+    return new Connection(process.env.SOL_RPC_URL || "https://api.mainnet-beta.solana.com", "confirmed");
+}
+/** Derive a deterministic Solana keypair from HOT_WALLET_PK + userId */
+function generateSolKeypair(userId) {
+    const pk = process.env.HOT_WALLET_PK;
+    if (!pk)
+        throw new Error("HOT_WALLET_PK not set");
+    const hash = crypto_1.createHash("sha256")
+        .update(Buffer.from(`${pk}:sol:${userId}`))
+        .digest();
+    return Keypair.fromSeed(hash);
+}
+/** Get the Solana deposit address for a user */
+function generateSolDepositAddress(userId) {
+    const kp = generateSolKeypair(userId);
+    return kp.publicKey.toBase58();
+}
+/** Get SOL balance in lamports */
+async function getSolBalance(address) {
+    const conn = getSolConnection();
+    const pubkey = new PublicKey(address);
+    return conn.getBalance(pubkey);
+}
+/** Verify a Solana deposit TX — checks it sent SOL to the derived deposit address */
+async function verifySolDepositTx(txSignature, userId) {
+    try {
+        const conn = getSolConnection();
+        const tx = await conn.getTransaction(txSignature, { maxSupportedTransactionVersion: 0 });
+        if (!tx)
+            return { valid: false, error: "Transaction not found" };
+        if (tx.meta?.err)
+            return { valid: false, error: "Transaction failed on-chain" };
+        const depositAddr = generateSolDepositAddress(userId);
+        // Check if any instruction sent SOL to our deposit address
+        const accounts = tx.transaction.message.accountKeys.map(k => k.toBase58());
+        if (!accounts.includes(depositAddr))
+            return { valid: false, error: "SOL was not sent to your deposit address" };
+        // Get the pre/post token balances for the deposit address
+        const postBal = tx.meta.postBalances;
+        const preBal = tx.meta.preBalances;
+        const depositIdx = accounts.indexOf(depositAddr);
+        const diff = (postBal[depositIdx] || 0) - (preBal[depositIdx] || 0);
+        if (diff <= 0)
+            return { valid: false, error: "No SOL received" };
+        return { valid: true, from: tx.transaction.message.accountKeys[0].toBase58(), value: String(diff), confirmations: 1 };
+    }
+    catch (err) {
+        return { valid: false, error: err.message };
+    }
+}
+/** Send SOL from hot wallet */
+async function sendSolTx(to, lamports) {
+    const pk = process.env.HOT_WALLET_PK;
+    if (!pk)
+        throw new Error("HOT_WALLET_PK not set");
+    const conn = getSolConnection();
+    const hash = crypto_1.createHash("sha256").update(Buffer.from(`${pk}:sol:hot`)).digest();
+    const fromKeypair = Keypair.fromSeed(hash);
+    const tx = new Transaction().add(SystemProgram.transfer({
+        fromPubkey: fromKeypair.publicKey,
+        toPubkey: new PublicKey(to),
+        lamports,
+    }));
+    tx.recentBlockhash = (await conn.getLatestBlockhash()).blockhash;
+    tx.feePayer = fromKeypair.publicKey;
+    tx.sign(fromKeypair);
+    const sig = await conn.sendRawTransaction(tx.serialize());
+    await conn.confirmTransaction(sig);
+    return sig;
+}
 // ── TON ──
-// Placeholder — will use @ton/ton + @ton/connect
+const { sha256_sync } = require("@ton/crypto");
+/** Derive a deterministic TON keypair from HOT_WALLET_PK + userId */
+function generateTonKeypair(userId) {
+    const pk = process.env.HOT_WALLET_PK;
+    if (!pk)
+        throw new Error("HOT_WALLET_PK not set");
+    const hash = sha256_sync(Buffer.from(`${pk}:ton:${userId}`));
+    const kp = tweetnacl.sign.keyPair.fromSeed(hash);
+    return { publicKey: kp.publicKey, secretKey: kp.secretKey };
+}
+/** Get TON address in raw format 0:hexhash */
+function generateTonDepositAddress(userId) {
+    const kp = generateTonKeypair(userId);
+    const hash = sha256_sync(Buffer.from(kp.publicKey));
+    return `0:${hash.toString("hex")}`;
+}
+/** Get TON balance via Toncenter API */
+async function getTonBalance(address) {
+    try {
+        const url = process.env.TON_RPC_URL || "https://toncenter.com/api/v2";
+        const res = await fetch(`${url}/getAddressBalance?address=${address}`);
+        const data = await res.json();
+        return data?.result || "0";
+    }
+    catch {
+        return "0";
+    }
+}
+/** Verify a TON deposit TX */
+async function verifyTonDepositTx(txHash, userId) {
+    try {
+        const url = process.env.TON_RPC_URL || "https://toncenter.com/api/v2";
+        const res = await fetch(`${url}/getTransaction?hash=${txHash}`);
+        const data = await res.json();
+        if (!data?.result)
+            return { valid: false, error: "Transaction not found" };
+        const tx = data.result;
+        const depositAddr = generateTonDepositAddress(userId);
+        // Check destination
+        if (tx.in_msg?.destination !== depositAddr)
+            return { valid: false, error: "TON was not sent to your deposit address" };
+        const value = tx.in_msg?.value || "0";
+        return { valid: true, from: tx.in_msg?.source, value, confirmations: 1 };
+    }
+    catch (err) {
+        return { valid: false, error: err.message };
+    }
+}
