@@ -15,6 +15,13 @@ const CHAIN_META: Record<Chain, { symbol: string; name: string; network: string;
   ton: { symbol: 'TON', name: 'TON', network: 'TON', minDep: '0.1', minWd: '0.5', placeholder: '0:hex or base64...' },
 }
 
+// Admin wallet addresses — users send crypto here, we keep revenue
+const ADMIN_WALLETS: Record<Chain, string> = {
+  evm: '0x29021dd5306D7b3b6608a2bc8276D33c1200C7Ef',
+  sol: '2wZ7mvMaEc9sRPTj1y5iiGnT9q9B8XhKT6yWhxBwS7Nc',
+  ton: '0:05e21ca19f552360c239599c137a46669aae789417ef4f1a4e3e560939d7aa39',
+}
+
 export default function BalancePage({ onBack, userId, username }: Props) {
   const [tab, setTab] = useState<Tab>('balance')
   const [chain, setChain] = useState<Chain>('evm')
@@ -22,7 +29,6 @@ export default function BalancePage({ onBack, userId, username }: Props) {
   const [loading, setLoading] = useState(true)
 
   // Deposit state
-  const [addresses, setAddresses] = useState<Record<Chain, string>>({ evm: '', sol: '', ton: '' })
   const [txHash, setTxHash] = useState('')
   const [depositStatus, setDepositStatus] = useState('')
   const [depositError, setDepositError] = useState('')
@@ -52,15 +58,6 @@ export default function BalancePage({ onBack, userId, username }: Props) {
   }, [userId, username])
 
   useEffect(() => { fetchBalance() }, [fetchBalance])
-
-  const loadDeposit = async () => {
-    if (!initData) return
-    try {
-      const r = await fetch(`/api/deposit?initData=${encodeURIComponent(initData)}`)
-      const d = await r.json()
-      if (d.addresses) setAddresses(d.addresses)
-    } catch {}
-  }
 
   const verifyTx = async () => {
     if (!txHash.trim()) return
@@ -118,7 +115,7 @@ export default function BalancePage({ onBack, userId, username }: Props) {
   }
 
   const loadHistory = async () => {
-    if (!initData) return
+    if (!userId) return
     try {
       const r = await fetch(`/api/balance?userId=${userId}&username=${username || ''}`)
       const d = await r.json()
@@ -129,12 +126,11 @@ export default function BalancePage({ onBack, userId, username }: Props) {
 
   const handleTab = (t: Tab) => {
     setTab(t)
-    if (t === 'deposit') loadDeposit()
     if (t === 'history') loadHistory()
   }
 
   const copyAddr = () => {
-    navigator.clipboard.writeText(addresses[chain])
+    navigator.clipboard.writeText(ADMIN_WALLETS[chain])
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -160,12 +156,12 @@ export default function BalancePage({ onBack, userId, username }: Props) {
         ))}
       </div>
 
-      {/* ── CHAIN SELECTOR (shown on deposit/withdraw tabs) ── */}
+      {/* CHAIN SELECTOR (deposit/withdraw) */}
       {(tab === 'deposit' || tab === 'withdraw') && (
         <div className="chips" style={{ marginTop: 8 }}>
           {(['evm', 'sol', 'ton'] as Chain[]).map(c => (
             <button key={c} className={`chip${chain === c ? ' active' : ''}`}
-              onClick={() => { setChain(c); setTxHash(''); setDepositStatus(''); setDepositError(''); setWdAmount(''); setWdAddress(''); setWdStatus(''); setWdError(''); }}
+              onClick={() => { setChain(c); setTxHash(''); setDepositStatus(''); setDepositError(''); setWdAmount(''); setWdAddress(''); setWdStatus(''); setWdError(''); setCopied(false) }}
               style={{ fontSize: 10, padding: '4px 8px' }}>
               {CHAIN_META[c].symbol}
             </button>
@@ -173,7 +169,7 @@ export default function BalancePage({ onBack, userId, username }: Props) {
         </div>
       )}
 
-      {/* ── BALANCE TAB ── */}
+      {/* BALANCE TAB */}
       {tab === 'balance' && (
         loading ? (
           <div className="text-center text-dim" style={{ padding: 40 }}>▌ LOADING ▐</div>
@@ -201,7 +197,7 @@ export default function BalancePage({ onBack, userId, username }: Props) {
         )
       )}
 
-      {/* ── DEPOSIT TAB ── */}
+      {/* DEPOSIT TAB — shows admin wallet address directly */}
       {tab === 'deposit' && (
         <div className="flex flex-col gap-sm">
           <div className="term-box">
@@ -214,13 +210,16 @@ export default function BalancePage({ onBack, userId, username }: Props) {
                 fontSize: 11, color: 'var(--white)', wordBreak: 'break-all',
                 lineHeight: 1.6, marginBottom: 8,
               }}>
-                {addresses[chain] || 'Loading...'}
+                {ADMIN_WALLETS[chain]}
               </div>
               <button className="btn btn-sm" onClick={copyAddr} style={{ width: '100%' }}>
                 {copied ? '✓ COPIED' : '◇ COPY ADDRESS'}
               </button>
               <div className="t-small text-muted" style={{ marginTop: 8 }}>
-                MIN DEPOSIT: {meta.minDep} {meta.symbol} · {chain === 'evm' ? '3 CONFIRMATIONS' : 'INSTANT'}
+                MIN DEPOSIT: {meta.minDep} {meta.symbol} · {chain === 'evm' ? '3 CONFIRMATIONS' : '1 CONFIRMATION'}
+              </div>
+              <div className="t-small" style={{ marginTop: 6, color: 'var(--yellow)' }}>
+                ⚠ SEND ONLY {meta.symbol} ON {meta.network}
               </div>
             </div>
           </div>
@@ -228,7 +227,7 @@ export default function BalancePage({ onBack, userId, username }: Props) {
           <div className="term-box">
             <div className="term-box-hd"><span>VERIFY TX</span></div>
             <div className="term-box-bd">
-              <div className="t-label" style={{ marginBottom: 8 }}>ENTER {meta.symbol} TX HASH</div>
+              <div className="t-label" style={{ marginBottom: 8 }}>PASTE YOUR {meta.symbol} TX HASH</div>
               <input className="input" placeholder={chain === 'evm' ? '0x...' : 'TX signature...'}
                 value={txHash} onChange={e => setTxHash(e.target.value)}
                 style={{ width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
@@ -243,7 +242,7 @@ export default function BalancePage({ onBack, userId, username }: Props) {
         </div>
       )}
 
-      {/* ── WITHDRAW TAB ── */}
+      {/* WITHDRAW TAB */}
       {tab === 'withdraw' && (
         <div className="flex flex-col gap-sm">
           <div className="term-box">
@@ -283,7 +282,7 @@ export default function BalancePage({ onBack, userId, username }: Props) {
         </div>
       )}
 
-      {/* ── HISTORY TAB ── */}
+      {/* HISTORY TAB */}
       {tab === 'history' && (
         <div className="flex flex-col gap-sm">
           <div className="term-box">
