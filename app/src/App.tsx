@@ -3,6 +3,8 @@ import Streak from './components/Streak'
 import XpBar from './components/XpBar'
 import LiveFeed from './components/LiveFeed'
 import DailyBonus from './components/DailyBonus'
+import ChainSwitcher, { getActiveChain, type Chain } from './components/ChainSwitcher'
+import RecentBets from './components/RecentBets'
 import DiceGame from './components/DiceGame'
 import CoinflipGame from './components/CoinflipGame'
 import CrashGame from './components/CrashGame'
@@ -38,6 +40,7 @@ export default function App() {
   const [page, setPage] = useState<Page>('home')
   const [user, setUser] = useState<{ id: number; username?: string } | null>(null)
   const [xp, setXp] = useState(12400)
+  const [chain, setChain] = useState<Chain>(getActiveChain)
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp
@@ -81,6 +84,9 @@ export default function App() {
           <div className="t-small text-dim" style={{letterSpacing:3,marginTop:2}}>
             PROVABLY FAIR · 2% EDGE · MULTI-CHAIN
           </div>
+          <div style={{marginTop:8, maxWidth:220}}>
+            <ChainSwitcher value={chain} onChange={setChain} />
+          </div>
         </div>
         <div className="header-balance" onClick={nav('balance')} style={{cursor:'pointer'}}>
           ◆ BALANCE
@@ -98,6 +104,10 @@ export default function App() {
       {/* LIVE FEED */}
       <div style={{marginBottom:16}}>
         <LiveFeed />
+      </div>
+      {/* RECENT BETS */}
+      <div style={{marginBottom:16}}>
+        <RecentBets userId={user?.id} />
       </div>
 
       {/* DIVIDER */}
