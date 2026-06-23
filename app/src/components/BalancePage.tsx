@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import AnimatedNumber from './AnimatedNumber'
 
 interface Props {
   onBack: () => void
@@ -143,7 +144,11 @@ export default function BalancePage({ onBack, userId, username }: Props) {
       <div className="header">
         <button className="btn-back" onClick={onBack}>Back</button>
         <span className="header-title">WALLET</span>
-        <span className="header-balance">{currentBal}</span>
+        <span className="header-balance">
+          {balance ? (
+            <AnimatedNumber value={Number(balance[chain])} decimals={6} />
+          ) : currentBal}
+        </span>
       </div>
 
       {/* TAB BAR */}
@@ -182,7 +187,7 @@ export default function BalancePage({ onBack, userId, username }: Props) {
                   <div className="stat-row">
                     <span className="stat-label">BALANCE</span>
                     <span className="stat-val" style={{ color: c === chain ? 'var(--yellow)' : undefined }}>
-                      {Number(balance[c]).toFixed(6)}
+                      <AnimatedNumber value={Number(balance[c])} decimals={6} />
                     </span>
                   </div>
                 </div>
