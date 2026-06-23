@@ -38,7 +38,8 @@ const GAMES = [
 ]
 
 export default function App() {
-  const [page, setPage] = useState<Page>('home')
+  const [displayPage, setDisplayPage] = useState<Page>('home')
+  const [fading, setFading] = useState(false)
   const [user, setUser] = useState<{ id: number; username?: string } | null>(null)
   const [xp, setXp] = useState(12400)
   const [chain, setChain] = useState<Chain>(getActiveChain)
@@ -56,105 +57,125 @@ export default function App() {
   const nav = (p: Page) => () => {
     sndClick()
     hapticTap()
-    setPage(p)
+    if (p === displayPage) return
+    setFading(true)
+    setTimeout(() => {
+      setDisplayPage(p)
+      setFading(false)
+    }, 120)
   }
 
-  if (page === 'dice') return <DiceGame onBack={nav('home')} userId={user?.id} />
-  if (page === 'coinflip') return <CoinflipGame onBack={nav('home')} userId={user?.id} />
-  if (page === 'crash') return <CrashGame onBack={nav('home')} userId={user?.id} />
-  if (page === 'mines') return <MinesGame onBack={nav('home')} userId={user?.id} />
-  if (page === 'plinko') return <PlinkoGame onBack={nav('home')} userId={user?.id} />
-  if (page === 'slots') return <SlotsGame onBack={nav('home')} userId={user?.id} />
-  if (page === 'roulette') return <RouletteGame onBack={nav('home')} userId={user?.id} />
-  if (page === 'limbo') return <LimboGame onBack={nav('home')} userId={user?.id} />
-  if (page === 'jackpot') return <JackpotGame onBack={nav('home')} userId={user?.id} />
-  if (page === 'balance') return <BalancePage onBack={nav('home')} userId={user?.id} username={user?.username} />
-  if (page === 'leaderboard') return <LeaderboardPage onBack={nav('home')} userId={user?.id} />
-  if (page === 'refs') return <ReferralsPage onBack={nav('home')} userId={user?.id} username={user?.username} />
-  if (page === 'history') return <GameHistoryPage onBack={nav('home')} userId={user?.id} />
+  const pageStyle: React.CSSProperties = {
+    opacity: fading ? 0 : 1,
+    transform: fading ? 'translateY(6px)' : 'translateY(0)',
+    transition: 'opacity .12s ease, transform .12s ease',
+  }
+
+  const renderPage = () => {
+    switch (displayPage) {
+      case 'dice': return <DiceGame onBack={nav('home')} userId={user?.id} />
+      case 'coinflip': return <CoinflipGame onBack={nav('home')} userId={user?.id} />
+      case 'crash': return <CrashGame onBack={nav('home')} userId={user?.id} />
+      case 'mines': return <MinesGame onBack={nav('home')} userId={user?.id} />
+      case 'plinko': return <PlinkoGame onBack={nav('home')} userId={user?.id} />
+      case 'slots': return <SlotsGame onBack={nav('home')} userId={user?.id} />
+      case 'roulette': return <RouletteGame onBack={nav('home')} userId={user?.id} />
+      case 'limbo': return <LimboGame onBack={nav('home')} userId={user?.id} />
+      case 'jackpot': return <JackpotGame onBack={nav('home')} userId={user?.id} />
+      case 'balance': return <BalancePage onBack={nav('home')} userId={user?.id} username={user?.username} />
+      case 'leaderboard': return <LeaderboardPage onBack={nav('home')} userId={user?.id} />
+      case 'refs': return <ReferralsPage onBack={nav('home')} userId={user?.id} username={user?.username} />
+      case 'history': return <GameHistoryPage onBack={nav('home')} userId={user?.id} />
+      default: return null
+    }
+  }
 
   return (
-    <div className="page">
-      {/* WIN TOAST LAYER */}
+    <div className="page" style={pageStyle}>
+      {/* WIN TOAST LAYER — always visible */}
       <WinToastLayer />
 
-      {/* DAILY BONUS POPUP */}
+      {/* DAILY BONUS POPUP — always visible */}
       <DailyBonus onClaim={(reward) => setXp(x => x + reward)} />
 
-      {/* HEADER */}
-      <div className="header">
-        <div>
-          <div className="t-display">CASINO</div>
-          <div className="t-small text-dim" style={{letterSpacing:3,marginTop:2}}>
-            PROVABLY FAIR · 2% EDGE · MULTI-CHAIN
-          </div>
-          <div style={{marginTop:8, maxWidth:220}}>
-            <ChainSwitcher value={chain} onChange={setChain} />
-          </div>
-        </div>
-        <div className="header-balance" onClick={nav('balance')} style={{cursor:'pointer'}}>
-          ◆ BALANCE
-        </div>
-      </div>
-
-      {/* XP BAR */}
-      <div style={{marginBottom:12}}>
-        <XpBar xp={xp} />
-      </div>
-
-      {/* STREAK */}
-      <Streak userId={user?.id} />
-
-      {/* LIVE FEED */}
-      <div style={{marginBottom:16}}>
-        <LiveFeed />
-      </div>
-      {/* RECENT BETS */}
-      <div style={{marginBottom:16}}>
-        <RecentBets userId={user?.id} />
-      </div>
-
-      {/* DIVIDER */}
-      <div className="divider">GAMES</div>
-
-      {/* GAME LIST */}
-      <div style={{display:'flex',flexDirection:'column',gap:6}}>
-        {GAMES.map(g => (
-          <button key={g.id} className="game-card" onClick={nav(g.id)}>
-            <div className="game-card-icon">{g.icon}</div>
-            <div style={{flex:1}}>
-              <div className="game-card-title">{g.title}</div>
-              <div className="game-card-desc">{g.desc}</div>
+      {displayPage === 'home' ? (
+        <>
+          {/* HEADER */}
+          <div className="header">
+            <div>
+              <div className="t-display">CASINO</div>
+              <div className="t-small text-dim" style={{letterSpacing:3,marginTop:2}}>
+                PROVABLY FAIR · 2% EDGE · MULTI-CHAIN
+              </div>
+              <div style={{marginTop:8, maxWidth:220}}>
+                <ChainSwitcher value={chain} onChange={setChain} />
+              </div>
             </div>
-            <div style={{
-              fontSize: 10, fontWeight: 800, fontFamily: 'var(--font-mono)',
-              color: 'var(--bg)', background: 'var(--primary)',
-              letterSpacing: 1, whiteSpace: 'nowrap',
-              padding: '3px 8px', borderRadius: 4,
-            }}>
-              {g.maxMult}
+            <div className="header-balance" onClick={nav('balance')} style={{cursor:'pointer'}}>
+              ◆ BALANCE
             </div>
-          </button>
-        ))}
-      </div>
+          </div>
 
-      {/* BOTTOM NAV */}
-      <div style={{marginTop:24,borderTop:'1px solid var(--border)',paddingTop:16}}>
-        <div className="flex gap-sm" style={{flexWrap:'wrap'}}>
-          <button className="btn btn-ghost btn-sm" onClick={nav('balance')} style={{flex:'1 1 30%'}}>◆ WALLET</button>
-          <button className="btn btn-ghost btn-sm" onClick={nav('history')} style={{flex:'1 1 30%'}}>◇ HISTORY</button>
-          <button className="btn btn-ghost btn-sm" onClick={nav('leaderboard')} style={{flex:'1 1 30%'}}>▲ RANK</button>
-        </div>
-        <div className="flex gap-sm" style={{marginTop:6}}>
-          <button className="btn btn-ghost btn-sm" onClick={nav('refs')} style={{flex:'1 1 50%'}}>◇ REFER</button>
-          <button className="btn btn-ghost btn-sm" onClick={() => window.open('https://t.me/' + (window as any).BOT_USERNAME, '_blank')} style={{flex:'1 1 50%'}}>◇ HELP</button>
-        </div>
-      </div>
+          {/* XP BAR */}
+          <div style={{marginBottom:12}}>
+            <XpBar xp={xp} />
+          </div>
 
-      {/* FOOTER */}
-      <div className="text-center mt-lg" style={{fontSize:9,letterSpacing:3,color:'var(--text-dim)'}}>
-        ═══ NEON NIGHT CASINO ═══
-      </div>
+          {/* STREAK */}
+          <Streak userId={user?.id} />
+
+          {/* LIVE FEED */}
+          <div style={{marginBottom:16}}>
+            <LiveFeed />
+          </div>
+          {/* RECENT BETS */}
+          <div style={{marginBottom:16}}>
+            <RecentBets userId={user?.id} />
+          </div>
+
+          {/* DIVIDER */}
+          <div className="divider">GAMES</div>
+
+          {/* GAME LIST */}
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            {GAMES.map(g => (
+              <button key={g.id} className="game-card" onClick={nav(g.id)}>
+                <div className="game-card-icon">{g.icon}</div>
+                <div style={{flex:1}}>
+                  <div className="game-card-title">{g.title}</div>
+                  <div className="game-card-desc">{g.desc}</div>
+                </div>
+                <div style={{
+                  fontSize: 10, fontWeight: 800, fontFamily: 'var(--font-mono)',
+                  color: 'var(--bg)', background: 'var(--primary)',
+                  letterSpacing: 1, whiteSpace: 'nowrap',
+                  padding: '3px 8px', borderRadius: 4,
+                }}>
+                  {g.maxMult}
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* BOTTOM NAV */}
+          <div style={{marginTop:24,borderTop:'1px solid var(--border)',paddingTop:16}}>
+            <div className="flex gap-sm" style={{flexWrap:'wrap'}}>
+              <button className="btn btn-ghost btn-sm" onClick={nav('balance')} style={{flex:'1 1 30%'}}>◆ WALLET</button>
+              <button className="btn btn-ghost btn-sm" onClick={nav('history')} style={{flex:'1 1 30%'}}>◇ HISTORY</button>
+              <button className="btn btn-ghost btn-sm" onClick={nav('leaderboard')} style={{flex:'1 1 30%'}}>▲ RANK</button>
+            </div>
+            <div className="flex gap-sm" style={{marginTop:6}}>
+              <button className="btn btn-ghost btn-sm" onClick={nav('refs')} style={{flex:'1 1 50%'}}>◇ REFER</button>
+              <button className="btn btn-ghost btn-sm" onClick={() => window.open('https://t.me/' + (window as any).BOT_USERNAME, '_blank')} style={{flex:'1 1 50%'}}>◇ HELP</button>
+            </div>
+          </div>
+
+          {/* FOOTER */}
+          <div className="text-center mt-lg" style={{fontSize:9,letterSpacing:3,color:'var(--text-dim)'}}>
+            ═══ NEON NIGHT CASINO ═══
+          </div>
+        </>
+      ) : renderPage()}
     </div>
   )
 }
