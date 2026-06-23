@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useGameFeedback } from '../hooks'
+import ShareWin from './ShareWin'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface CrashGameProps {
@@ -234,6 +235,9 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
             <div className="result-hash">
               NONCE: {result.nonce} · CLIENT SEED: {result.clientSeed}
             </div>
+            {result.playerWon && result.payoutMultiplier >= 2 && (
+              <ShareWin game="crash" payout={result.payout} multiplier={result.payoutMultiplier} betAmount={betAmount} />
+            )}
           </div>
         </div>
       )}

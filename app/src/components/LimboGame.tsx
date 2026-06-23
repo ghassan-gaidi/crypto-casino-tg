@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useGameFeedback } from '../hooks';
+import ShareWin from './ShareWin';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface LimboGameProps {
@@ -210,6 +211,9 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
             Hash: {result.resultHash.slice(0, 20)}...
             <br />
             Nonce: {result.nonce} | Seed: {result.clientSeed.slice(0, 12)}...
+          {result.playerWon && result.payoutMultiplier >= 2 && (
+            <ShareWin game="limbo" payout={result.payout} multiplier={result.payoutMultiplier} betAmount={betAmount} />
+          )}
           </div>
 
           <button

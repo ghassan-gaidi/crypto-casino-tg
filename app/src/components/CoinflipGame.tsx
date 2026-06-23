@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useGameFeedback } from '../hooks'
+import ShareWin from './ShareWin'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface Props {
@@ -142,6 +143,9 @@ export default function CoinflipGame({ onBack }: Props) {
               ? `WON ${result.payout.toFixed(4)} (${result.payoutMultiplier.toFixed(2)}x)`
               : `LOST ${betAmount}`}
           </div>
+          {result.playerWon && result.payoutMultiplier >= 2 && (
+            <ShareWin game="coinflip" payout={result.payout} multiplier={result.payoutMultiplier} betAmount={parseFloat(betAmount)} />
+          )}
         </div>
       )}
     </div>

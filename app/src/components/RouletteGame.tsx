@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useGameFeedback } from '../hooks';
+import ShareWin from './ShareWin';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface RouletteGameProps {
@@ -361,6 +362,9 @@ export default function RouletteGame({ onBack }: RouletteGameProps) {
             <div className="result-hash">
               {result.resultHash}
             </div>
+            {result.playerWon && result.payoutMultiplier >= 2 && (
+              <ShareWin game="roulette" payout={result.payout} multiplier={result.payoutMultiplier} betAmount={parseFloat(amount)} />
+            )}
             <button className="btn btn-green mt-md" onClick={closeResult}>
               OK
             </button>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useGameFeedback } from '../hooks'
+import ShareWin from './ShareWin'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface Props {
@@ -146,9 +147,10 @@ export default function DiceGame({ onBack }: Props) {
               ? `WIN +${result.payout.toFixed(4)} (${result.payoutMultiplier.toFixed(2)}x)`
               : `LOSE -${betAmount}`}
           </div>
-          <div className="result-hash">
-            {result.resultHash}
-          </div>
+          <div className="result-hash">{result.resultHash}</div>
+          {result.playerWon && result.payoutMultiplier >= 2 && (
+            <ShareWin game="dice" payout={result.payout} multiplier={result.payoutMultiplier} betAmount={parseFloat(betAmount)} />
+          )}
         </div>
       )}
     </div>

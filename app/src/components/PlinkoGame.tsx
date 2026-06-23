@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useGameFeedback } from '../hooks';
+import ShareWin from './ShareWin';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface PlinkoGameProps {
@@ -231,6 +232,9 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
             <div className="result-hash">
               {result.resultHash}
             </div>
+            {result.playerWon && result.multiplier >= 2 && (
+              <ShareWin game="plinko" payout={result.payout} multiplier={result.multiplier} betAmount={parseFloat(amount)} />
+            )}
             <button className="btn btn-green mt-md" onClick={closeResult}>
               OK
             </button>

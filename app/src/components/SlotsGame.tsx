@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useGameFeedback } from '../hooks';
+import ShareWin from './ShareWin';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface SlotsGameProps {
@@ -214,6 +215,9 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
           <div className="result-hash">
             HASH: {result.resultHash}
           </div>
+          {result.playerWon && result.payoutMultiplier >= 2 && (
+            <ShareWin game="slots" payout={result.payout} multiplier={result.payoutMultiplier} betAmount={parseFloat(amount)} />
+          )}
           <button
             className="btn btn-ghost mt-md"
             onClick={(e) => { e.stopPropagation(); closeResult(); }}

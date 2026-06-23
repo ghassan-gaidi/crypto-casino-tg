@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useGameFeedback } from '../hooks';
+import ShareWin from './ShareWin';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface MinesGameProps {
@@ -384,6 +385,9 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
             <div className="result-hash">
               Hash: {result.resultHash.slice(0, 20)}...<br />
               Nonce: {result.nonce} · Seed: {result.clientSeed.slice(0, 12)}...
+            {result.safe && result.multiplier >= 2 && (
+              <ShareWin game="mines" payout={result.payout} multiplier={result.multiplier} betAmount={betAmount} />
+            )}
             </div>
           </div>
 
