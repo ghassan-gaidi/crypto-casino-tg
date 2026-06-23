@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useGameFeedback } from '../hooks'
+import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
@@ -126,6 +127,8 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
 
   // Compute graph dimensions for the animated crash line
   const graphProgress = Math.min(((displayMultiplier - 1) / Math.max(displayMultiplier, 2)) * 100, 100)
+
+  useGameKeyboard({ onBet: handlePlay, onQuickBet: (v) => setBetAmount(parseFloat(v)), disabled: loading })
 
   return (
     <div className="page">

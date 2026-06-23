@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useGameFeedback } from '../hooks';
+import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
@@ -37,7 +38,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
   const [tiles, setTiles] = useState<TileState[]>([]);
   const [result, setResult] = useState<MinesResult | null>(null);
 
-  useGameFeedback(result)
+  useGameFeedback(result);
   const [balance, setBalance] = useState<number>(0);
 
   // Fetch real balance
@@ -235,6 +236,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
   const revealedCount = tiles.filter((t) => t.revealed && !t.isMine).length;
   const maxReveals = GRID_SIZE - numMines;
   const multPercent = maxReveals > 0 ? (revealedCount / maxReveals) * 100 : 0;
+  useGameKeyboard({ onBet: startGame, onQuickBet: (v) => setBetAmount(parseFloat(v)), disabled: loading });
 
   return (
     <div className="page">

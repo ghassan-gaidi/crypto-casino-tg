@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useGameFeedback } from '../hooks';
+import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
@@ -23,7 +24,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
 
-  useGameFeedback(result)
+  useGameFeedback(result);
   const [dropSlot, setDropSlot] = useState<number | null>(null);
   const [error, setError] = useState('');
 
@@ -85,6 +86,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
     setResult(null);
     setDropSlot(null);
   };
+  useGameKeyboard({ onBet: handlePlay, onQuickBet: setAmount, disabled: loading });
 
   return (
     <div className="page">

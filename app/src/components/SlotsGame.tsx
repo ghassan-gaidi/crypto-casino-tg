@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useGameFeedback } from '../hooks';
+import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
@@ -21,7 +22,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
 
-  useGameFeedback(result)
+  useGameFeedback(result);
   const [error, setError] = useState('');
   const [animating, setAnimating] = useState(false);
   const [displayReels, setDisplayReels] = useState<string[][]>([
@@ -97,6 +98,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
   const closeResult = () => {
     setResult(null);
   };
+  useGameKeyboard({ onBet: handleSpin, onQuickBet: setAmount, disabled: loading });
 
   return (
     <div className="page">

@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useGameFeedback } from '../hooks';
+import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
@@ -26,7 +27,7 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [result, setResult] = useState<LimboResult | null>(null);
 
-  useGameFeedback(result)
+  useGameFeedback(result);
   const [balance, setBalance] = useState<number>(0);
   const [error, setError] = useState('');
 
@@ -73,6 +74,8 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
   const handleCloseResult = useCallback(() => {
     setResult(null);
   }, []);
+
+  useGameKeyboard({ onBet: handlePlay, onQuickBet: (v) => setBetAmount(parseFloat(v)), disabled: loading })
 
   return (
     <div className="page">

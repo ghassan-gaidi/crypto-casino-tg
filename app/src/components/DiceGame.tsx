@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useGameFeedback } from '../hooks'
+import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
@@ -53,6 +54,8 @@ export default function DiceGame({ onBack }: Props) {
       setLoading(false)
     }
   }
+
+  useGameKeyboard({ onBet: placeBet, onQuickBet: setBetAmount, disabled: loading })
 
   return (
     <div className="page">

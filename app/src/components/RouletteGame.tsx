@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useGameFeedback } from '../hooks';
+import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
@@ -34,7 +35,7 @@ export default function RouletteGame({ onBack }: RouletteGameProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
 
-  useGameFeedback(result)
+  useGameFeedback(result);
   const [error, setError] = useState('');
   const [animating, setAnimating] = useState(false);
   const [spinIndex, setSpinIndex] = useState(0);
@@ -132,6 +133,7 @@ export default function RouletteGame({ onBack }: RouletteGameProps) {
   for (let i = 1; i <= 36; i += 6) {
     numberGridRows.push([i, i + 1, i + 2, i + 3, i + 4, i + 5]);
   }
+  useGameKeyboard({ onBet: handleSpin, onQuickBet: setAmount, disabled: loading });
 
   return (
     <div className="page">
