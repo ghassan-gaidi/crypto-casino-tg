@@ -213,7 +213,7 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
 
           {/* Enter Button */}
           <button
-            className="btn btn-green"
+            className="btn btn-green btn-pulse"
             onClick={handleEnter}
             disabled={enterLoading || betAmount <= 0 || betAmount > balance}
           >

@@ -139,7 +139,7 @@ export default function DiceGame({ onBack }: Props) {
       </div>
 
       <button
-        className="btn btn-green"
+        className="btn btn-green btn-pulse"
         onClick={placeBet}
         disabled={loading}
       >

@@ -360,7 +360,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
       </div>
 
       <button
-        className="btn btn-green"
+        className="btn btn-green btn-pulse"
         onClick={startGame}
         disabled={loading || betAmount <= 0 || betAmount > balance || gameActive}
       >

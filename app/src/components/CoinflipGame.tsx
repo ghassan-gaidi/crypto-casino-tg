@@ -130,7 +130,7 @@ export default function CoinflipGame({ onBack }: Props) {
 
       {/* Place bet */}
       <button
-        className="btn btn-green"
+        className="btn btn-green btn-pulse"
         onClick={placeBet}
         disabled={loading || !pick}
       >

@@ -254,7 +254,17 @@ body::before{
   cursor:pointer;width:100%;text-align:left;
   transition:all .2s;font-family:var(--font);
   border-radius:var(--radius);
+  opacity:0;animation:card-stagger .35s cubic-bezier(.16,1,.3,1) forwards;
 }
+.game-card:nth-child(1){animation-delay:.05s}
+.game-card:nth-child(2){animation-delay:.1s}
+.game-card:nth-child(3){animation-delay:.15s}
+.game-card:nth-child(4){animation-delay:.2s}
+.game-card:nth-child(5){animation-delay:.25s}
+.game-card:nth-child(6){animation-delay:.3s}
+.game-card:nth-child(7){animation-delay:.35s}
+.game-card:nth-child(8){animation-delay:.4s}
+.game-card:nth-child(9){animation-delay:.45s}
 .game-card:hover{
   border-color:var(--cyan);color:var(--white);
   background:rgba(0,240,255,.03);
@@ -458,6 +468,15 @@ input[type=range]::-moz-range-thumb{
   0%{transform:scale(1.3);color:var(--green);}
   100%{transform:scale(1);}
 }
+@keyframes card-stagger{
+  0%{opacity:0;transform:translateY(12px);}
+  100%{opacity:1;transform:translateY(0);}
+}
+@keyframes btn-pulse-glow{
+  0%,100%{box-shadow:0 0 8px rgba(0,240,255,.2);}
+  50%{box-shadow:0 0 20px rgba(0,240,255,.4),0 0 40px rgba(0,240,255,.1);}
+}
+.btn-pulse{animation:btn-pulse-glow 2s ease-in-out infinite;}
 
 /* ── SLOTS REEL ────────────────────────────────────────────── */
 .reels{display:flex;gap:8px;justify-content:center;margin:16px 0;}

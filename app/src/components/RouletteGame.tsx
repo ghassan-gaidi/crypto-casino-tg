@@ -312,7 +312,7 @@ export default function RouletteGame({ onBack }: RouletteGameProps) {
 
       {/* Spin Button */}
       <button
-        className={"btn btn-green" + (loading || animating ? " disabled" : "")}
+        className={"btn btn-green btn-pulse" + (loading || animating ? " disabled" : "")}
         onClick={handleSpin}
         disabled={loading || animating}
       >

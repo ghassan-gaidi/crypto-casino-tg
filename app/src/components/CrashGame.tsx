@@ -208,7 +208,7 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
 
       {/* Launch — .btn .btn-green */}
       <button
-        className="btn btn-green"
+        className="btn btn-green btn-pulse"
         onClick={handlePlay}
         disabled={loading || balance === null || betAmount <= 0 || betAmount > (balance ?? 0)}
       >

@@ -181,7 +181,7 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
       {error && <div className="overlay-error">{error}</div>}
 
       <button
-        className="btn btn-green"
+        className="btn btn-green btn-pulse"
         onClick={handlePlay}
         disabled={loading || betAmount <= 0 || betAmount > balance}
       >

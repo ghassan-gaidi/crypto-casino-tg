@@ -169,7 +169,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
 
       {/* Spin Button */}
       <button
-        className="btn btn-green mt-sm"
+        className="btn btn-green btn-pulse mt-sm"
         onClick={handleSpin}
         disabled={loading || animating}
       >

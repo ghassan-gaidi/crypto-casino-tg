@@ -203,7 +203,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
 
       {/* Play Button */}
       <button
-        className={"btn btn-green" + (loading ? " disabled" : "")}
+        className={"btn btn-green btn-pulse" + (loading ? " disabled" : "")}
         onClick={handlePlay}
         disabled={loading}
       >
