@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import HotCold from './HotCold';
+import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface LimboGameProps {
@@ -62,6 +63,7 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
       const data: LimboResult = await res.json();
       setResult(data);
       setGameHistory(prev => [...prev.slice(-9), data.playerWon]);
+      if (data.playerWon) showWinToast('limbo', betAmount, data.payoutMultiplier ?? 1, '↑');
       if (data.playerWon) {
         setBalance((prev) => prev + data.payout);
       } else {

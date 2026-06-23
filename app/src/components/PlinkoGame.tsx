@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import HotCold from './HotCold';
+import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface PlinkoGameProps {
@@ -77,6 +78,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
       const data = await res.json();
       setResult(data);
       setGameHistory(prev => [...prev.slice(-9), (data.multiplier ?? 0) > 1]);
+      if ((data.multiplier ?? 0) > 1) showWinToast('plinko', amount, data.multiplier ?? 1, '▼')
       setDropSlot(data.slot);
     } catch (err: any) {
       setError(err.message || 'Something went wrong');

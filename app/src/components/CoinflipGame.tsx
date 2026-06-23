@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks'
 import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
 import HotCold from './HotCold'
+import { showWinToast } from './WinToast'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface Props {
@@ -49,6 +50,7 @@ export default function CoinflipGame({ onBack }: Props) {
       setTimeout(() => {
         setResult(data)
         setGameHistory(prev => [...prev.slice(-9), data.playerWon])
+        if (data.playerWon) showWinToast('coinflip', parseFloat(betAmount), 1.96, '◑')
         setFlipping(false)
         setLoading(false)
       }, 800)

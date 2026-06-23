@@ -5,6 +5,7 @@ import LiveFeed from './components/LiveFeed'
 import DailyBonus from './components/DailyBonus'
 import ChainSwitcher, { getActiveChain, type Chain } from './components/ChainSwitcher'
 import RecentBets from './components/RecentBets'
+import WinToastLayer from './components/WinToast'
 import DiceGame from './components/DiceGame'
 import CoinflipGame from './components/CoinflipGame'
 import CrashGame from './components/CrashGame'
@@ -74,6 +75,9 @@ export default function App() {
 
   return (
     <div className="page">
+      {/* WIN TOAST LAYER */}
+      <WinToastLayer />
+
       {/* DAILY BONUS POPUP */}
       <DailyBonus onClaim={(reward) => setXp(x => x + reward)} />
 

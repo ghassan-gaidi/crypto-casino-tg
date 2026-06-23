@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import HotCold from './HotCold';
+import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface SlotsGameProps {
@@ -83,6 +84,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
       const data = await res.json();
       setResult(data);
       setGameHistory(prev => [...prev.slice(-9), data.won ?? data.playerWon ?? false]);
+      if (data.won) showWinToast('slots', amount, data.payoutMultiplier ?? 1, '≡')
 
       const reels = data.reels || ['🍒🍒🍒', '🍋🍋🍋', '🍊🍊🍊'];
       const parsedReels = reels.map((r: string) => r.split(''));

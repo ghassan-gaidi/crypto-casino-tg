@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks'
 import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
 import HotCold from './HotCold'
+import { showWinToast } from './WinToast'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface Props {
@@ -51,6 +52,7 @@ export default function DiceGame({ onBack }: Props) {
       const data = await res.json()
       setResult(data)
       setGameHistory(prev => [...prev.slice(-9), data.playerWon])
+      if (data.playerWon) showWinToast('dice', parseFloat(betAmount), 99 / (data.winChance || 50) * 0.98, '◆')
     } catch (err) {
       console.error('Bet failed', err)
     } finally {

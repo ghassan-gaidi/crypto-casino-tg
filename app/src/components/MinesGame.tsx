@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import HotCold from './HotCold';
+import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface MinesGameProps {
@@ -90,6 +91,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
       const data: MinesResult = await res.json();
       setResult(data);
       setGameHistory(prev => [...prev.slice(-9), data.safe ?? false]);
+      if (data.safe) showWinToast('mines', betAmount, data.multiplier ?? 1, '⛏')
       setTiles(initTiles());
 
       if (!data.safe) {

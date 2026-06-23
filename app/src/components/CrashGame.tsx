@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks'
 import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
 import HotCold from './HotCold'
+import { showWinToast } from './WinToast'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface CrashGameProps {
@@ -117,6 +118,7 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
       setTimeout(() => {
         setResult(data)
         setGameHistory(prev => [...prev.slice(-9), data.playerWon])
+        if (data.playerWon) showWinToast('crash', betAmount, data.crashPoint ?? 1, '↗')
       }, Math.ceil(Math.log(data.crashPoint) / 0.1 * 1000) + 200)
     } catch (err) {
       console.error('Crash API error:', err)

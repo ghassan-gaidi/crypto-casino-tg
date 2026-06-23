@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import HotCold from './HotCold';
+import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface RouletteGameProps {
@@ -119,6 +120,7 @@ export default function RouletteGame({ onBack }: RouletteGameProps) {
       const data = await res.json();
       setResult(data);
       setGameHistory(prev => [...prev.slice(-9), data.playerWon]);
+      if (data.playerWon) showWinToast('roulette', amount, data.payoutMultiplier ?? 1, '◎');
 
       await spinWheelAnimation(data.spin);
     } catch (err: any) {

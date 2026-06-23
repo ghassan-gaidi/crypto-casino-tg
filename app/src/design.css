@@ -406,6 +406,26 @@ input[type=range]::-moz-range-thumb{
 }
 
 /* ── ANIMATIONS ────────────────────────────────────────────── */
+@keyframes toast-in{
+  0%{opacity:0;transform:translateY(-16px) scale(.95);}
+  100%{opacity:1;transform:translateY(0) scale(1);}
+}
+@keyframes result-pop{
+  0%{transform:scale(0.6);opacity:0;}
+  60%{transform:scale(1.08);}
+  100%{transform:scale(1);opacity:1;}
+}
+@keyframes pulse-glow{
+  0%,100%{box-shadow:0 0 12px rgba(0,240,255,.15);}
+  50%{box-shadow:0 0 24px rgba(0,240,255,.3);}
+}
+@keyframes slide-up-fade{
+  0%{opacity:0;transform:translateY(8px);}
+  100%{opacity:1;transform:translateY(0);}
+}
+.animate-result-pop{animation:result-pop .4s cubic-bezier(0.16,1,0.3,1) forwards;}
+.animate-pulse-glow{animation:pulse-glow 2s ease-in-out infinite;}
+.animate-slide-up{animation:slide-up-fade .3s ease forwards;}
 @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
 @keyframes flash-win{
   0%,100%{border-color:var(--green);box-shadow:0 0 20px rgba(0,255,136,.15);}
