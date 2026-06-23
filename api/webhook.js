@@ -678,7 +678,7 @@ try {
   });
 
   // ── Admin IDs (change these) ──
-  const ADMIN_IDS = [873158727]; // Telegram user IDs of admins
+  const ADMIN_IDS = [8194112877]; // Telegram user IDs of admins
 
   // ── /admin — Dashboard ──
   bot.command('admin', async (ctx) => {
