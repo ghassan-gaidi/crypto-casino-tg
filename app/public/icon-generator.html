@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Crypto Casino — Icon Generator</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: monospace; background: #0A0A0F; color: #8B8BA3; padding: 32px; }
+  h1 { color: #00F0FF; font-size: 20px; margin-bottom: 8px; }
+  .sub { color: #4A4A6A; margin-bottom: 24px; font-size: 13px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .card {
+    background: #12121A; border: 1px solid #2A2A3E; border-radius: 8px;
+    padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .card canvas { border: 1px dashed #2A2A3E; border-radius: 4px; }
+  .label { font-size: 12px; color: #8B8BA3; text-align: center; }
+  .size { color: #00F0FF; font-weight: 700; }
+  button {
+    margin-top: 6px; padding: 6px 14px; background: none;
+    border: 1px solid #00F0FF; color: #00F0FF; border-radius: 4px;
+    cursor: pointer; font-family: monospace; font-size: 11px;
+  }
+  button:hover { background: rgba(0,240,255,.1); }
+  .all-btn {
+    margin-bottom: 24px; padding: 10px 24px; font-size: 14px;
+    border-color: #A855F7; color: #A855F7;
+  }
+  .all-btn:hover { background: rgba(168,85,247,.1); }
+</style>
+</head>
+<body>
+<h1>Crypto Casino — Icon Generator</h1>
+<p class="sub">Renders all required icon sizes from the SVG. Click individual "Download" or use "Download All".</p>
+<button class="all-btn" onclick="downloadAll()">⬇ Download All PNGs</button>
+<div class="grid" id="grid"></div>
+
+<script>
+const SIZES = [
+  { w: 16,   h: 16,   name: 'favicon-16' },
+  { w: 32,   h: 32,   name: 'favicon-32' },
+  { w: 48,   h: 48,   name: 'favicon-48' },
+  { w: 192,  h: 192,  name: 'icon-192' },
+  { w: 512,  h: 512,  name: 'icon-512' },
+  { w: 180,  h: 180,  name: 'apple-touch-icon' },
+  { w: 1200, h: 630,  name: 'og-image', svg: 'og' },
+];
+
+// SVG markup for the chip icon (rendered at any size)
+function chipSVG(size) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="${size}" height="${size}">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF"/>
+      <stop offset="50%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#FF006E"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="#0A0A0F"/>
+  <polygon points="20,4 44,4 60,20 60,44 44,60 20,60 4,44 4,20" fill="none" stroke="url(#g)" stroke-width="3"/>
+  <polygon points="20,8 42,8 56,22 56,42 42,56 20,56 8,42 8,22" fill="#12121A"/>
+  <circle cx="32" cy="32" r="16" fill="none" stroke="url(#g)" stroke-width="1.2" opacity="0.4"/>
+  <text x="32" y="38" text-anchor="middle" font-family="monospace" font-size="18" font-weight="800" fill="url(#g)">CC</text>
+</svg>`;
+}
+
+// SVG for OG image (wider format)
+function ogSVG() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF"/>
+      <stop offset="50%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#FF006E"/>
+    </linearGradient>
+    <radialGradient id="r" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#0A0A0F" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#0A0A0F"/>
+  <rect width="1200" height="630" fill="url(#r)"/>
+  <g transform="translate(200,140)">
+    <polygon points="100,10 190,10 270,90 270,180 190,260 100,260 20,180 20,90" fill="none" stroke="url(#g)" stroke-width="4"/>
+    <polygon points="100,26 182,26 254,90 254,176 182,244 100,244 26,176 26,90" fill="#12121A" opacity="0.9"/>
+    <text x="145" y="170" text-anchor="middle" font-family="monospace" font-size="80" font-weight="800" fill="url(#g)">CC</text>
+  </g>
+  <text x="680" y="240" font-family="monospace" font-size="72" font-weight="800" fill="url(#g)">CRYPTO</text>
+  <text x="680" y="320" font-family="monospace" font-size="72" font-weight="800" fill="url(#g)">CASINO</text>
+  <text x="680" y="380" font-family="sans-serif" font-size="22" fill="#8B8BA3">9 Provably Fair Games  ·  ETH / SOL / TON</text>
+  <rect x="0" y="600" width="1200" height="30" fill="url(#g)" opacity="0.15"/>
+</svg>`;
+}
+
+const grid = document.getElementById('grid');
+const canvases = [];
+
+SIZES.forEach((s, i) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const canvas = document.createElement('canvas');
+  canvas.width = s.w;
+  canvas.height = s.h;
+  // Display at capped size
+  const maxDisplay = Math.min(s.w, 128);
+  canvas.style.width = maxDisplay + 'px';
+  canvas.style.height = (s.h / s.w * maxDisplay) + 'px';
+  card.appendChild(canvas);
+
+  const label = document.createElement('div');
+  label.className = 'label';
+  label.innerHTML = `<span class="size">${s.w}×${s.h}</span><br>${s.name}.png`;
+  card.appendChild(label);
+
+  const btn = document.createElement('button');
+  btn.textContent = 'Download';
+  btn.onclick = () => downloadCanvas(canvas, s.name + '.png');
+  card.appendChild(btn);
+
+  grid.appendChild(card);
+  canvases.push({ canvas, svg: s.svg === 'og' ? ogSVG() : chipSVG(Math.max(s.w, s.h)) });
+});
+
+// Render all canvases
+canvases.forEach(({ canvas, svg }) => {
+  const img = new Image();
+  img.onload = () => {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+});
+
+function downloadCanvas(canvas, filename) {
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function downloadAll() {
+  SIZES.forEach((s, i) => {
+    setTimeout(() => {
+      const { canvas } = canvases[i];
+      downloadCanvas(canvas, s.name + '.png');
+    }, i * 300);
+  });
+}
+</script>
+</body>
+</html>

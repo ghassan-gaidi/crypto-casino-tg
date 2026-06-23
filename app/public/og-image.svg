@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <filter id="g">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="gr" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF"/>
+      <stop offset="50%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#FF006E"/>
+    </linearGradient>
+    <radialGradient id="rg" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#0A0A0F" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#0A0A0F"/>
+  <rect width="1200" height="630" fill="url(#rg)"/>
+
+  <!-- Grid dots -->
+  <g opacity="0.04" fill="#00F0FF">
+    <circle cx="100" cy="100" r="1.5"/><circle cx="200" cy="100" r="1.5"/><circle cx="300" cy="100" r="1.5"/>
+    <circle cx="400" cy="100" r="1.5"/><circle cx="500" cy="100" r="1.5"/><circle cx="600" cy="100" r="1.5"/>
+    <circle cx="700" cy="100" r="1.5"/><circle cx="800" cy="100" r="1.5"/><circle cx="900" cy="100" r="1.5"/>
+    <circle cx="1000" cy="100" r="1.5"/><circle cx="1100" cy="100" r="1.5"/>
+    <circle cx="100" cy="200" r="1.5"/><circle cx="200" cy="200" r="1.5"/><circle cx="300" cy="200" r="1.5"/>
+    <circle cx="400" cy="200" r="1.5"/><circle cx="500" cy="200" r="1.5"/><circle cx="600" cy="200" r="1.5"/>
+    <circle cx="700" cy="200" r="1.5"/><circle cx="800" cy="200" r="1.5"/><circle cx="900" cy="200" r="1.5"/>
+    <circle cx="1000" cy="200" r="1.5"/><circle cx="1100" cy="200" r="1.5"/>
+    <circle cx="100" cy="300" r="1.5"/><circle cx="200" cy="300" r="1.5"/><circle cx="300" cy="300" r="1.5"/>
+    <circle cx="400" cy="300" r="1.5"/><circle cx="500" cy="300" r="1.5"/><circle cx="600" cy="300" r="1.5"/>
+    <circle cx="700" cy="300" r="1.5"/><circle cx="800" cy="300" r="1.5"/><circle cx="900" cy="300" r="1.5"/>
+    <circle cx="1000" cy="300" r="1.5"/><circle cx="1100" cy="300" r="1.5"/>
+    <circle cx="100" cy="400" r="1.5"/><circle cx="200" cy="400" r="1.5"/><circle cx="300" cy="400" r="1.5"/>
+    <circle cx="400" cy="400" r="1.5"/><circle cx="500" cy="400" r="1.5"/><circle cx="600" cy="400" r="1.5"/>
+    <circle cx="700" cy="400" r="1.5"/><circle cx="800" cy="400" r="1.5"/><circle cx="900" cy="400" r="1.5"/>
+    <circle cx="1000" cy="400" r="1.5"/><circle cx="1100" cy="400" r="1.5"/>
+    <circle cx="100" cy="500" r="1.5"/><circle cx="200" cy="500" r="1.5"/><circle cx="300" cy="500" r="1.5"/>
+    <circle cx="400" cy="500" r="1.5"/><circle cx="500" cy="500" r="1.5"/><circle cx="600" cy="500" r="1.5"/>
+    <circle cx="700" cy="500" r="1.5"/><circle cx="800" cy="500" r="1.5"/><circle cx="900" cy="500" r="1.5"/>
+    <circle cx="1000" cy="500" r="1.5"/><circle cx="1100" cy="500" r="1.5"/>
+  </g>
+
+  <!-- Left: chip icon -->
+  <g transform="translate(200,140)">
+    <polygon points="100,10 190,10 270,90 270,180 190,260 100,260 20,180 20,90"
+             fill="none" stroke="url(#gr)" stroke-width="4" filter="url(#g)"/>
+    <polygon points="100,26 182,26 254,90 254,176 182,244 100,244 26,176 26,90"
+             fill="#12121A" opacity="0.9"/>
+    <text x="145" y="170" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="80" font-weight="800" fill="url(#gr)" filter="url(#g)">CC</text>
+    <circle cx="100" cy="90" r="6" fill="#00F0FF" opacity="0.5"/>
+    <circle cx="190" cy="90" r="6" fill="#A855F7" opacity="0.5"/>
+    <circle cx="190" cy="180" r="6" fill="#FF006E" opacity="0.5"/>
+    <circle cx="100" cy="180" r="6" fill="#00FF88" opacity="0.5"/>
+  </g>
+
+  <!-- Right: text -->
+  <text x="680" y="240" font-family="'JetBrains Mono',monospace" font-size="72" font-weight="800" fill="url(#gr)" filter="url(#g)">CRYPTO</text>
+  <text x="680" y="320" font-family="'JetBrains Mono',monospace" font-size="72" font-weight="800" fill="url(#gr)" filter="url(#g)">CASINO</text>
+  <text x="680" y="380" font-family="'Inter',sans-serif" font-size="22" fill="#8B8BA3">9 Provably Fair Games  ·  ETH / SOL / TON</text>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="600" width="1200" height="30" fill="url(#gr)" opacity="0.15"/>
+</svg>
