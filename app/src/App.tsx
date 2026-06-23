@@ -90,6 +90,13 @@ export default function App() {
     }
   }
 
+  const navTabs: { page: Page; icon: string; label: string }[] = [
+    { page: 'home',        icon: '⌂',  label: 'HOME' },
+    { page: 'balance',     icon: '◆',  label: 'WALLET' },
+    { page: 'history',     icon: '◇',  label: 'HISTORY' },
+    { page: 'leaderboard', icon: '▲',  label: 'RANK' },
+  ]
+
   return (
     <div className="page" style={pageStyle}>
       {/* WIN TOAST LAYER — always visible */}
@@ -157,25 +164,32 @@ export default function App() {
             ))}
           </div>
 
-          {/* BOTTOM NAV */}
-          <div style={{marginTop:24,borderTop:'1px solid var(--border)',paddingTop:16}}>
-            <div className="flex gap-sm" style={{flexWrap:'wrap'}}>
-              <button className="btn btn-ghost btn-sm" onClick={nav('balance')} style={{flex:'1 1 30%'}}>◆ WALLET</button>
-              <button className="btn btn-ghost btn-sm" onClick={nav('history')} style={{flex:'1 1 30%'}}>◇ HISTORY</button>
-              <button className="btn btn-ghost btn-sm" onClick={nav('leaderboard')} style={{flex:'1 1 30%'}}>▲ RANK</button>
-            </div>
-            <div className="flex gap-sm" style={{marginTop:6}}>
-              <button className="btn btn-ghost btn-sm" onClick={nav('refs')} style={{flex:'1 1 50%'}}>◇ REFER</button>
-              <button className="btn btn-ghost btn-sm" onClick={() => window.open('https://t.me/' + (window as any).BOT_USERNAME, '_blank')} style={{flex:'1 1 50%'}}>◇ HELP</button>
-            </div>
+          {/* BOTTOM LINKS — secondary actions */}
+          <div style={{marginTop:24, display:'flex', gap:8, flexWrap:'wrap'}}>
+            <button className="btn btn-ghost btn-sm" onClick={nav('refs')} style={{flex:'1 1 45%'}}>◇ REFER A FRIEND</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => window.open('https://t.me/' + (window as any).BOT_USERNAME, '_blank')} style={{flex:'1 1 45%'}}>◇ HELP</button>
           </div>
 
           {/* FOOTER */}
-          <div className="text-center mt-lg" style={{fontSize:9,letterSpacing:3,color:'var(--text-dim)'}}>
+          <div className="text-center" style={{fontSize:9,letterSpacing:3,color:'var(--text-dim)',paddingBottom:16}}>
             ═══ NEON NIGHT CASINO ═══
           </div>
         </>
       ) : renderPage()}
+
+      {/* FIXED BOTTOM NAV — always visible on all pages */}
+      <nav className="bottom-nav">
+        {navTabs.map(t => (
+          <button
+            key={t.page}
+            className={`nav-item${displayPage === t.page ? ' active' : ''}`}
+            onClick={nav(t.page)}
+          >
+            <span className="nav-icon">{t.icon}</span>
+            <span className="nav-label">{t.label}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   )
 }
