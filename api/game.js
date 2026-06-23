@@ -62,7 +62,8 @@ module.exports = async (req, res) => {
     // ── GET /api/balance ──
     if (game === 'balance') {
       if (req.method !== 'GET') { res.status(405).json({ error: 'GET required' }); return; }
-      const userId = parseInt(req.headers['x-user-id']);
+      const urlParams = new URL(req.url, 'http://localhost').searchParams;
+      const userId = parseInt(req.headers['x-user-id'] || urlParams.get('userId'));
       if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
       const bal = await getBalance(userId);
       const { getUserDeposits, getUserWithdrawals } = require('../src/supabase');
@@ -89,7 +90,8 @@ module.exports = async (req, res) => {
     // ── GET /api/history ──
     if (game === 'history') {
       if (req.method !== 'GET') { res.status(405).json({ error: 'GET required' }); return; }
-      const userId = parseInt(req.headers['x-user-id']);
+      const urlParamsH = new URL(req.url, 'http://localhost').searchParams;
+      const userId = parseInt(req.headers['x-user-id'] || urlParamsH.get('userId'));
       if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
       const stats = await getUserStats(userId);
       const bets = await getRecentBets(userId, 20);
@@ -99,7 +101,8 @@ module.exports = async (req, res) => {
     // ── GET /api/refs ──
     if (game === 'refs') {
       if (req.method !== 'GET') { res.status(405).json({ error: 'GET required' }); return; }
-      const userId = parseInt(req.headers['x-user-id']);
+      const urlParamsR = new URL(req.url, 'http://localhost').searchParams;
+      const userId = parseInt(req.headers['x-user-id'] || urlParamsR.get('userId'));
       if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
       const refStats = await getReferralStats(userId);
       const referrer = await getReferrer(userId);
