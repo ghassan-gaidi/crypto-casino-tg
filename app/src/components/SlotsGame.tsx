@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useGameFeedback } from '../hooks';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface SlotsGameProps {
@@ -18,6 +19,8 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
   const [amount, setAmount] = useState('0.01');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+
+  useGameFeedback(result)
   const [error, setError] = useState('');
   const [animating, setAnimating] = useState(false);
   const [displayReels, setDisplayReels] = useState<string[][]>([

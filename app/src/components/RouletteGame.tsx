@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState } from 'react'
+import { useGameFeedback } from '../hooks';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface RouletteGameProps {
@@ -31,6 +32,8 @@ export default function RouletteGame({ onBack }: RouletteGameProps) {
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+
+  useGameFeedback(result)
   const [error, setError] = useState('');
   const [animating, setAnimating] = useState(false);
   const [spinIndex, setSpinIndex] = useState(0);

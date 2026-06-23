@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useGameFeedback } from '../hooks'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface Props {
@@ -15,6 +16,8 @@ export default function CoinflipGame({ onBack }: Props) {
     payout: number
     payoutMultiplier: number
   } | null>(null)
+
+  useGameFeedback(result)
   const [loading, setLoading] = useState(false)
   const [flipping, setFlipping] = useState(false)
 

@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useGameFeedback } from '../hooks';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface PlinkoGameProps {
@@ -20,6 +21,8 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
   const [risk, setRisk] = useState<string>('medium');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+
+  useGameFeedback(result)
   const [dropSlot, setDropSlot] = useState<number | null>(null);
   const [error, setError] = useState('');
 

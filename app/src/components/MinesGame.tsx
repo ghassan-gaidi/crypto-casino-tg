@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { useGameFeedback } from '../hooks';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface MinesGameProps {
@@ -34,6 +35,8 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
   const [gameActive, setGameActive] = useState<boolean>(false);
   const [tiles, setTiles] = useState<TileState[]>([]);
   const [result, setResult] = useState<MinesResult | null>(null);
+
+  useGameFeedback(result)
   const [balance, setBalance] = useState<number>(0);
 
   // Fetch real balance

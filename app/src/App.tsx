@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Streak from './components/Streak'
 import XpBar from './components/XpBar'
 import LiveFeed from './components/LiveFeed'
+import DailyBonus from './components/DailyBonus'
 import DiceGame from './components/DiceGame'
 import CoinflipGame from './components/CoinflipGame'
 import CrashGame from './components/CrashGame'
@@ -15,25 +16,28 @@ import BalancePage from './components/BalancePage'
 import LeaderboardPage from './components/LeaderboardPage'
 import ReferralsPage from './components/ReferralsPage'
 import GameHistoryPage from './components/GameHistoryPage'
+import { sndClick } from './sounds'
+import { hapticTap } from './haptic'
 import './design.css'
 
 type Page = 'home' | 'dice' | 'coinflip' | 'crash' | 'mines' | 'plinko' | 'slots' | 'roulette' | 'limbo' | 'jackpot' | 'balance' | 'leaderboard' | 'refs' | 'history'
 
 const GAMES = [
-  { id: 'dice' as const,    icon: '◆', title: 'DICE',    desc: 'Roll over/under  ·  99% win chance' },
-  { id: 'coinflip' as const,icon: '◑', title: 'COINFLIP',desc: 'Heads or tails  ·  50% win chance' },
-  { id: 'crash' as const,   icon: '↗', title: 'CRASH',   desc: 'Cash out before rocket crashes' },
-  { id: 'mines' as const,   icon: '⛏', title: 'MINES',   desc: 'Pick gems, avoid bombs  ·  5×5' },
-  { id: 'plinko' as const,  icon: '▼', title: 'PLINKO',  desc: 'Drop ball  ·  low/med/high risk' },
-  { id: 'slots' as const,   icon: '≡', title: 'SLOTS',   desc: 'Match 3 symbols  ·  classic reels' },
-  { id: 'roulette' as const,icon: '◎', title: 'ROULETTE', desc: 'European  ·  number/color/section' },
-  { id: 'limbo' as const,   icon: '↑', title: 'LIMBO',   desc: 'Target multiplier  ·  fly high' },
-  { id: 'jackpot' as const, icon: '★', title: 'JACKPOT', desc: 'Progressive pool  ·  highest wins' },
+  { id: 'dice' as const,    icon: '◆', title: 'DICE',    desc: 'Roll over/under  ·  99% win chance',    maxMult: '99×' },
+  { id: 'coinflip' as const,icon: '◑', title: 'COINFLIP',desc: 'Heads or tails  ·  50% win chance',     maxMult: '2×' },
+  { id: 'crash' as const,   icon: '↗', title: 'CRASH',   desc: 'Cash out before rocket crashes',        maxMult: '∞' },
+  { id: 'mines' as const,   icon: '⛏', title: 'MINES',   desc: 'Pick gems, avoid bombs  ·  5×5',       maxMult: '25×' },
+  { id: 'plinko' as const,  icon: '▼', title: 'PLINKO',  desc: 'Drop ball  ·  low/med/high risk',       maxMult: '29×' },
+  { id: 'slots' as const,   icon: '≡', title: 'SLOTS',   desc: 'Match 3 symbols  ·  classic reels',    maxMult: '1000×' },
+  { id: 'roulette' as const,icon: '◎', title: 'ROULETTE', desc: 'European  ·  number/color/section',    maxMult: '36×' },
+  { id: 'limbo' as const,   icon: '↑', title: 'LIMBO',   desc: 'Target multiplier  ·  fly high',       maxMult: '100×' },
+  { id: 'jackpot' as const, icon: '★', title: 'JACKPOT', desc: 'Progressive pool  ·  highest wins',    maxMult: '∞' },
 ]
 
 export default function App() {
   const [page, setPage] = useState<Page>('home')
   const [user, setUser] = useState<{ id: number; username?: string } | null>(null)
+  const [xp, setXp] = useState(12400)
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp
@@ -45,7 +49,11 @@ export default function App() {
     }
   }, [])
 
-  const nav = (p: Page) => () => setPage(p)
+  const nav = (p: Page) => () => {
+    sndClick()
+    hapticTap()
+    setPage(p)
+  }
 
   if (page === 'dice') return <DiceGame onBack={nav('home')} userId={user?.id} />
   if (page === 'coinflip') return <CoinflipGame onBack={nav('home')} userId={user?.id} />
@@ -63,6 +71,9 @@ export default function App() {
 
   return (
     <div className="page">
+      {/* DAILY BONUS POPUP */}
+      <DailyBonus onClaim={(reward) => setXp(x => x + reward)} />
+
       {/* HEADER */}
       <div className="header">
         <div>
@@ -78,7 +89,7 @@ export default function App() {
 
       {/* XP BAR */}
       <div style={{marginBottom:12}}>
-        <XpBar xp={12400} />
+        <XpBar xp={xp} />
       </div>
 
       {/* STREAK */}
@@ -97,9 +108,15 @@ export default function App() {
         {GAMES.map(g => (
           <button key={g.id} className="game-card" onClick={nav(g.id)}>
             <div className="game-card-icon">{g.icon}</div>
-            <div>
+            <div style={{flex:1}}>
               <div className="game-card-title">{g.title}</div>
               <div className="game-card-desc">{g.desc}</div>
+            </div>
+            <div style={{
+              fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)',
+              color: 'var(--primary)', letterSpacing: 1, whiteSpace: 'nowrap',
+            }}>
+              UP TO {g.maxMult}
             </div>
           </button>
         ))}

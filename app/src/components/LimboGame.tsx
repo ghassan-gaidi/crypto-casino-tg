@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { useGameFeedback } from '../hooks';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface LimboGameProps {
@@ -23,6 +24,8 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
   const [targetMultiplier, setTargetMultiplier] = useState<number>(2.0);
   const [loading, setLoading] = useState<boolean>(false);
   const [result, setResult] = useState<LimboResult | null>(null);
+
+  useGameFeedback(result)
   const [balance, setBalance] = useState<number>(0);
   const [error, setError] = useState('');
 

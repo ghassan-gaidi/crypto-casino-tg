@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { useGameFeedback } from '../hooks'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface CrashGameProps {
@@ -23,6 +24,8 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
   const [autoCashoutMultiplier, setAutoCashoutMultiplier] = useState(2.0)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<CrashResult | null>(null)
+
+  useGameFeedback(result)
   const [balance, setBalance] = useState<number | null>(null)
 
   // Crash animation state

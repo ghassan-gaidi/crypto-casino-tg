@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useGameFeedback } from '../hooks'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface Props {
@@ -20,6 +21,8 @@ export default function DiceGame({ onBack }: Props) {
     clientSeed: string
   } | null>(null)
   const [loading, setLoading] = useState(false)
+
+  useGameFeedback(result)
 
   const quickBets = ['0.001', '0.01', '0.1', '1.0']
 
