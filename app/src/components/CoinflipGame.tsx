@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useGameFeedback } from '../hooks'
 import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
+import HotCold from './HotCold'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface Props {
@@ -20,6 +21,8 @@ export default function CoinflipGame({ onBack }: Props) {
   } | null>(null)
 
   useGameFeedback(result)
+  const [gameHistory, setGameHistory] = useState<boolean[]>([])
+
   const [loading, setLoading] = useState(false)
   const [flipping, setFlipping] = useState(false)
 
@@ -45,6 +48,7 @@ export default function CoinflipGame({ onBack }: Props) {
       // Simulate flip animation
       setTimeout(() => {
         setResult(data)
+        setGameHistory(prev => [...prev.slice(-9), data.playerWon])
         setFlipping(false)
         setLoading(false)
       }, 800)
@@ -149,6 +153,7 @@ export default function CoinflipGame({ onBack }: Props) {
           {result.playerWon && result.payoutMultiplier >= 2 && (
             <ShareWin game="coinflip" payout={result.payout} multiplier={result.payoutMultiplier} betAmount={parseFloat(betAmount)} />
           )}
+          <HotCold history={gameHistory} />
         </div>
       )}
     </div>

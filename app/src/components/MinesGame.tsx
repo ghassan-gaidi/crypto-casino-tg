@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
+import HotCold from './HotCold';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface MinesGameProps {
@@ -39,6 +40,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
   const [result, setResult] = useState<MinesResult | null>(null);
 
   useGameFeedback(result);
+  const [gameHistory, setGameHistory] = useState<boolean[]>([]);
   const [balance, setBalance] = useState<number>(0);
 
   // Fetch real balance
@@ -87,6 +89,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
       });
       const data: MinesResult = await res.json();
       setResult(data);
+      setGameHistory(prev => [...prev.slice(-9), data.safe ?? false]);
       setTiles(initTiles());
 
       if (!data.safe) {
@@ -153,6 +156,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
         });
         const data: MinesResult = await res.json();
         setResult(data);
+        setGameHistory(prev => [...prev.slice(-9), data.safe ?? false]);
 
         if (data.safe) {
           const newTiles = [...tiles];
@@ -205,6 +209,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
       });
       const data: MinesResult = await res.json();
       setResult(data);
+      setGameHistory(prev => [...prev.slice(-9), data.safe ?? false]);
       setGameActive(false);
 
       if (data.safe) {
@@ -396,6 +401,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
           <button className="btn btn-ghost mt-md" onClick={handleCloseResult}>
             NEW GAME
           </button>
+          <HotCold history={gameHistory} />
         </>
       )}
     </div>

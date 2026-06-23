@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
+import HotCold from './HotCold';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface LimboGameProps {
@@ -30,6 +31,7 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
   useGameFeedback(result);
   const [balance, setBalance] = useState<number>(0);
   const [error, setError] = useState('');
+  const [gameHistory, setGameHistory] = useState<boolean[]>([]);
 
   // Fetch real balance
   useEffect(() => {
@@ -59,6 +61,7 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
       });
       const data: LimboResult = await res.json();
       setResult(data);
+      setGameHistory(prev => [...prev.slice(-9), data.playerWon]);
       if (data.playerWon) {
         setBalance((prev) => prev + data.payout);
       } else {
@@ -227,6 +230,7 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
           </button>
         </div>
       )}
+      <HotCold history={gameHistory} />
     </div>
   );
 };

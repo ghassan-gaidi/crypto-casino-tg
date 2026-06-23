@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
+import HotCold from './HotCold';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface SlotsGameProps {
@@ -23,6 +24,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
   const [result, setResult] = useState<any>(null);
 
   useGameFeedback(result);
+  const [gameHistory, setGameHistory] = useState<boolean[]>([]);
   const [error, setError] = useState('');
   const [animating, setAnimating] = useState(false);
   const [displayReels, setDisplayReels] = useState<string[][]>([
@@ -80,6 +82,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
 
       const data = await res.json();
       setResult(data);
+      setGameHistory(prev => [...prev.slice(-9), data.won ?? data.playerWon ?? false]);
 
       const reels = data.reels || ['🍒🍒🍒', '🍋🍋🍋', '🍊🍊🍊'];
       const parsedReels = reels.map((r: string) => r.split(''));
@@ -220,6 +223,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
           {result.playerWon && result.payoutMultiplier >= 2 && (
             <ShareWin game="slots" payout={result.payout} multiplier={result.payoutMultiplier} betAmount={parseFloat(amount)} />
           )}
+          <HotCold history={gameHistory} />
           <button
             className="btn btn-ghost mt-md"
             onClick={(e) => { e.stopPropagation(); closeResult(); }}

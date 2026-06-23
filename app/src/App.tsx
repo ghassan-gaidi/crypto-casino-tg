@@ -113,10 +113,12 @@ export default function App() {
               <div className="game-card-desc">{g.desc}</div>
             </div>
             <div style={{
-              fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)',
-              color: 'var(--primary)', letterSpacing: 1, whiteSpace: 'nowrap',
+              fontSize: 10, fontWeight: 800, fontFamily: 'var(--font-mono)',
+              color: 'var(--bg)', background: 'var(--primary)',
+              letterSpacing: 1, whiteSpace: 'nowrap',
+              padding: '3px 8px', borderRadius: 4,
             }}>
-              UP TO {g.maxMult}
+              {g.maxMult}
             </div>
           </button>
         ))}

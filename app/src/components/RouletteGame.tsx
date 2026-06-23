@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
+import HotCold from './HotCold';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
 interface RouletteGameProps {
@@ -36,6 +37,7 @@ export default function RouletteGame({ onBack }: RouletteGameProps) {
   const [result, setResult] = useState<any>(null);
 
   useGameFeedback(result);
+  const [gameHistory, setGameHistory] = useState<boolean[]>([]);
   const [error, setError] = useState('');
   const [animating, setAnimating] = useState(false);
   const [spinIndex, setSpinIndex] = useState(0);
@@ -116,6 +118,7 @@ export default function RouletteGame({ onBack }: RouletteGameProps) {
 
       const data = await res.json();
       setResult(data);
+      setGameHistory(prev => [...prev.slice(-9), data.playerWon]);
 
       await spinWheelAnimation(data.spin);
     } catch (err: any) {
@@ -367,6 +370,7 @@ export default function RouletteGame({ onBack }: RouletteGameProps) {
             {result.playerWon && result.payoutMultiplier >= 2 && (
               <ShareWin game="roulette" payout={result.payout} multiplier={result.payoutMultiplier} betAmount={parseFloat(amount)} />
             )}
+            <HotCold history={gameHistory} />
             <button className="btn btn-green mt-md" onClick={closeResult}>
               OK
             </button>

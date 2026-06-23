@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useGameFeedback } from '../hooks'
 import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
+import HotCold from './HotCold'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface Props {
@@ -25,6 +26,7 @@ export default function DiceGame({ onBack }: Props) {
   const [loading, setLoading] = useState(false)
 
   useGameFeedback(result)
+  const [gameHistory, setGameHistory] = useState<boolean[]>([])
 
   const quickBets = ['0.001', '0.01', '0.1', '1.0']
 
@@ -48,6 +50,7 @@ export default function DiceGame({ onBack }: Props) {
       })
       const data = await res.json()
       setResult(data)
+      setGameHistory(prev => [...prev.slice(-9), data.playerWon])
     } catch (err) {
       console.error('Bet failed', err)
     } finally {
@@ -154,6 +157,7 @@ export default function DiceGame({ onBack }: Props) {
           {result.playerWon && result.payoutMultiplier >= 2 && (
             <ShareWin game="dice" payout={result.payout} multiplier={result.payoutMultiplier} betAmount={parseFloat(betAmount)} />
           )}
+          <HotCold history={gameHistory} />
         </div>
       )}
     </div>

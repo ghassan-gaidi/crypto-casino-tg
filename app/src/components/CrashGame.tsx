@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { useGameFeedback } from '../hooks'
 import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
+import HotCold from './HotCold'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
 interface CrashGameProps {
@@ -29,6 +30,7 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
 
   useGameFeedback(result)
   const [balance, setBalance] = useState<number | null>(null)
+  const [gameHistory, setGameHistory] = useState<boolean[]>([])
 
   // Crash animation state
   const [animating, setAnimating] = useState(false)
@@ -114,6 +116,7 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
       // Show result overlay after animation completes
       setTimeout(() => {
         setResult(data)
+        setGameHistory(prev => [...prev.slice(-9), data.playerWon])
       }, Math.ceil(Math.log(data.crashPoint) / 0.1 * 1000) + 200)
     } catch (err) {
       console.error('Crash API error:', err)
@@ -244,6 +247,7 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
           </div>
         </div>
       )}
+      <HotCold history={gameHistory} />
     </div>
   )
 }
