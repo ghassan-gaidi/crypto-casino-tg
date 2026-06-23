@@ -216,20 +216,24 @@ body::before{
   border:1px solid var(--border);padding:20px;
   text-align:center;margin-top:20px;
   background:var(--surface);border-radius:var(--radius);
+  animation:result-pop .25s cubic-bezier(.18,.89,.32,1.28);
 }
 .result-win{
   border-color:var(--green);
   box-shadow:0 0 30px rgba(0,255,136,.15),inset 0 0 30px rgba(0,255,136,.03);
+  animation:result-pop .25s cubic-bezier(.18,.89,.32,1.28), result-glow-win 1.5s ease-in-out 1;
 }
 .result-lose{
   border-color:var(--red);
   box-shadow:0 0 20px rgba(255,51,102,.1);
+  animation:result-pop .25s cubic-bezier(.18,.89,.32,1.28), result-shake .4s ease-in-out;
 }
 .result-number{
   font-size:42px;font-weight:800;color:var(--white);
   margin:8px 0;line-height:1;
   font-variant-numeric:tabular-nums;
 }
+.result-win .result-number{animation:result-count .3s ease}
 .result-label{
   font-size:11px;text-transform:uppercase;letter-spacing:2px;
   margin-bottom:4px;
@@ -437,6 +441,23 @@ input[type=range]::-moz-range-thumb{
 }
 .animate-win{animation:flash-win .5s ease 2;}
 .animate-lose{animation:flash-lose .5s ease 2;}
+
+@keyframes result-glow-win{
+  0%{box-shadow:0 0 30px rgba(0,255,136,.15),inset 0 0 30px rgba(0,255,136,.03);}
+  50%{box-shadow:0 0 60px rgba(0,255,136,.3),inset 0 0 40px rgba(0,255,136,.08);}
+  100%{box-shadow:0 0 30px rgba(0,255,136,.15),inset 0 0 30px rgba(0,255,136,.03);}
+}
+@keyframes result-shake{
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-4px);}
+  40%{transform:translateX(4px);}
+  60%{transform:translateX(-3px);}
+  80%{transform:translateX(3px);}
+}
+@keyframes result-count{
+  0%{transform:scale(1.3);color:var(--green);}
+  100%{transform:scale(1);}
+}
 
 /* ── SLOTS REEL ────────────────────────────────────────────── */
 .reels{display:flex;gap:8px;justify-content:center;margin:16px 0;}
