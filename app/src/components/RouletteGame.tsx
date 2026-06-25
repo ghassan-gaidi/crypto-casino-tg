@@ -8,6 +8,8 @@ import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 import BetMultipliers from './BetMultipliers';
+import FairnessPanel from './FairnessPanel';
+import GameLiveBets from './GameLiveBets';
 
 interface RouletteGameProps {
   onBack: () => void;
@@ -403,6 +405,8 @@ export default function RouletteGame({ onBack, userId }: RouletteGameProps) {
           </div>
         </div>
       )}
+      <GameLiveBets />
+      <FairnessPanel userId={userId} gameName="roulette" />
     </div>
   );
 }

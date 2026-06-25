@@ -8,6 +8,9 @@ import AnimatedNumber from './AnimatedNumber'
 import { showWinToast } from './WinToast'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 import BetMultipliers from './BetMultipliers'
+import FairnessPanel from './FairnessPanel'
+import GameLiveBets from './GameLiveBets'
+import AutoPlay from './AutoPlay'
 
 interface CrashGameProps {
   onBack: () => void
@@ -226,6 +229,8 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
         {loading ? "🚀 LAUNCHING..." : animating ? `×${currentMultiplier.toFixed(2)}` : "🚀 LAUNCH"}
       </button>
 
+      <AutoPlay onPlay={handlePlay} disabled={loading} balance={balance} />
+
       {isRateLimited(result) && <RateLimitBanner data={result} />}
       {/* Result Modal — .overlay / .result / .result-win / .result-lose */}
       {result && !animating && (
@@ -262,6 +267,8 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
         </div>
       )}
       <HotCold history={gameHistory} />
+      <GameLiveBets />
+      <FairnessPanel userId={userId} gameName="crash" />
     </div>
   )
 }

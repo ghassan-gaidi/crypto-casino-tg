@@ -8,6 +8,8 @@ import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 import BetMultipliers from './BetMultipliers';
+import FairnessPanel from './FairnessPanel';
+import GameLiveBets from './GameLiveBets';
 
 interface MinesGameProps {
   onBack: () => void;
@@ -419,6 +421,8 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
           <HotCold history={gameHistory} />
         </>
       )}
+      <GameLiveBets />
+      <FairnessPanel userId={userId} gameName="mines" />
     </div>
   );
 };

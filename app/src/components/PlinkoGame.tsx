@@ -8,6 +8,8 @@ import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 import BetMultipliers from './BetMultipliers';
+import FairnessPanel from './FairnessPanel';
+import GameLiveBets from './GameLiveBets';
 
 interface PlinkoGameProps {
   onBack: () => void;
@@ -274,6 +276,8 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack, userId }) => {
           </div>
         </div>
       )}
+      <GameLiveBets />
+      <FairnessPanel userId={userId} gameName="plinko" />
     </div>
   );
 };

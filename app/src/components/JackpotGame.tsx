@@ -9,6 +9,8 @@ import HotCold from './HotCold';
 import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 import BetMultipliers from './BetMultipliers';
+import FairnessPanel from './FairnessPanel';
+import GameLiveBets from './GameLiveBets';
 
 interface JackpotGameProps {
   onBack: () => void;
@@ -319,6 +321,8 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
           </div>
         </div>
       )}
+      <GameLiveBets />
+      <FairnessPanel userId={userId} gameName="jackpot" />
     </div>
   );
 };

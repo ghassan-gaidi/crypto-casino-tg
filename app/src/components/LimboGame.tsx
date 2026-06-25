@@ -8,6 +8,9 @@ import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 import BetMultipliers from './BetMultipliers';
+import FairnessPanel from './FairnessPanel';
+import GameLiveBets from './GameLiveBets';
+import AutoPlay from './AutoPlay';
 
 interface LimboGameProps {
   onBack: () => void;
@@ -201,6 +204,8 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
         {loading ? 'FLYING...' : 'PLAY'}
       </button>
 
+      <AutoPlay onPlay={handlePlay} disabled={loading} balance={balance} />
+
       {isRateLimited(result) && <RateLimitBanner data={result} />}
       {/* Result */}
       {result && (
@@ -247,6 +252,8 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
         </div>
       )}
       <HotCold history={gameHistory} />
+      <GameLiveBets />
+      <FairnessPanel userId={userId} gameName="limbo" />
     </div>
   );
 };

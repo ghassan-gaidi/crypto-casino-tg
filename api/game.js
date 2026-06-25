@@ -6,6 +6,8 @@ const {
   getOrCreateJackpotRound, enterJackpotRound,
   getLeaderboard, getUserStats, getRecentBets, getPlatformStats,
   getReferralStats, getReferrer, trackReferral,
+  revealSeed,
+  getRevealedSeeds, getAllRecentBets,
 } = require("../src/supabase");
 const { generateSeed, hashSeed } = require("../src/provably-fair");
 const { validateTelegramInitData } = require("../src/supabase");
@@ -18,6 +20,12 @@ const { playSlots } = require("../src/games/slots");
 const { playRoulette } = require("../src/games/roulette");
 const { playLimbo } = require("../src/games/limbo");
 const { rateLimit, getClientIp } = require("../src/rate-limit");
+
+async function readBody(req) {
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  return JSON.parse(Buffer.concat(chunks).toString());
+}
 
 function parseInitData(initData) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -96,6 +104,46 @@ module.exports = async (req, res) => {
       const stats = await getUserStats(userId);
       const bets = await getRecentBets(userId, 20);
       return res.json({ stats, bets });
+    }
+
+    // ── GET /api/fairness?userId=X ──
+    if (game === 'fairness') {
+      if (req.method === 'GET') {
+        const urlParamsF = new URL(req.url, 'http://localhost').searchParams;
+        const userId = parseInt(req.headers['x-user-id'] || urlParamsF.get('userId'));
+        if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+        const seed = await getActiveSeed(userId);
+        const revealedSeeds = await getRevealedSeeds(userId, 10);
+        return res.json({
+          seedHash: seed?.seed_hash || null,
+          nonce: seed?.current_nonce || 0,
+          maxNonce: seed?.max_nonce || 10000,
+          revealedSeeds: revealedSeeds || [],
+        });
+      }
+      // POST — rotate seed (reveal current, create new)
+      if (req.method === 'POST') {
+        const body = await readBody(req);
+        const userId = body.userId;
+        if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+        const currentSeed = await getActiveSeed(userId);
+        if (currentSeed) {
+          await revealSeed(currentSeed.id);
+        }
+        const newSeed = generateSeed();
+        const hashed = hashSeed(newSeed);
+        const seed = await createServerSeed(userId, newSeed, hashed);
+        return res.json({ seedHash: seed.seed_hash, nonce: 0 });
+      }
+    }
+
+    // ── GET /api/bets/recent ──
+    if (game === 'bets') {
+      const sub = new URL(req.url, 'http://localhost').searchParams.get('action');
+      if (sub === 'recent') {
+        const bets = await getAllRecentBets(20);
+        return res.json({ bets });
+      }
     }
 
     // ── GET /api/refs ──

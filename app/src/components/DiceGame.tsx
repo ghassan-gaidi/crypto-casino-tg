@@ -8,6 +8,9 @@ import AnimatedNumber from './AnimatedNumber'
 import { showWinToast } from './WinToast'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 import BetMultipliers from './BetMultipliers'
+import FairnessPanel from './FairnessPanel'
+import GameLiveBets from './GameLiveBets'
+import AutoPlay from './AutoPlay'
 
 interface Props {
   onBack: () => void
@@ -172,6 +175,8 @@ export default function DiceGame({ onBack, userId }: Props) {
         {loading ? 'ROLLING...' : 'ROLL DICE'}
       </button>
 
+      <AutoPlay onPlay={placeBet} disabled={loading} balance={balance} />
+
       {isRateLimited(result) && <RateLimitBanner data={result} />}
       {result && (
         <div className={"result " + (result.playerWon ? 'result-win' : 'result-lose')}>
@@ -189,6 +194,8 @@ export default function DiceGame({ onBack, userId }: Props) {
           <HotCold history={gameHistory} />
         </div>
       )}
+      <GameLiveBets />
+      <FairnessPanel userId={userId} gameName="dice" />
     </div>
   )
 }

@@ -9,7 +9,7 @@
     }
   ],
   "rewrites": [
-    { "source": "/api/(dice|coinflip|crash|mines|plinko|slots|roulette|limbo|jackpot|balance|leaderboard|history|refs|stats)", "destination": "/api/game" },
+    { "source": "/api/(dice|coinflip|crash|mines|plinko|slots|roulette|limbo|jackpot|balance|leaderboard|history|refs|stats|fairness|bets)", "destination": "/api/game" },
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

@@ -39,6 +39,8 @@ exports.trackReferral = trackReferral;
 exports.getReferralStats = getReferralStats;
 exports.getReferrer = getReferrer;
 exports.addReferralReward = addReferralReward;
+exports.getRevealedSeeds = getRevealedSeeds;
+exports.getAllRecentBets = getAllRecentBets;
 const supabase_js_1 = require("@supabase/supabase-js");
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
@@ -503,6 +505,27 @@ async function getRecentBets(userId, limit = 10) {
         .from('tg_bets')
         .select('*')
         .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+    return data ?? [];
+}
+// ── Fairness: Revealed Seeds ──
+async function getRevealedSeeds(userId, limit = 10) {
+    const { data } = await exports.db
+        .from('tg_server_seeds')
+        .select('id, seed_hash, seed, current_nonce, revealed_at')
+        .eq('user_id', userId)
+        .eq('status', 'revealed')
+        .order('revealed_at', { ascending: false })
+        .limit(limit);
+    return data ?? [];
+}
+
+// ── Fairness: All Recent Bets (cross-user) ──
+async function getAllRecentBets(limit = 20) {
+    const { data } = await exports.db
+        .from('tg_bets')
+        .select('id, user_id, game, bet_amount, payout, player_won, created_at')
         .order('created_at', { ascending: false })
         .limit(limit);
     return data ?? [];
