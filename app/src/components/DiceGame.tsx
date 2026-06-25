@@ -7,6 +7,7 @@ import PayoutBadge from './PayoutBadge'
 import AnimatedNumber from './AnimatedNumber'
 import { showWinToast } from './WinToast'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
+import BetMultipliers from './BetMultipliers'
 
 interface Props {
   onBack: () => void
@@ -72,7 +73,14 @@ export default function DiceGame({ onBack, userId }: Props) {
     }
   }
 
-  useGameKeyboard({ onBet: placeBet, onQuickBet: setBetAmount, disabled: loading })
+  useGameKeyboard({
+    onBet: placeBet,
+    onQuickBet: setBetAmount,
+    disabled: loading,
+    onHalfBet: () => { const c = parseFloat(betAmount) || 0; setBetAmount(Math.max(c / 2, 0.001).toFixed(4)) },
+    onDoubleBet: () => { const c = parseFloat(betAmount) || 0; setBetAmount((balance != null ? Math.min(c * 2, balance) : c * 2).toFixed(4)) },
+    onMaxBet: () => { setBetAmount((balance != null ? Math.max(balance, 0.001) : (parseFloat(betAmount) || 0) * 2).toFixed(4)) },
+  })
 
   return (
     <div className="page">
@@ -97,8 +105,9 @@ export default function DiceGame({ onBack, userId }: Props) {
                 {amt}
               </button>
             ))}
-          </div>
-          <input
+            </div>
+            <BetMultipliers betAmount={betAmount} onSet={setBetAmount} balance={balance} />
+            <input
             className="input"
             type="number"
             step="0.001"

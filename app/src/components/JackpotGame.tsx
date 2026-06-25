@@ -8,6 +8,7 @@ import { useGameKeyboard } from '../hooks/keyboard';
 import HotCold from './HotCold';
 import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
+import BetMultipliers from './BetMultipliers';
 
 interface JackpotGameProps {
   onBack: () => void;
@@ -139,7 +140,14 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
     }
   }, [betAmount, enterLoading, balance, userId, fetchRound]);
 
-  useGameKeyboard({ onBet: handleEnter, onQuickBet: handleQuickBetFromKey, disabled: enterLoading });
+  useGameKeyboard({
+    onBet: handleEnter,
+    onQuickBet: handleQuickBetFromKey,
+    disabled: enterLoading,
+    onHalfBet: () => { setBetAmount(Math.max(betAmount / 2, 1)) },
+    onDoubleBet: () => { setBetAmount(Math.min(betAmount * 2, balance)) },
+    onMaxBet: () => { setBetAmount(Math.max(balance, 1)) },
+  });
 
   const handleCloseResult = useCallback(() => {
     setEntryResult(null);
@@ -230,6 +238,8 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
               </button>
             ))}
           </div>
+
+          <BetMultipliers betAmount={betAmount} onSet={setBetAmount} balance={balance} />
 
           {/* Bet Input */}
           <div className="s-title">ENTRY AMOUNT</div>

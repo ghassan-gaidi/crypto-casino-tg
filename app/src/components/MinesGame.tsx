@@ -7,6 +7,7 @@ import PayoutBadge from './PayoutBadge';
 import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
+import BetMultipliers from './BetMultipliers';
 
 interface MinesGameProps {
   onBack: () => void;
@@ -245,7 +246,14 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
   const revealedCount = tiles.filter((t) => t.revealed && !t.isMine).length;
   const maxReveals = GRID_SIZE - numMines;
   const multPercent = maxReveals > 0 ? (revealedCount / maxReveals) * 100 : 0;
-  useGameKeyboard({ onBet: startGame, onQuickBet: (v) => setBetAmount(parseFloat(v)), disabled: loading });
+  useGameKeyboard({
+    onBet: startGame,
+    onQuickBet: (v) => setBetAmount(parseFloat(v)),
+    disabled: loading,
+    onHalfBet: () => { setBetAmount(Math.max(betAmount / 2, 1)) },
+    onDoubleBet: () => { setBetAmount(Math.min(betAmount * 2, balance)) },
+    onMaxBet: () => { setBetAmount(Math.max(balance, 1)) },
+  });
 
   return (
     <div className="page">
@@ -283,6 +291,8 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
           </button>
         ))}
       </div>
+
+      <BetMultipliers betAmount={betAmount} onSet={setBetAmount} balance={balance} />
 
       <div className="s-title">MINES: {numMines}</div>
       <div className="term-box mb-md">

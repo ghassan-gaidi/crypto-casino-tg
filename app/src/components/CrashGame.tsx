@@ -7,6 +7,7 @@ import PayoutBadge from './PayoutBadge'
 import AnimatedNumber from './AnimatedNumber'
 import { showWinToast } from './WinToast'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
+import BetMultipliers from './BetMultipliers'
 
 interface CrashGameProps {
   onBack: () => void
@@ -135,7 +136,14 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
   // Compute graph dimensions for the animated crash line
   const graphProgress = Math.min(((displayMultiplier - 1) / Math.max(displayMultiplier, 2)) * 100, 100)
 
-  useGameKeyboard({ onBet: handlePlay, onQuickBet: (v) => setBetAmount(parseFloat(v)), disabled: loading })
+  useGameKeyboard({
+    onBet: handlePlay,
+    onQuickBet: (v) => setBetAmount(parseFloat(v)),
+    disabled: loading,
+    onHalfBet: () => { setBetAmount(Math.max(betAmount / 2, 1)) },
+    onDoubleBet: () => { setBetAmount(balance != null ? Math.min(betAmount * 2, balance) : betAmount * 2) },
+    onMaxBet: () => { setBetAmount(balance != null ? Math.max(balance, 1) : betAmount * 2) },
+  })
 
   return (
     <div className="page">
@@ -178,8 +186,9 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
                 {amount}
               </button>
             ))}
-          </div>
-          <input
+            </div>
+            <BetMultipliers betAmount={betAmount} onSet={setBetAmount} balance={balance} />
+            <input
             className="input"
             type="number"
             min={1}

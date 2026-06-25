@@ -7,6 +7,7 @@ import PayoutBadge from './PayoutBadge';
 import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
+import BetMultipliers from './BetMultipliers';
 
 interface RouletteGameProps {
   onBack: () => void;
@@ -150,7 +151,14 @@ export default function RouletteGame({ onBack, userId }: RouletteGameProps) {
   for (let i = 1; i <= 36; i += 6) {
     numberGridRows.push([i, i + 1, i + 2, i + 3, i + 4, i + 5]);
   }
-  useGameKeyboard({ onBet: handleSpin, onQuickBet: setAmount, disabled: loading });
+  useGameKeyboard({
+    onBet: handleSpin,
+    onQuickBet: setAmount,
+    disabled: loading,
+    onHalfBet: () => { const c = parseFloat(amount) || 0; setAmount(Math.max(c / 2, 0.001).toFixed(4)) },
+    onDoubleBet: () => { const c = parseFloat(amount) || 0; setAmount((balance != null ? Math.min(c * 2, balance) : c * 2).toFixed(4)) },
+    onMaxBet: () => { setAmount((balance != null ? Math.max(balance, 0.001) : (parseFloat(amount) || 0) * 2).toFixed(4)) },
+  });
 
   return (
     <div className="page">
@@ -187,6 +195,7 @@ export default function RouletteGame({ onBack, userId }: RouletteGameProps) {
               </button>
             ))}
           </div>
+          <BetMultipliers betAmount={amount} onSet={setAmount} balance={balance} />
         </div>
       </div>
 

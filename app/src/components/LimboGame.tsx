@@ -7,6 +7,7 @@ import PayoutBadge from './PayoutBadge';
 import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
+import BetMultipliers from './BetMultipliers';
 
 interface LimboGameProps {
   onBack: () => void;
@@ -82,7 +83,14 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
     setResult(null);
   }, []);
 
-  useGameKeyboard({ onBet: handlePlay, onQuickBet: (v) => setBetAmount(parseFloat(v)), disabled: loading })
+  useGameKeyboard({
+    onBet: handlePlay,
+    onQuickBet: (v) => setBetAmount(parseFloat(v)),
+    disabled: loading,
+    onHalfBet: () => { setBetAmount(Math.max(betAmount / 2, 0.001)) },
+    onDoubleBet: () => { setBetAmount(Math.min(betAmount * 2, balance)) },
+    onMaxBet: () => { setBetAmount(Math.max(balance, 0.001)) },
+  })
 
   return (
     <div className="page">
@@ -136,6 +144,9 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
           </button>
         ))}
       </div>
+
+      <BetMultipliers betAmount={betAmount} onSet={setBetAmount} balance={balance} />
+
       <div className="mb-md">
         <input
           className="input"
