@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import HotCold from './HotCold';
+import PayoutBadge from './PayoutBadge';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
@@ -385,6 +386,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
             <div className={"result-label " + (result.safe ? 'win' : 'lose')}>
               {result.safe ? 'WIN' : 'LOSE'}
             </div>
+            {result.safe && <PayoutBadge multiplier={result.multiplier} />}
             <div className="result-number">
               {result.safe ? `+${result.payout.toLocaleString()}` : `-${betAmount.toLocaleString()}`}
             </div>

@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import HotCold from './HotCold';
+import PayoutBadge from './PayoutBadge';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
@@ -197,6 +198,7 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
           <div className={"result-label " + (result.playerWon ? "win" : "lose")}>
             {result.playerWon ? "YOU WON" : "CRASHED"}
           </div>
+          {result.playerWon && <PayoutBadge multiplier={result.payoutMultiplier} />}
 
           <div className="result-number">
             x{result.crashPoint.toFixed(2)}

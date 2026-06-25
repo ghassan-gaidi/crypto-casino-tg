@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks'
 import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
 import HotCold from './HotCold'
+import PayoutBadge from './PayoutBadge'
 import { showWinToast } from './WinToast'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
@@ -144,6 +145,7 @@ export default function CoinflipGame({ onBack }: Props) {
           <div className={"result-label " + (result.playerWon ? 'win' : 'lose')}>
             {result.playerWon ? 'WIN' : 'LOSE'}
           </div>
+          {result.playerWon && <PayoutBadge multiplier={result.payoutMultiplier || 1.96} />}
           <div className="result-number">
             {result.result.toUpperCase()}
           </div>

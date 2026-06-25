@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks'
 import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
 import HotCold from './HotCold'
+import PayoutBadge from './PayoutBadge'
 import { showWinToast } from './WinToast'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
@@ -229,11 +230,12 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
             <div className="result-number">
               ×{result.crashPoint.toFixed(2)}
             </div>
-            <div className={result.playerWon ? "result-label win" : "result-label lose"}>
+            <div className={"result-label " + (result.playerWon ? "win" : "lose")}>
               {result.playerWon
                 ? `+${result.payout.toLocaleString()} (+×${result.payoutMultiplier.toFixed(2)})`
                 : `-${betAmount.toLocaleString()} LOST`}
             </div>
+            {result.playerWon && <PayoutBadge multiplier={result.payoutMultiplier} />}
             <div className="result-detail">
               Cashout: ×{result.payoutMultiplier.toFixed(2)}
             </div>

@@ -1,5 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
+import { sndWin, sndCoin, sndLose } from '../sounds';
+import { hapticSuccess, hapticError } from '../haptic';
+import { confetti } from '../confetti';
+import { tapButton } from '../hooks';
+import { useGameKeyboard } from '../hooks/keyboard';
+import HotCold from './HotCold';
+import { showWinToast } from './WinToast';
 
 interface JackpotGameProps {
   onBack: () => void;
@@ -30,6 +37,17 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
   const [entryResult, setEntryResult] = useState<JackpotEntryResult | null>(null);
   const [balance, setBalance] = useState<number>(0);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [entryHistory, setEntryHistory] = useState<boolean[]>([]);
+
+  // Keyboard shortcuts: space = enter round, 1-5 = quick bets
+  const quickBetMap: Record<string, number> = { '0.001': 100, '0.01': 500, '0.1': 1000, '1.0': 2500 };
+  const handleQuickBetFromKey = useCallback((amt: string) => {
+    const mapped = quickBetMap[amt];
+    if (mapped !== undefined) {
+      tapButton();
+      setBetAmount(mapped);
+    }
+  }, []);
 
   // Fetch real balance from API
   useEffect(() => {
@@ -96,16 +114,31 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
       const data: JackpotEntryResult = await res.json();
       setEntryResult(data);
       if (data.success) {
+        sndWin();
+        sndCoin();
+        hapticSuccess();
+        confetti(1500);
+        showWinToast('jackpot', betAmount, 2, '★');
+        setEntryHistory(prev => [...prev.slice(-9), true]);
         setBalance((prev) => prev - betAmount);
         fetchRound();
+      } else {
+        sndLose();
+        hapticError();
+        setEntryHistory(prev => [...prev.slice(-9), false]);
       }
     } catch (err) {
       console.error('Jackpot enter error:', err);
+      sndLose();
+      hapticError();
+      setEntryHistory(prev => [...prev.slice(-9), false]);
       setEntryResult({ success: false, round_id: '', prize_pool: 0, entries: 0 });
     } finally {
       setEnterLoading(false);
     }
   }, [betAmount, enterLoading, balance, userId, fetchRound]);
+
+  useGameKeyboard({ onBet: handleEnter, onQuickBet: handleQuickBetFromKey, disabled: enterLoading });
 
   const handleCloseResult = useCallback(() => {
     setEntryResult(null);
@@ -190,7 +223,7 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
               <button
                 key={amt}
                 className={"chip" + (betAmount === amt ? " active" : "")}
-                onClick={() => handleQuickBet(amt)}
+                onClick={() => { tapButton(); handleQuickBet(amt); }}
               >
                 {amt}
               </button>
@@ -263,6 +296,8 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
                 </span>
               </div>
             )}
+
+            <HotCold history={entryHistory} />
 
             <button
               className="btn btn-green mt-md"

@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import HotCold from './HotCold';
+import PayoutBadge from './PayoutBadge';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
@@ -227,6 +228,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
             <div className={"result-label " + (result.playerWon ? "win" : "lose")}>
               {result.playerWon ? 'WIN' : 'LOSE'}
             </div>
+            {result.playerWon && <PayoutBadge multiplier={result.multiplier || result.payoutMultiplier || 1} />}
             <div className="result-number">
               {result.playerWon ? '+' : ''}{formatPayout(result.payout)}
             </div>

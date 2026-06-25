@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import HotCold from './HotCold';
+import PayoutBadge from './PayoutBadge';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
@@ -205,6 +206,7 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
           <div className={"result-label " + (result.playerWon ? "win" : "lose")}>
             {result.playerWon ? 'YOU WON' : 'YOU LOST'}
           </div>
+          {result.playerWon && <PayoutBadge multiplier={result.payoutMultiplier || 1} />}
           <div className="result-number">
             {result.playerWon ? '+' : ''}{formatPayout(result.payout)}
           </div>

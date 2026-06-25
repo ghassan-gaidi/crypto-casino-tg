@@ -20,6 +20,7 @@ import LeaderboardPage from './components/LeaderboardPage'
 import ReferralsPage from './components/ReferralsPage'
 import GameHistoryPage from './components/GameHistoryPage'
 import { sndClick } from './sounds'
+import { isMuted, toggleMute } from './sound-toggle'
 import { hapticTap } from './haptic'
 import './design.css'
 
@@ -43,6 +44,7 @@ export default function App() {
   const [user, setUser] = useState<{ id: number; username?: string } | null>(null)
   const [xp, setXp] = useState(12400)
   const [chain, setChain] = useState<Chain>(getActiveChain)
+  const [muted, setMuted] = useState(isMuted)
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp
@@ -118,8 +120,20 @@ export default function App() {
                 <ChainSwitcher value={chain} onChange={setChain} />
               </div>
             </div>
-            <div className="header-balance" onClick={nav('balance')} style={{cursor:'pointer'}}>
-              ◆ BALANCE
+            <div style={{display:'flex', alignItems:'center', gap:8}}>
+              <button
+                onClick={() => { toggleMute(); setMuted(isMuted()) }}
+                style={{
+                  background:'none', border:'none', cursor:'pointer',
+                  fontSize:16, lineHeight:1, padding:4, opacity:0.7,
+                }}
+                title={muted ? 'Unmute' : 'Mute'}
+              >
+                {muted ? '🔇' : '🔊'}
+              </button>
+              <div className="header-balance" onClick={nav('balance')} style={{cursor:'pointer'}}>
+                ◆ BALANCE
+              </div>
             </div>
           </div>
 

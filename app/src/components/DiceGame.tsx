@@ -3,6 +3,7 @@ import { useGameFeedback } from '../hooks'
 import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
 import HotCold from './HotCold'
+import PayoutBadge from './PayoutBadge'
 import { showWinToast } from './WinToast'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
@@ -155,6 +156,7 @@ export default function DiceGame({ onBack }: Props) {
               ? `WIN +${result.payout.toFixed(4)} (${result.payoutMultiplier.toFixed(2)}x)`
               : `LOSE -${betAmount}`}
           </div>
+          {result.playerWon && <PayoutBadge multiplier={result.payoutMultiplier} />}
           <div className="result-hash">{result.resultHash}</div>
           {result.playerWon && result.payoutMultiplier >= 2 && (
             <ShareWin game="dice" payout={result.payout} multiplier={result.payoutMultiplier} betAmount={parseFloat(betAmount)} />
