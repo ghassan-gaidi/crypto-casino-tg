@@ -4,6 +4,7 @@ import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import HotCold from './HotCold';
 import PayoutBadge from './PayoutBadge';
+import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
@@ -253,7 +254,7 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
           Back
         </button>
         <span className="header-title">MINES</span>
-        <span className="header-balance">{balance.toLocaleString()}</span>
+        <span className="header-balance"><AnimatedNumber value={balance} decimals={4} /></span>
       </div>
 
       <div className="s-title">BET AMOUNT</div>

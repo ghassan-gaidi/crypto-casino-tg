@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import HotCold from './HotCold';
 import PayoutBadge from './PayoutBadge';
+import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
@@ -29,7 +30,7 @@ function formatPayout(amount: number): string {
 
 const SPINNING_STATES = ['●', '◎', '◉', '○'];
 
-export default function RouletteGame({ onBack }: RouletteGameProps) {
+export default function RouletteGame({ onBack, userId }: RouletteGameProps) {
   const [amount, setAmount] = useState('0.01');
   const [betType, setBetType] = useState<BetType>('number');
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
@@ -44,6 +45,16 @@ export default function RouletteGame({ onBack }: RouletteGameProps) {
   const [animating, setAnimating] = useState(false);
   const [spinIndex, setSpinIndex] = useState(0);
   const [showSpinNumber, setShowSpinNumber] = useState<number | null>(null);
+  const [balance, setBalance] = useState<number | null>(null);
+
+  // Fetch real balance
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`/api/balance?userId=${userId}`)
+      .then(r => r.json())
+      .then(data => { if (data.evm !== undefined) setBalance(parseFloat(data.evm) || 0); })
+      .catch(() => setBalance(0));
+  }, [userId]);
 
   const handleQuickBet = (val: number) => {
     setAmount(val.toString());
@@ -147,7 +158,9 @@ export default function RouletteGame({ onBack }: RouletteGameProps) {
       <div className="header">
         <button className="btn-back" onClick={onBack}>BACK</button>
         <span className="header-title">ROULETTE</span>
-        <span className="header-balance"></span>
+        <span className="header-balance">
+          {balance !== null ? <AnimatedNumber value={balance} decimals={4} /> : '---'}
+        </span>
       </div>
 
       {/* Bet Amount */}

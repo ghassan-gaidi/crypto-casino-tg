@@ -4,6 +4,7 @@ import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
 import HotCold from './HotCold'
 import PayoutBadge from './PayoutBadge'
+import AnimatedNumber from './AnimatedNumber'
 import { showWinToast } from './WinToast'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
@@ -144,7 +145,7 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
         <span className="header-title">🚀 CRASH</span>
         <span className="header-balance">
           {balance !== null
-            ? balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            ? <AnimatedNumber value={balance} decimals={2} />
             : '---'}
         </span>
       </div>

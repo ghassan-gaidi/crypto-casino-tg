@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useGameFeedback } from '../hooks'
 import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
 import HotCold from './HotCold'
 import PayoutBadge from './PayoutBadge'
+import AnimatedNumber from './AnimatedNumber'
 import { showWinToast } from './WinToast'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
@@ -12,7 +13,7 @@ interface Props {
   userId?: number
 }
 
-export default function CoinflipGame({ onBack }: Props) {
+export default function CoinflipGame({ onBack, userId }: Props) {
   const [betAmount, setBetAmount] = useState('0.01')
   const [pick, setPick] = useState<'heads' | 'tails' | null>(null)
   const [result, setResult] = useState<{
@@ -27,6 +28,16 @@ export default function CoinflipGame({ onBack }: Props) {
 
   const [loading, setLoading] = useState(false)
   const [flipping, setFlipping] = useState(false)
+  const [balance, setBalance] = useState<number | null>(null)
+
+  // Fetch real balance
+  useEffect(() => {
+    if (!userId) return
+    fetch(`/api/balance?userId=${userId}`)
+      .then(r => r.json())
+      .then(data => { if (data.evm !== undefined) setBalance(parseFloat(data.evm) || 0) })
+      .catch(() => setBalance(0))
+  }, [userId])
 
   const quickBets = ['0.001', '0.01', '0.1', '1.0']
 
@@ -65,11 +76,13 @@ export default function CoinflipGame({ onBack }: Props) {
 
   return (
     <div className="page">
-      <button className="btn-back" onClick={onBack}>
-        Back
-      </button>
-
-      <div className="s-title">COINFLIP</div>
+      <div className="header">
+        <button className="btn-back" onClick={onBack}>Back</button>
+        <span className="header-title">COINFLIP</span>
+        <span className="header-balance">
+          {balance !== null ? <AnimatedNumber value={balance} decimals={4} /> : '---'}
+        </span>
+      </div>
 
       {/* Quick bet amounts */}
       <div className="chips">

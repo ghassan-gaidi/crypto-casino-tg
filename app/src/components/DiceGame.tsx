@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useGameFeedback } from '../hooks'
 import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
 import HotCold from './HotCold'
 import PayoutBadge from './PayoutBadge'
+import AnimatedNumber from './AnimatedNumber'
 import { showWinToast } from './WinToast'
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui'
 
@@ -12,7 +13,7 @@ interface Props {
   userId?: number
 }
 
-export default function DiceGame({ onBack }: Props) {
+export default function DiceGame({ onBack, userId }: Props) {
   const [betAmount, setBetAmount] = useState('0.01')
   const [direction, setDirection] = useState<'under' | 'over'>('under')
   const [target, setTarget] = useState(50)
@@ -29,6 +30,16 @@ export default function DiceGame({ onBack }: Props) {
 
   useGameFeedback(result)
   const [gameHistory, setGameHistory] = useState<boolean[]>([])
+  const [balance, setBalance] = useState<number | null>(null)
+
+  // Fetch real balance
+  useEffect(() => {
+    if (!userId) return
+    fetch(`/api/balance?userId=${userId}`)
+      .then(r => r.json())
+      .then(data => { if (data.evm !== undefined) setBalance(parseFloat(data.evm) || 0) })
+      .catch(() => setBalance(0))
+  }, [userId])
 
   const quickBets = ['0.001', '0.01', '0.1', '1.0']
 
@@ -65,8 +76,13 @@ export default function DiceGame({ onBack }: Props) {
 
   return (
     <div className="page">
-      <button className="btn-back" onClick={onBack}>&larr; Back</button>
-      <div className="s-title" style={{ marginTop: 12 }}>DICE</div>
+      <div className="header">
+        <button className="btn-back" onClick={onBack}>&larr; Back</button>
+        <span className="s-title" style={{ marginTop: 0 }}>DICE</span>
+        <span className="header-balance">
+          {balance !== null ? <AnimatedNumber value={balance} decimals={4} /> : '---'}
+        </span>
+      </div>
 
       <div className="term-box">
         <div className="term-box-hd"><span>AMOUNT</span></div>

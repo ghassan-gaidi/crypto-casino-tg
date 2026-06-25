@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import HotCold from './HotCold';
 import PayoutBadge from './PayoutBadge';
+import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
@@ -20,7 +21,7 @@ function formatPayout(amount: number): string {
   return amount.toFixed(6);
 }
 
-const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
+const SlotsGame: React.FC<SlotsGameProps> = ({ onBack, userId }) => {
   const [amount, setAmount] = useState('0.01');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -35,6 +36,16 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
     ['🍊', '🍇', '💎'],
   ]);
   const [spinPhase, setSpinPhase] = useState(0);
+  const [balance, setBalance] = useState<number | null>(null);
+
+  // Fetch real balance
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`/api/balance?userId=${userId}`)
+      .then(r => r.json())
+      .then(data => { if (data.evm !== undefined) setBalance(parseFloat(data.evm) || 0); })
+      .catch(() => setBalance(0));
+  }, [userId]);
 
   const handleQuickBet = (val: number) => {
     setAmount(val.toString());
@@ -112,7 +123,9 @@ const SlotsGame: React.FC<SlotsGameProps> = ({ onBack }) => {
       <div className="header">
         <button className="btn-back" onClick={onBack}>Back</button>
         <span className="header-title">SLOTS</span>
-        <span className="header-balance" />
+        <span className="header-balance">
+          {balance !== null ? <AnimatedNumber value={balance} decimals={4} /> : '---'}
+        </span>
       </div>
 
       {/* Bet Amount */}

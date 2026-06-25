@@ -4,6 +4,7 @@ import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import HotCold from './HotCold';
 import PayoutBadge from './PayoutBadge';
+import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
@@ -90,7 +91,7 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
           Back
         </button>
         <span className="header-title">LIMBO</span>
-        <span className="header-balance">{balance.toFixed(4)}</span>
+        <span className="header-balance"><AnimatedNumber value={balance} decimals={4} /></span>
       </div>
 
       {/* Crash Display */}

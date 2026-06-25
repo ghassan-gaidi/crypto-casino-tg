@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useGameFeedback } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import ShareWin from './ShareWin';
 import HotCold from './HotCold';
 import PayoutBadge from './PayoutBadge';
+import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 
@@ -20,7 +21,7 @@ function formatPayout(amount: number): string {
   return amount.toFixed(6);
 }
 
-const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
+const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack, userId }) => {
   const [amount, setAmount] = useState('0.01');
   const [rows, setRows] = useState<number>(12);
   const [risk, setRisk] = useState<string>('medium');
@@ -31,6 +32,16 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
   const [gameHistory, setGameHistory] = useState<boolean[]>([]);
   const [dropSlot, setDropSlot] = useState<number | null>(null);
   const [error, setError] = useState('');
+  const [balance, setBalance] = useState<number | null>(null);
+
+  // Fetch real balance
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`/api/balance?userId=${userId}`)
+      .then(r => r.json())
+      .then(data => { if (data.evm !== undefined) setBalance(parseFloat(data.evm) || 0); })
+      .catch(() => setBalance(0));
+  }, [userId]);
 
   // Build peg rows for visualization
   const pegRows = Array.from({ length: rows }, (_, rowIdx) => {
@@ -100,6 +111,9 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack }) => {
       <div className="header">
         <button className="btn-back" onClick={onBack}>Back</button>
         <span className="header-title">PLINKO</span>
+        <span className="header-balance">
+          {balance !== null ? <AnimatedNumber value={balance} decimals={4} /> : '---'}
+        </span>
       </div>
 
       {/* Bet Amount */}

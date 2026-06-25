@@ -6,6 +6,7 @@ import { confetti } from '../confetti';
 import { tapButton } from '../hooks';
 import { useGameKeyboard } from '../hooks/keyboard';
 import HotCold from './HotCold';
+import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 
 interface JackpotGameProps {
@@ -167,7 +168,7 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
           Back
         </button>
         <span className="header-title">JACKPOT</span>
-        <span className="header-balance">{balance.toLocaleString()}</span>
+        <span className="header-balance"><AnimatedNumber value={balance} decimals={4} /></span>
       </div>
 
       {/* Jackpot Pool */}
