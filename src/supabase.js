@@ -259,11 +259,12 @@ async function recordBet(params) {
     return data;
 }
 // ── Server Seeds ──
-async function getActiveSeed() {
+async function getActiveSeed(userId) {
     const { data } = await exports.db
         .from('tg_server_seeds')
         .select('*')
         .eq('status', 'active')
+        .eq('user_id', userId)
         .single();
     return data;
 }
@@ -401,11 +402,13 @@ async function getUserStats(userId) {
     return stats;
 }
 // ── Leaderboard ──
-async function getLeaderboard(limit = 10) {
-    // Top players by net profit from bets
+async function getLeaderboard(limit = 20) {
+    // Top players by net profit from bets — use DB limit to avoid OOM
     const { data } = await exports.db
         .from('tg_bets')
-        .select('user_id, bet_amount, payout, player_won');
+        .select('user_id, bet_amount, payout, player_won')
+        .order('created_at', { ascending: false })
+        .limit(1000);
     if (!data) return [];
     const profits = {};
     for (const b of data) {

@@ -340,9 +340,10 @@ module.exports = async (req, res) => {
         case 'jackpot': {
           const action = body.action || 'status';
           if (action === 'enter') {
-            const round = await enterJackpotRound(userId, amount, 'evm');
+            const round = await getOrCreateJackpotRound();
+            const ticket = await enterJackpotRound(round.id, userId, amount, 'evm');
             await updateBalance(userId, 'evm', -amount);
-            res.json({ success: true, round_id: round.round_id, prize_pool: round.prize_pool, entries: round.entries });
+            res.json({ success: true, round_id: round.id, prize_pool: round.prize_pool, ticket, entries: round.entry_count });
           } else {
             const round = await getOrCreateJackpotRound();
             res.json({ round_id: round.id, prize_pool: round.prize_pool, entry_count: round.entry_count, status: round.status });

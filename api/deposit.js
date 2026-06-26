@@ -2,8 +2,8 @@ const { getOrCreateDepositAddress, getBalance, createDeposit, confirmDeposit, up
 const { generateDepositAddress, verifyDepositTx, checkEvmTxConfirmations, generateSolDepositAddress, verifySolDepositTx, generateTonDepositAddress, verifyTonDepositTx } = require('../src/wallet');
 const { rateLimit, getClientIp } = require('../src/rate-limit');
 
-const CHAINS = ['evm', 'sol', 'ton'];
-const MIN_DEPOSIT = { evm: 0.0001, sol: 0.001, ton: 0.1 };
+const CHAINS = ['evm', 'solana', 'ton'];
+const MIN_DEPOSIT = { evm: 0.0001, solana: 0.001, ton: 0.1 };
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
       for (const chain of CHAINS) {
         let addr;
         if (chain === 'evm') addr = generateDepositAddress(userId);
-        else if (chain === 'sol') addr = generateSolDepositAddress(userId);
+        else if (chain === 'solana') addr = generateSolDepositAddress(userId);
         else addr = generateTonDepositAddress(userId);
         await getOrCreateDepositAddress(userId, chain, addr);
         addresses[chain] = addr;
@@ -59,7 +59,7 @@ module.exports = async function handler(req, res) {
     let verification;
     if (chain === 'evm') {
       verification = await verifyDepositTx(txHash);
-    } else if (chain === 'sol') {
+    } else if (chain === 'solana') {
       verification = await verifySolDepositTx(txHash, userId);
     } else {
       verification = await verifyTonDepositTx(txHash, userId);
@@ -73,14 +73,14 @@ module.exports = async function handler(req, res) {
     let amount;
     if (chain === 'evm') {
       amount = parseFloat(verification.value) / 1e18;
-    } else if (chain === 'sol') {
+    } else if (chain === 'solana') {
       amount = parseFloat(verification.value) / 1e9;
     } else {
       amount = parseFloat(verification.value) / 1e9; // TON nanoton
     }
 
     const min = MIN_DEPOSIT[chain];
-    const symbol = { evm: 'ETH', sol: 'SOL', ton: 'TON' }[chain];
+    const symbol = { evm: 'ETH', solana: 'SOL', ton: 'TON' }[chain];
     if (amount < min) {
       return res.status(400).json({ error: `Minimum deposit is ${min} ${symbol}` });
     }
