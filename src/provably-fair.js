@@ -27,7 +27,7 @@ const node_crypto_1 = __importDefault(require("node:crypto"));
 /**
  * Provably Fair System
  * ─────────────────────
- * Standard crypto casino provably fair:
+ * Standard Pickr provably fair:
  * 1. Server generates a seed, publishes SHA-256(seed) (the "commit")
  * 2. Client provides their own seed (or auto-generated)
  * 3. Each bet increments a nonce (starting at 0)

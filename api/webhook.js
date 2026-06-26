@@ -55,13 +55,13 @@ try {
       }
     }
     await ctx.reply(
-      '🎲 *Crypto Casino*\n\nWelcome to the most transparent casino on Telegram.\n\n'
+      '🎲 *Pickr*\n\nWelcome to the most premium casino on Telegram.\n\n'
       + '• Provably fair: Dice, Coinflip, Crash, Mines, Plinko, Slots, Roulette, Limbo\n'
       + '• Jackpot lottery — 90/10 split\n'
       + '• Multi-chain: Base · Solana · TON\n'
       + '• 2% house edge\n'
-      + '• Instant deposits & withdrawals\n\n👇 Tap to open the casino',
-      { reply_markup: new InlineKeyboard().url('🎰 Open Casino', miniAppUrl), parse_mode: 'Markdown' }
+      + '• Instant deposits & withdrawals\n\n👇 Tap to open Pickr',
+      { reply_markup: new InlineKeyboard().url('🎰 Open Pickr', miniAppUrl), parse_mode: 'Markdown' }
     );
   });
 

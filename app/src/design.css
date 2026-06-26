@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   CRYPTO CASINO — NEON NIGHT DESIGN SYSTEM
+   PICKR — NEON NIGHT DESIGN SYSTEM
    Dark base. Neon accents. Glow effects. Energy everywhere.
    ═══════════════════════════════════════════════════════════════ */
 
@@ -15,9 +15,9 @@
   --surface2:#1A1A2E;
   --border:#2A2A3E;
   --border-focus:#00F0FF;
-  --text:#8B8BA3;
-  --text-dim:#4A4A6A;
-  --text-muted:#2A2A3E;
+  --text:#E0E0E0;
+  --text-dim:#8B8BA3;
+  --text-muted:#4A4A6A;
   --white:#FFFFFF;
   --green:#00FF88;
   --red:#FF3366;
@@ -26,6 +26,12 @@
   --purple:#A855F7;
   --pink:#FF006E;
   --gold:#FFD700;
+  --warning:#FFB800;
+  --brand-start:#00F0FF;
+  --brand-mid:#A855F7;
+  --brand-end:#FF006E;
+  --surface-glow:0 0 28px rgba(0,240,255,.15);
+  --border-soft:rgba(255,255,255,.06);
   --glow:0 0 20px rgba(0,240,255,.15);
   --glow-green:0 0 20px rgba(0,255,136,.2);
   --glow-red:0 0 20px rgba(255,51,102,.2);
@@ -33,11 +39,12 @@
   --glow-pink:0 0 20px rgba(255,0,110,.2);
   --glow-gold:0 0 20px rgba(255,215,0,.2);
   --font:'JetBrains Mono','Fira Code','Courier New',monospace;
+  --font-display:var(--font);
   --font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-  --max-w:440px;
+  --max-w:520px;
   --px:16px;
-  --radius:8px;
-  --radius-sm:4px;
+  --radius:14px;
+  --radius-sm:6px;
 }
 
 /* ── BASE ──────────────────────────────────────────────────── */
@@ -70,6 +77,8 @@ body::before{
 .t-h2{font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--white);line-height:1.4;}
 .t-h3{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text);line-height:1.4;}
 .t-body{font-size:13px;line-height:1.6;color:var(--text);}
+.t-title{font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--white);}
+.t-sub{font-size:11px;letter-spacing:1.5px;color:var(--text-dim);text-transform:uppercase;}
 .t-small{font-size:11px;line-height:1.5;color:var(--text);}
 .t-label{font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);}
 .t-mono{font-family:var(--font);font-variant-numeric:tabular-nums;}
@@ -103,7 +112,75 @@ body::before{
   letter-spacing:1px;
   text-shadow:0 0 8px rgba(255,215,0,.3);
 }
-
+.hero-brand{
+  display:flex;align-items:center;gap:12px;
+}
+.brand-mark{
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+  border-radius:14px;border:1px solid rgba(0,240,255,.18);
+  background:linear-gradient(135deg,rgba(0,240,255,.18),rgba(168,85,247,.12));
+  color:var(--white);font-size:18px;font-weight:900;
+  box-shadow:0 0 24px rgba(0,240,255,.08);
+}
+.hero-subtitle{letter-spacing:1px;max-width:280px;}
+.hero-meta{
+  margin-top:8px;font-size:11px;color:var(--text-dim);letter-spacing:1.5px;text-transform:uppercase;
+}
+.header-actions{
+  display:flex;align-items:center;gap:10px;
+}
+.icon-button{
+  width:44px;height:44px;border-radius:12px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  transition:all .2s;
+}
+.icon-button:hover{border-color:var(--cyan);box-shadow:var(--surface-glow);}
+.pill{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:6px 10px;background:rgba(0,240,255,.08);color:var(--cyan);
+  border-radius:999px;font-size:10px;font-weight:700;letter-spacing:1px;
+}
+ 
+/* ── HERO CARD ─────────────────────────────────────────────── */
+.hero-card{
+  padding:18px 18px 16px;
+  background:linear-gradient(180deg,rgba(0,240,255,.08),rgba(10,10,15,.95));
+  border:1px solid rgba(0,240,255,.1);
+  border-radius:18px;
+  box-shadow:0 0 40px rgba(0,240,255,.06);
+  margin-bottom:18px;
+}
+.hero-card-label{
+  font-size:9px;text-transform:uppercase;letter-spacing:3px;color:var(--cyan);margin-bottom:8px;
+}
+.hero-card-title{
+  font-size:18px;font-weight:800;letter-spacing:2px;color:var(--white);margin-bottom:6px;
+}
+.hero-card-copy{
+  font-size:12px;line-height:1.6;color:var(--text-dim);margin-bottom:14px;
+}
+.hero-card-badges{
+  display:flex;flex-wrap:wrap;gap:8px;
+}
+.badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:6px 10px;border-radius:999px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+}
+.badge-cyan{background:rgba(0,240,255,.1);color:var(--cyan);}
+.badge-purple{background:rgba(168,85,247,.12);color:var(--purple);}
+.badge-low{background:rgba(0,255,136,.1);color:var(--green);}
+.badge-medium{background:rgba(168,85,247,.12);color:var(--purple);}
+.badge-high{background:rgba(255,0,110,.1);color:var(--pink);}
+.game-card-badge{
+  min-width:56px;text-align:center;padding:6px 8px;
+  border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;
+  background:rgba(255,255,255,.04);color:var(--text);
+}
+.game-grid{display:flex;flex-direction:column;gap:10px;}
+.action-row{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;}
+.footer-copy{font-size:9px;letter-spacing:3px;color:var(--text-dim);padding-bottom:16px;text-align:center;}
+ 
 /* ── BACK BUTTON ───────────────────────────────────────────── */
 .btn-back{
   background:none;border:none;color:var(--cyan);
@@ -164,7 +241,16 @@ body::before{
   background:rgba(0,240,255,.06);
   box-shadow:0 0 12px rgba(0,240,255,.1);
 }
-
+.btn-primary{
+  background:linear-gradient(135deg,var(--brand-start),var(--brand-mid),var(--brand-end));
+  border-color:transparent;color:var(--bg);
+  box-shadow:0 0 24px rgba(0,240,255,.18);
+}
+.btn-primary:hover{
+  transform:translateY(-1px);
+  box-shadow:0 0 28px rgba(0,240,255,.25);
+}
+ 
 /* ── INPUTS ────────────────────────────────────────────────── */
 .input{
   width:100%;padding:10px 12px;
@@ -273,12 +359,13 @@ body::before{
 }
 .game-card:active{opacity:.85;transform:scale(.98);}
 .game-card-icon{
-  font-size:28px;width:44px;height:44px;
+  width:48px;height:48px;
   display:flex;align-items:center;justify-content:center;
   border:1px solid var(--border);background:var(--surface2);
-  flex-shrink:0;border-radius:var(--radius);
-  transition:all .2s;
+  flex-shrink:0;border-radius:16px;
+  transition:all .2s;color:var(--cyan);
 }
+.game-card-icon svg{width:24px;height:24px;}
 .game-card:hover .game-card-icon{
   border-color:var(--cyan);
   box-shadow:0 0 12px rgba(0,240,255,.15);
@@ -574,7 +661,8 @@ input[type=range]::-moz-range-thumb{
 .nav-item:not(.active):hover{
   color:var(--text);
 }
-.nav-icon{font-size:18px;line-height:1;}
+.nav-icon{display:flex;align-items:center;justify-content:center;width:20px;height:20px;}
+.nav-icon svg{width:20px;height:20px;}
 .nav-label{margin-top:1px;}
 
 /* ── JACKPOT POOL ──────────────────────────────────────────── */

@@ -56,9 +56,8 @@
   </g>
 
   <!-- Right: text -->
-  <text x="680" y="240" font-family="'JetBrains Mono',monospace" font-size="72" font-weight="800" fill="url(#gr)" filter="url(#g)">CRYPTO</text>
-  <text x="680" y="320" font-family="'JetBrains Mono',monospace" font-size="72" font-weight="800" fill="url(#gr)" filter="url(#g)">CASINO</text>
-  <text x="680" y="380" font-family="'Inter',sans-serif" font-size="22" fill="#8B8BA3">9 Provably Fair Games  ·  ETH / SOL / TON</text>
+  <text x="680" y="240" font-family="'JetBrains Mono',monospace" font-size="72" font-weight="800" fill="url(#gr)" filter="url(#g)">PICKR</text>
+  <text x="680" y="320" font-family="'Inter',sans-serif" font-size="22" fill="#8B8BA3">9 Provably Fair Games  ·  ETH / SOL / TON</text>
 
   <!-- Bottom bar -->
   <rect x="0" y="600" width="1200" height="30" fill="url(#gr)" opacity="0.15"/>

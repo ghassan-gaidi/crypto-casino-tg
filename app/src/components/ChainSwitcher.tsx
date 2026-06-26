@@ -11,7 +11,7 @@ const CHAINS: { id: Chain; icon: string; symbol: string; color: string }[] = [
   { id: 'ton', icon: '💎', symbol: 'TON', color: '#0098EA' },
 ]
 
-const STORAGE_KEY = 'casino_chain'
+const STORAGE_KEY = 'pickr_chain'
 
 export function getActiveChain(): Chain {
   try {

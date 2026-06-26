@@ -1,7 +1,7 @@
-# Crypto Casino — Branding Asset Spec
+# Pickr — Branding Asset Spec
 
-**Project:** Crypto Casino Telegram Mini App  
-**Theme:** "Neon Night" — dark casino with neon glow  
+**Project:** Pickr Telegram Mini App  
+**Theme:** "Neon Night" — premium glowing casino with addictive, mesmerizing polish  
 **Live URL:** crypto-casino-tg.vercel.app  
 **Date:** 2026-06-23
 
@@ -64,7 +64,7 @@ Everything below is currently **placeholder SVGs** generated with code. They nee
 | **Also needed**  | `og-image.svg` (source vector)                            |
 | **Usage**        | Shared on Telegram, Twitter/X, Discord, WhatsApp, Slack — any link preview |
 | **Dimensions**   | **1200 × 630 px** (required by OG/Twitter spec)           |
-| **Description**  | Landscape banner. Logo mark on left, "CRYPTO CASINO" text on right, tagline "9 Provably Fair Games · ETH / SOL / TON", neon gradient bar at bottom. Dark background. |
+| **Description**  | Landscape banner. Logo mark on left, "PICKR" text on right, tagline "9 Provably Fair Games · ETH / SOL / TON", neon gradient bar at bottom. Dark background. |
 | **Format**       | PNG (max 1MB for social platforms) + SVG source           |
 
 ### 4. GAME ICONS (9 games)

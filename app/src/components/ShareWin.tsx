@@ -32,13 +32,13 @@ export default function ShareWin({ game, payout, multiplier, betAmount }: ShareW
     hapticTap()
     const emoji = GAME_EMOJIS[game] || '🎰'
     const text = `${emoji} Just won ${payout.toFixed(4)} on ${game.toUpperCase()}! (${multiplier}x — bet: ${betAmount.toFixed(4)})\n\nPlay now: `
-    const url = `https://t.me/share/url?url=${encodeURIComponent('https://crypto-casino-tg.vercel.app')}&text=${encodeURIComponent(text)}`
+    const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(text)}`
     window.open(url, '_blank')
   }, [game, payout, multiplier, betAmount])
-
+ 
   const copyLink = useCallback(() => {
     hapticTap()
-    const text = `🎰 I just won on Crypto Casino! Play now`
+    const text = `🎰 I just won on Pickr! Play now`
     navigator.clipboard?.writeText(text).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)

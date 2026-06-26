@@ -1,6 +1,6 @@
-# Crypto Casino TG 🎰
+# Pickr 🎰
 
-Multi-chain crypto casino Telegram bot + Mini App.
+Pickr is a premium, addictive multi-chain casino Telegram bot + Mini App.
 
 Built with **Node.js + TypeScript + Grammy + Vite React + ethers.js**.
 

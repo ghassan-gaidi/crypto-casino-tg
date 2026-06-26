@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   SOUNDS — Web Audio API synthesizer for casino micro-interactions
+   SOUNDS — Web Audio API synthesizer for Pickr micro-interactions
    Zero external files, all procedurally generated
    ═══════════════════════════════════════════════════════════════ */
 

@@ -47,7 +47,7 @@ async function verifyDepositTx(txHash) {
             ? new ethers_1.Wallet(process.env.HOT_WALLET_PK).address
             : '').toLowerCase();
         if (!tx.to || tx.to.toLowerCase() !== hotWallet) {
-            return { valid: false, error: `Transaction did not go to the casino hot wallet` };
+            return { valid: false, error: `Transaction did not go to the Pickr hot wallet` };
         }
         return {
             valid: true,

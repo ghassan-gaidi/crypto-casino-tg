@@ -22,20 +22,32 @@ import GameHistoryPage from './components/GameHistoryPage'
 import { sndClick } from './sounds'
 import { isMuted, toggleMute } from './sound-toggle'
 import { hapticTap } from './haptic'
+import { GameIcon, NavIcon, type GameId } from './components/Icons'
 import './design.css'
 
 type Page = 'home' | 'dice' | 'coinflip' | 'crash' | 'mines' | 'plinko' | 'slots' | 'roulette' | 'limbo' | 'jackpot' | 'balance' | 'leaderboard' | 'refs' | 'history'
 
-const GAMES = [
-  { id: 'dice' as const,    icon: '◆', title: 'DICE',    desc: 'Roll over/under  ·  99% win chance',    maxMult: '99×' },
-  { id: 'coinflip' as const,icon: '◑', title: 'COINFLIP',desc: 'Heads or tails  ·  50% win chance',     maxMult: '2×' },
-  { id: 'crash' as const,   icon: '↗', title: 'CRASH',   desc: 'Cash out before rocket crashes',        maxMult: '∞' },
-  { id: 'mines' as const,   icon: '⛏', title: 'MINES',   desc: 'Pick gems, avoid bombs  ·  5×5',       maxMult: '25×' },
-  { id: 'plinko' as const,  icon: '▼', title: 'PLINKO',  desc: 'Drop ball  ·  low/med/high risk',       maxMult: '29×' },
-  { id: 'slots' as const,   icon: '≡', title: 'SLOTS',   desc: 'Match 3 symbols  ·  classic reels',    maxMult: '1000×' },
-  { id: 'roulette' as const,icon: '◎', title: 'ROULETTE', desc: 'European  ·  number/color/section',    maxMult: '36×' },
-  { id: 'limbo' as const,   icon: '↑', title: 'LIMBO',   desc: 'Target multiplier  ·  fly high',       maxMult: '100×' },
-  { id: 'jackpot' as const, icon: '★', title: 'JACKPOT', desc: 'Progressive pool  ·  highest wins',    maxMult: '∞' },
+type Risk = 'low' | 'medium' | 'high'
+
+interface GameItem {
+  id: Page
+  icon: GameId
+  title: string
+  desc: string
+  maxMult: string
+  risk: Risk
+}
+
+const GAMES: GameItem[] = [
+  { id: 'dice',    icon: 'dice',     title: 'DICE',    desc: 'Roll over/under · 99% win chance',         maxMult: '99×',   risk: 'low' },
+  { id: 'coinflip',icon: 'coinflip', title: 'COINFLIP',desc: 'Heads or tails · 50% win chance',          maxMult: '2×',    risk: 'low' },
+  { id: 'crash',   icon: 'crash',    title: 'CRASH',   desc: 'Cash out before rocket crashes',           maxMult: '∞',    risk: 'high' },
+  { id: 'mines',   icon: 'mines',    title: 'MINES',   desc: 'Pick gems, avoid bombs · 5×5',             maxMult: '25×',  risk: 'medium' },
+  { id: 'plinko',  icon: 'plinko',   title: 'PLINKO',  desc: 'Drop ball · low/med/high risk',             maxMult: '29×',  risk: 'medium' },
+  { id: 'slots',   icon: 'slots',    title: 'SLOTS',   desc: 'Match 3 symbols · classic reels',          maxMult: '1000×',risk: 'high' },
+  { id: 'roulette',icon: 'roulette', title: 'ROULETTE', desc: 'European · number/color/section',           maxMult: '36×',  risk: 'medium' },
+  { id: 'limbo',   icon: 'limbo',    title: 'LIMBO',   desc: 'Target multiplier · fly high',             maxMult: '100×',  risk: 'high' },
+  { id: 'jackpot', icon: 'jackpot', title: 'JACKPOT', desc: 'Progressive pool · highest wins',            maxMult: '∞',    risk: 'high' },
 ]
 
 export default function App() {
@@ -92,11 +104,11 @@ export default function App() {
     }
   }
 
-  const navTabs: { page: Page; icon: string; label: string }[] = [
-    { page: 'home',        icon: '⌂',  label: 'HOME' },
-    { page: 'balance',     icon: '◆',  label: 'WALLET' },
-    { page: 'history',     icon: '◇',  label: 'HISTORY' },
-    { page: 'leaderboard', icon: '▲',  label: 'RANK' },
+  const navTabs: { page: Page; icon: 'home' | 'wallet' | 'history' | 'rank'; label: string }[] = [
+    { page: 'home',        icon: 'home',   label: 'HOME' },
+    { page: 'balance',     icon: 'wallet', label: 'WALLET' },
+    { page: 'history',     icon: 'history',label: 'HISTORY' },
+    { page: 'leaderboard', icon: 'rank',   label: 'RANK' },
   ]
 
   return (
@@ -112,45 +124,66 @@ export default function App() {
           {/* HEADER */}
           <div className="header">
             <div>
-              <div className="t-display">CASINO</div>
-              <div className="t-small text-dim" style={{letterSpacing:3,marginTop:2}}>
-                PROVABLY FAIR · 2% EDGE · MULTI-CHAIN
+              <div className="hero-brand">
+                <div className="brand-mark">P</div>
+                <div>
+                  <div className="header-title">PICKR</div>
+                  <div className="t-small text-dim hero-subtitle">
+                    Premium neon casino. Addictive, fast, and beautifully designed.
+                  </div>
+                </div>
               </div>
-              <div style={{marginTop:8, maxWidth:220}}>
+              <div className="hero-meta">
+                <span>Provably fair · Instant payouts · Multi-chain</span>
+              </div>
+              <div style={{marginTop:10, maxWidth:240}}>
                 <ChainSwitcher value={chain} onChange={setChain} />
               </div>
             </div>
-            <div style={{display:'flex', alignItems:'center', gap:8}}>
+            <div className="header-actions">
               <button
                 onClick={() => { toggleMute(); setMuted(isMuted()) }}
-                style={{
-                  background:'none', border:'none', cursor:'pointer',
-                  fontSize:16, lineHeight:1, padding:4, opacity:0.7,
-                }}
+                className="icon-button"
                 title={muted ? 'Unmute' : 'Mute'}
               >
                 {muted ? '🔇' : '🔊'}
               </button>
-              <div className="header-balance" onClick={nav('balance')} style={{cursor:'pointer'}}>
-                ◆ BALANCE
-              </div>
+              <button className="btn btn-ghost btn-sm header-balance" onClick={nav('balance')}>
+                <span className="pill">BALANCE</span>
+              </button>
+            </div>
+          </div>
+
+          {/* HERO SUMMARY */}
+          <div className="hero-card">
+            <div>
+              <div className="hero-card-label">PICKR</div>
+              <div className="hero-card-title">Stay on top of every bet</div>
+              <div className="hero-card-copy">Track streaks, live winners, and hot games while your balance grows.</div>
+            </div>
+            <div className="hero-card-badges">
+              <span className="badge badge-cyan">TOP RISK</span>
+              <span className="badge badge-purple">HIGH REWARDS</span>
             </div>
           </div>
 
           {/* XP BAR */}
-          <div style={{marginBottom:12}}>
+          <div className="section-block">
             <XpBar xp={xp} />
           </div>
 
           {/* STREAK */}
-          <Streak userId={user?.id} />
+          <div className="section-block">
+            <Streak userId={user?.id} />
+          </div>
 
           {/* LIVE FEED */}
-          <div style={{marginBottom:16}}>
+          <div className="section-block">
             <LiveFeed />
           </div>
+
           {/* RECENT BETS */}
-          <div style={{marginBottom:16}}>
+          <div className="section-block">
             <RecentBets userId={user?.id} />
           </div>
 
@@ -158,20 +191,17 @@ export default function App() {
           <div className="divider">GAMES</div>
 
           {/* GAME LIST */}
-          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+          <div className="game-grid">
             {GAMES.map(g => (
               <button key={g.id} className="game-card" onClick={nav(g.id)}>
-                <div className="game-card-icon">{g.icon}</div>
+                <div className="game-card-icon">
+                  <GameIcon game={g.icon} />
+                </div>
                 <div style={{flex:1}}>
                   <div className="game-card-title">{g.title}</div>
                   <div className="game-card-desc">{g.desc}</div>
                 </div>
-                <div style={{
-                  fontSize: 10, fontWeight: 800, fontFamily: 'var(--font-mono)',
-                  color: 'var(--bg)', background: 'var(--primary)',
-                  letterSpacing: 1, whiteSpace: 'nowrap',
-                  padding: '3px 8px', borderRadius: 4,
-                }}>
+                <div className={`game-card-badge badge-${g.risk}`}>
                   {g.maxMult}
                 </div>
               </button>
@@ -179,14 +209,14 @@ export default function App() {
           </div>
 
           {/* BOTTOM LINKS — secondary actions */}
-          <div style={{marginTop:24, display:'flex', gap:8, flexWrap:'wrap'}}>
-            <button className="btn btn-ghost btn-sm" onClick={nav('refs')} style={{flex:'1 1 45%'}}>◇ REFER A FRIEND</button>
-            <button className="btn btn-ghost btn-sm" onClick={() => window.open('https://t.me/' + (window as any).BOT_USERNAME, '_blank')} style={{flex:'1 1 45%'}}>◇ HELP</button>
+          <div className="action-row">
+            <button className="btn btn-ghost btn-sm" onClick={nav('refs')}>◇ REFER A FRIEND</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => window.open('https://t.me/' + (window as any).BOT_USERNAME, '_blank')}>◇ HELP</button>
           </div>
 
           {/* FOOTER */}
-          <div className="text-center" style={{fontSize:9,letterSpacing:3,color:'var(--text-dim)',paddingBottom:16}}>
-            ═══ NEON NIGHT CASINO ═══
+          <div className="footer-copy">
+            ═══ PICKR — NEON NIGHT CASINO ═══
           </div>
         </>
       ) : renderPage()}
@@ -199,7 +229,7 @@ export default function App() {
             className={`nav-item${displayPage === t.page ? ' active' : ''}`}
             onClick={nav(t.page)}
           >
-            <span className="nav-icon">{t.icon}</span>
+            <span className="nav-icon"><NavIcon name={t.icon} /></span>
             <span className="nav-label">{t.label}</span>
           </button>
         ))}

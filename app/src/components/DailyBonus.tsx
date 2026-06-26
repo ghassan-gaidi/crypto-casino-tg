@@ -11,19 +11,19 @@ import { confetti } from '../confetti'
 const REWARDS = [50, 75, 100, 125, 150, 175, 200]
 
 function getLastClaimDate(): string | null {
-  try { return localStorage.getItem('casino_daily_bonus') } catch { return null }
+  try { return localStorage.getItem('pickr_daily_bonus') } catch { return null }
 }
 
 function saveLastClaimDate(date: string) {
-  try { localStorage.setItem('casino_daily_bonus', date) } catch {}
+  try { localStorage.setItem('pickr_daily_bonus', date) } catch {}
 }
 
 function getStreak(): number {
-  try { return parseInt(localStorage.getItem('casino_daily_streak') || '0') } catch { return 0 }
+  try { return parseInt(localStorage.getItem('pickr_daily_streak') || '0') } catch { return 0 }
 }
 
 function saveStreak(n: number) {
-  try { localStorage.setItem('casino_daily_streak', String(n)) } catch {}
+  try { localStorage.setItem('pickr_daily_streak', String(n)) } catch {}
 }
 
 function getTodayStr() {

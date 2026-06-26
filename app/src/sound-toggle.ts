@@ -1,6 +1,6 @@
 /* Sound toggle — persists mute state in localStorage */
 
-const KEY = 'casino_muted'
+const KEY = 'pickr_muted'
 
 export function isMuted(): boolean {
   try {
