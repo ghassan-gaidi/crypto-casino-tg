@@ -32,16 +32,99 @@ export function showWinToast(game: string, amount: number | string, multiplier: 
   }, 3500)
 }
 
-const GAMES: Record<string, { icon: string; color: string }> = {
-  dice: { icon: '◆', color: '#00F0FF' },
-  coinflip: { icon: '◑', color: '#A855F7' },
-  crash: { icon: '↗', color: '#FFB800' },
-  mines: { icon: '⛏', color: '#FF3366' },
-  plinko: { icon: '▼', color: '#00FF88' },
-  slots: { icon: '≡', color: '#FFB800' },
-  roulette: { icon: '◎', color: '#FF3366' },
-  limbo: { icon: '↑', color: '#00F0FF' },
-  jackpot: { icon: '★', color: '#FFD700' },
+const GAME_COLORS: Record<string, string> = {
+  dice: '#DC2626',
+  coinflip: '#A855F7',
+  crash: '#FFB800',
+  mines: '#FF3366',
+  plinko: '#00FF88',
+  slots: '#FFB800',
+  roulette: '#FF3366',
+  limbo: '#DC2626',
+  jackpot: '#FFD700',
+}
+
+function GameIconSVG({ game }: { game: string }) {
+  const s = { width: 18, height: 18, display: 'block' as const }
+  switch (game) {
+    case 'dice':
+      return (
+        <svg {...s} viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="2" fill="none" />
+          <circle cx="9" cy="9" r="1.5" fill="currentColor" />
+          <circle cx="15" cy="15" r="1.5" fill="currentColor" />
+        </svg>
+      )
+    case 'coinflip':
+      return (
+        <svg {...s} viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" fill="none" />
+          <path d="M12 4v16" stroke="currentColor" strokeWidth="2" opacity="0.5" />
+          <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.25" />
+        </svg>
+      )
+    case 'crash':
+      return (
+        <svg {...s} viewBox="0 0 24 24" fill="none">
+          <path d="M2 20L8 12L14 16L22 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        </svg>
+      )
+    case 'mines':
+      return (
+        <svg {...s} viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L22 12L12 22L2 12Z" stroke="currentColor" strokeWidth="2" fill="none" />
+          <circle cx="12" cy="12" r="2" fill="currentColor" />
+        </svg>
+      )
+    case 'plinko':
+      return (
+        <svg {...s} viewBox="0 0 24 24" fill="none">
+          <path d="M12 3L21 20H3Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill="none" />
+          <circle cx="12" cy="14" r="1.5" fill="currentColor" opacity="0.5" />
+          <circle cx="8" cy="18" r="1" fill="currentColor" opacity="0.5" />
+          <circle cx="16" cy="18" r="1" fill="currentColor" opacity="0.5" />
+        </svg>
+      )
+    case 'slots':
+      return (
+        <svg {...s} viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="4" width="5.5" height="16" rx="1" stroke="currentColor" strokeWidth="2" fill="none" />
+          <rect x="9.25" y="4" width="5.5" height="16" rx="1" stroke="currentColor" strokeWidth="2" fill="none" />
+          <rect x="16.5" y="4" width="5.5" height="16" rx="1" stroke="currentColor" strokeWidth="2" fill="none" />
+        </svg>
+      )
+    case 'roulette':
+      return (
+        <svg {...s} viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" fill="none" />
+          <circle cx="12" cy="12" r="2" fill="currentColor" />
+          <path d="M12 3v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M12 17v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M3 12h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M17 12h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      )
+    case 'limbo':
+      return (
+        <svg {...s} viewBox="0 0 24 24" fill="none">
+          <path d="M4 18L12 6L20 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          <path d="M12 6v8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+        </svg>
+      )
+    case 'jackpot':
+      return (
+        <svg {...s} viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L15 9H22L16 14L18 22L12 17L6 22L8 14L2 9H9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="none" />
+        </svg>
+      )
+    default:
+      return (
+        <svg {...s} viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" fill="none" />
+          <path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      )
+  }
 }
 
 export default function WinToastLayer() {
@@ -71,13 +154,13 @@ export default function WinToastLayer() {
       pointerEvents: 'none',
     }}>
       {toasts.map((t) => {
-        const meta = GAMES[t.game] || { icon: '🎰', color: '#00F0FF' }
+        const color = GAME_COLORS[t.game] || '#DC2626'
         return (
           <div
             key={t.id}
             style={{
-              background: 'linear-gradient(135deg, rgba(0,255,136,.12), rgba(0,240,255,.08))',
-              border: '1px solid rgba(0,255,136,.3)',
+              background: 'linear-gradient(135deg, rgba(220,38,54,.12), rgba(220,38,54,.06))',
+              border: '1px solid rgba(220,38,54,.25)',
               borderRadius: 10,
               padding: '10px 14px',
               display: 'flex',
@@ -85,32 +168,31 @@ export default function WinToastLayer() {
               gap: 10,
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
-              boxShadow: '0 4px 20px rgba(0,255,136,.15), 0 0 40px rgba(0,255,136,.08)',
+              boxShadow: '0 4px 20px rgba(220,38,54,.15), 0 0 40px rgba(220,38,54,.06)',
               animation: 'toast-in 0.35s cubic-bezier(0.16,1,0.3,1) forwards',
               opacity: 0,
               pointerEvents: 'auto',
             }}
           >
             <span style={{
-              fontSize: 20,
               width: 32,
               height: 32,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'rgba(0,255,136,.1)',
+              background: 'rgba(220,38,54,.1)',
               borderRadius: 8,
-              color: meta.color,
+              color: color,
               flexShrink: 0,
             }}>
-              {meta.icon}
+              <GameIconSVG game={t.game} />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
                 fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: 2,
-                color: '#00FF88',
+                color: '#DC2626',
                 textTransform: 'uppercase',
               }}>
                 BIG WIN
@@ -123,15 +205,15 @@ export default function WinToastLayer() {
               }}>
                 <span style={{ color: '#fff', fontWeight: 600 }}>{t.game.toUpperCase()}</span>
                 {' · '}
-                <span style={{ color: '#00FF88', fontWeight: 700 }}>{t.multiplier}×</span>
+                <span style={{ color: '#DC2626', fontWeight: 700 }}>{t.multiplier}×</span>
               </div>
             </div>
             <div style={{
               fontSize: 13,
               fontWeight: 800,
-              color: '#00FF88',
+              color: '#DC2626',
               fontFamily: 'var(--font)',
-              textShadow: '0 0 8px rgba(0,255,136,.4)',
+              textShadow: '0 0 8px rgba(220,38,54,.4)',
               whiteSpace: 'nowrap',
             }}>
               +{t.amount.toFixed(4)}

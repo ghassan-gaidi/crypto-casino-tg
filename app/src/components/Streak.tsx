@@ -12,6 +12,32 @@ interface StreakProps {
   userId?: number
 }
 
+function FlameIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
+      <path
+        d="M12 2C10 6 6 9 6 13C6 16.3 8.7 19 12 19C15.3 19 18 16.3 18 13C18 9 14 6 12 2Z"
+        fill="currentColor"
+        opacity="0.3"
+      />
+      <path
+        d="M12 6C11 8.5 8 11 8 13.5C8 15.7 9.8 17.5 12 17.5C14.2 17.5 16 15.7 16 13.5C16 11 13 8.5 12 6Z"
+        fill="currentColor"
+        opacity="0.6"
+      />
+      <path
+        d="M12 10C11.5 11.5 10 13 10 14C10 15.1 10.9 16 12 16C13.1 16 14 15.1 14 14C14 13 12.5 11.5 12 10Z"
+        fill="currentColor"
+      />
+      <path
+        d="M11 17C10 17.5 9.5 18 9.5 18.5C9.5 19.3 10.2 20 11 20C11.8 20 12.5 19.3 12.5 18.5C12.5 18 12 17.5 11 17Z"
+        fill="currentColor"
+        opacity="0.4"
+      />
+    </svg>
+  )
+}
+
 export default function Streak({ userId }: StreakProps) {
   const [streak, setStreak] = useState(0)
   const [claimedToday, setClaimedToday] = useState(false)
@@ -74,15 +100,17 @@ export default function Streak({ userId }: StreakProps) {
       {/* Streak Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '20px' }}>🔥</span>
+          <span style={{ display: 'flex', alignItems: 'center', color: 'var(--accent)' }}>
+            <FlameIcon />
+          </span>
           <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--white)' }}>
             {streak} DAY STREAK
           </span>
         </div>
         <span style={{
           fontSize: '10px', fontWeight: 700,
-          color: streak >= 7 ? 'var(--gold)' : 'var(--cyan)',
-          background: streak >= 7 ? 'rgba(255,215,0,.1)' : 'rgba(0,240,255,.1)',
+          color: streak >= 7 ? 'var(--gold)' : 'var(--accent)',
+          background: streak >= 7 ? 'rgba(255,215,0,.1)' : 'rgba(220,38,54,.1)',
           padding: '2px 8px',
           borderRadius: '10px',
           textShadow: streak >= 7 ? '0 0 6px rgba(255,215,0,.3)' : 'none',

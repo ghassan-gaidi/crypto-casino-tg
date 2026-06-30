@@ -134,6 +134,7 @@ export default function RouletteGame({ onBack, userId }: RouletteGameProps) {
 
       const data = await res.json();
       setResult(data);
+      setBalance(prev => prev !== null ? prev + data.payout - amt : prev);
       setGameHistory(prev => [...prev.slice(-9), data.playerWon]);
       if (data.playerWon) showWinToast('roulette', amount, data.payoutMultiplier ?? 1, '◎');
 
@@ -167,7 +168,10 @@ export default function RouletteGame({ onBack, userId }: RouletteGameProps) {
       {/* Header */}
       <div className="header">
         <button className="btn-back" onClick={onBack}>BACK</button>
-        <span className="header-title">ROULETTE</span>
+        <span className="header-title" style={{display:'flex',alignItems:'center',gap:6}}>
+          <img src="/icons/icon-roulette.svg" alt="" width="18" height="18" />
+          ROULETTE
+        </span>
         <span className="header-balance">
           {balance !== null ? <AnimatedNumber value={balance} decimals={4} /> : '---'}
         </span>

@@ -110,7 +110,7 @@ export default function XpBar({ xp, compact = false }: XpBarProps) {
           <div style={{
             fontSize: '14px', fontWeight: 700, color: 'var(--cyan)',
             fontVariantNumeric: 'tabular-nums',
-            textShadow: '0 0 8px rgba(0,240,255,.3)',
+            textShadow: '0 0 8px rgba(220,38,54,.3)',
           }}>
             {currentXp.toLocaleString()}
           </div>

@@ -7,6 +7,7 @@ import PayoutBadge from './PayoutBadge';
 import AnimatedNumber from './AnimatedNumber';
 import { showWinToast } from './WinToast';
 import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
+import PlinkoVisual from './PlinkoVisual'
 import BetMultipliers from './BetMultipliers';
 import FairnessPanel from './FairnessPanel';
 import GameLiveBets from './GameLiveBets';
@@ -19,6 +20,7 @@ interface PlinkoGameProps {
 const QUICK_BETS = [0.001, 0.01, 0.1, 1.0];
 const ROWS_OPTIONS = [8, 12, 16] as const;
 const RISK_OPTIONS = ['low', 'medium', 'high'] as const;
+const ANIM_DURATION_MS = 1600; // matches ~56 frames × 28ms in PlinkoVisual
 
 function formatPayout(amount: number): string {
   return amount.toFixed(6);
@@ -34,6 +36,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack, userId }) => {
   useGameFeedback(result);
   const [gameHistory, setGameHistory] = useState<boolean[]>([]);
   const [dropSlot, setDropSlot] = useState<number | null>(null);
+  const [animating, setAnimating] = useState(false);
   const [error, setError] = useState('');
   const [balance, setBalance] = useState<number | null>(null);
 
@@ -45,16 +48,6 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack, userId }) => {
       .then(data => { if (data.evm !== undefined) setBalance(parseFloat(data.evm) || 0); })
       .catch(() => setBalance(0));
   }, [userId]);
-
-  // Build peg rows for visualization
-  const pegRows = Array.from({ length: rows }, (_, rowIdx) => {
-    const pegCount = rowIdx + 1;
-    return Array.from({ length: pegCount }, (_, pegIdx) => ({
-      row: rowIdx,
-      col: pegIdx,
-      key: `${rowIdx}-${pegIdx}`,
-    }));
-  });
 
   const handleQuickBet = (val: number) => {
     setAmount(val.toString());
@@ -71,6 +64,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack, userId }) => {
     setError('');
     setResult(null);
     setDropSlot(null);
+    setAnimating(false);
 
     try {
       const initData = (window as any).Telegram?.WebApp?.initData || '';
@@ -92,9 +86,12 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack, userId }) => {
 
       const data = await res.json();
       setResult(data);
+      setBalance(prev => prev !== null ? prev + data.payout - amt : prev);
       setGameHistory(prev => [...prev.slice(-9), (data.multiplier ?? 0) > 1]);
       if ((data.multiplier ?? 0) > 1) showWinToast('plinko', amount, data.multiplier ?? 1, '▼')
       setDropSlot(data.slot);
+      // Start canvas animation
+      setAnimating(true);
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -102,10 +99,19 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack, userId }) => {
     }
   }, [amount, rows, risk]);
 
+  // Stop animating after duration so the ball stays at final position
+  useEffect(() => {
+    if (!animating) return;
+    const t = setTimeout(() => setAnimating(false), ANIM_DURATION_MS);
+    return () => clearTimeout(t);
+  }, [animating]);
+
   const closeResult = () => {
     setResult(null);
     setDropSlot(null);
+    setAnimating(false);
   };
+
   useGameKeyboard({
     onBet: handlePlay,
     onQuickBet: setAmount,
@@ -120,7 +126,10 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack, userId }) => {
       {/* Header */}
       <div className="header">
         <button className="btn-back" onClick={onBack}>Back</button>
-        <span className="header-title">PLINKO</span>
+        <span className="header-title" style={{display:'flex',alignItems:'center',gap:6}}>
+          <img src="/icons/icon-plinko.svg" alt="" width="18" height="18" />
+          PLINKO
+        </span>
         <span className="header-balance">
           {balance !== null ? <AnimatedNumber value={balance} decimals={4} /> : '---'}
         </span>
@@ -193,37 +202,15 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onBack, userId }) => {
         </div>
       </div>
 
-      {/* Plinko Board Visualization */}
+      {/* Plinko Board - Canvas Visualization */}
       <div className="term-box">
         <div className="term-box-hd"><span>BOARD</span></div>
-        <div className="term-box-bd plinko-board">
-          <div className="flex flex-col items-center">
-            {pegRows.map((row, rowIdx) => (
-              <div key={rowIdx} className="plinko-row">
-                {row.map((peg) => {
-                  const isActive = dropSlot !== null && rowIdx === rows - 1 && peg.col === dropSlot;
-                  return (
-                    <div
-                      key={peg.key}
-                      className={"plinko-peg" + (isActive ? " active" : "")}
-                    />
-                  );
-                })}
-              </div>
-            ))}
-
-            {/* Slot labels */}
-            <div className="plinko-slots">
-              {Array.from({ length: rows + 1 }, (_, i) => (
-                <div
-                  key={i}
-                  className={"plinko-slot" + (dropSlot === i ? " active" : "")}
-                >
-                  {dropSlot === i ? '●' : '○'}
-                </div>
-              ))}
-            </div>
-          </div>
+        <div className="term-box-bd" style={{ padding: 0 }}>
+          <PlinkoVisual
+            rows={rows}
+            dropSlot={dropSlot}
+            animating={animating}
+          />
         </div>
       </div>
 

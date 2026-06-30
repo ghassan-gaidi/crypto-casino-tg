@@ -1,49 +1,41 @@
-# Crypto Casino TG 🎰
+# 🎰 NEON NIGHT CASINO
 
-Multi-chain crypto casino Telegram bot + Mini App.
+> Multi-chain crypto casino running entirely inside Telegram — bot + Mini App, provably fair, 2% house edge.
 
-Built with **Node.js + TypeScript + Grammy + Vite React + ethers.js**.
+## Tech Stack
 
-## Stack
+| Layer      | Technology                              |
+|------------|-----------------------------------------|
+| Bot        | Grammy · TypeScript · Node.js           |
+| Frontend   | Vite · React 19 · Telegram Mini App SDK |
+| Database   | Supabase (PostgreSQL + RPC)             |
+| EVM        | ethers.js v6 (Base chain)               |
+| Solana     | @solana/web3.js                         |
+| TON        | @ton/ton · @ton/crypto                  |
+| Deploy     | Vercel                                  |
 
-| Layer       | Technology          |
-|-------------|---------------------|
-| Bot         | Grammy (TypeScript) |
-| Frontend    | Vite + React (Mini App) |
-| Database    | Supabase (Postgres) |
-| Web3        | ethers.js           |
-| Deploy      | Vercel              |
+## Key Features
 
-## Games (v1)
+- **9 Provably Fair Games** — Dice, Coinflip, Crash, Mines, Plinko, Slots, Roulette, Limbo, Jackpot
+- **Multi-Chain Wallets** — ETH (Base), SOL, TON with on-chain deposit detection & hot wallet payouts
+- **Provably Fair System** — HMAC-SHA256 commit-reveal with per-user seed rotation and verification
+- **Gamification** — XP bar, daily streaks, daily bonus claims, leaderboard rankings
+- **Social Features** — Live bet feed, share wins, referral system (20% house profit reward)
+- **Responsive Mini App** — Sound effects, haptic feedback, confetti, animated numbers, auto-play
+- **Rate Limiting** — Per-IP and per-user game play limits
 
-- **Dice** — Roll over/under with configurable target (1–99). 2% house edge.
-- **Coinflip** — Heads or tails. 50% win chance, 1.96x payout.
+## Supported Chains
 
-## Chains
+| Chain   | Symbol | Network |
+|---------|--------|---------|
+| EVM     | ETH    | Base    |
+| Solana  | SOL    | Mainnet |
+| TON     | TON    | Telegram |
 
-- **Base** (ETH)
-- **Solana** (SOL)
-- **TON** (Telegram native wallet)
-
-## Wallet Model
-
-Non-custodial connect → deposit to hot wallet → instant credit balance → on-chain withdraw.
-
-Players connect their own wallet (WalletConnect / TON Connect), deposit to a bot-managed address, and play with zero gas fees. Withdrawals are processed by the hot wallet.
-
-## Provably Fair
-
-Standard HMAC-SHA256 system:
-1. Server seed is committed (SHA-256) before use
-2. Client seed provided by player
-3. Nonce increments per bet
-4. Result = HMAC(serverSeed, clientSeed:nonce)
-5. Old seeds are revealed for verification
-
-## Local Dev
+## Local Development
 
 ```bash
-# Install deps
+# Install root deps + app deps
 npm install
 cd app && npm install && cd ..
 
@@ -58,28 +50,28 @@ npx tsx scripts/set-webhook.ts
 npm run dev
 ```
 
-## Vercel Deploy
+## Deploy (Vercel)
 
 ```bash
-# Deploy everything
 npx vercel --prod
 
 # Set webhook to your Vercel URL
-TELEGRAM_BOT_TOKEN=xxx BOT_URL=https://your-project.vercel.app/api/bot npx tsx scripts/set-webhook.ts
+TELEGRAM_BOT_TOKEN=xxx BOT_URL=https://your-project.vercel.app/api/bot \
+  npx tsx scripts/set-webhook.ts
 ```
 
-Set these env vars in Vercel:
+### Environment Variables
 
-| Variable              | Description                         |
-|-----------------------|-------------------------------------|
-| `TELEGRAM_BOT_TOKEN`  | Bot token from @BotFather           |
-| `TELEGRAM_SECRET_TOKEN` | Webhook secret (optional)         |
-| `SUPABASE_URL`         | Supabase project URL                |
-| `SUPABASE_SERVICE_KEY` | Supabase service_role key           |
-| `BASE_RPC_URL`         | Base mainnet RPC (e.g. Alchemy)     |
-| `HOT_WALLET_PK`        | Hot wallet private key (for payouts)|
-| `MINI_APP_URL`         | Mini App URL (same as Vercel domain)|
+| Variable              | Description                            |
+|-----------------------|----------------------------------------|
+| `TELEGRAM_BOT_TOKEN`  | Bot token from @BotFather              |
+| `TELEGRAM_SECRET_TOKEN` | Webhook secret (optional)           |
+| `SUPABASE_URL`        | Supabase project URL                   |
+| `SUPABASE_SERVICE_KEY` | Supabase service_role key             |
+| `BASE_RPC_URL`        | Base mainnet RPC (e.g. Alchemy)        |
+| `HOT_WALLET_PK`       | Hot wallet private key (for payouts)   |
+| `MINI_APP_URL`        | Mini App URL (same as Vercel domain)   |
 
-## DB Setup
+## Database Setup
 
 Run `supabase/schema.sql` and `supabase/rpc.sql` in your Supabase SQL editor.

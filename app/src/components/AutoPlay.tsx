@@ -63,7 +63,7 @@ export default function AutoPlay({ onPlay, disabled, balance }: Props) {
           letterSpacing: 1, padding: '4px 0', opacity: 0.7,
         }}
       >
-        {open ? '▼ HIDE' : '▶'} AUTO-PLAY
+        {open ? 'HIDE' : 'SHOW'} AUTO-PLAY
       </button>
 
       {open && (
@@ -140,7 +140,7 @@ export default function AutoPlay({ onPlay, disabled, balance }: Props) {
               opacity: !running && disabled ? 0.5 : 1,
             }}
           >
-            {running ? '■ STOP' : '▶ START AUTO'}
+            {running ? 'STOP' : 'START AUTO'}
           </button>
         </div>
       )}

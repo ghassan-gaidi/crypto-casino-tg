@@ -28,8 +28,9 @@ interface Props {
 const BASE = import.meta.env.VITE_API_URL || ''
 
 const GAME_ICONS: Record<string, string> = {
-  dice: '◆', coinflip: '◑', crash: '↗', mines: '⛏',
-  plinko: '▼', slots: '≡', roulette: '◎', limbo: '↑', jackpot: '★'
+  dice: '/icons/icon-dice.svg', coinflip: '/icons/icon-coinflip.svg', crash: '/icons/icon-crash.svg',
+  mines: '/icons/icon-mines.svg', plinko: '/icons/icon-plinko.svg', slots: '/icons/icon-slots.svg',
+  roulette: '/icons/icon-roulette.svg', limbo: '/icons/icon-limbo.svg', jackpot: '/icons/icon-jackpot.svg'
 }
 
 const GAME_COLORS: Record<string, string> = {

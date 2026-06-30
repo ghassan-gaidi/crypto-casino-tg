@@ -5,10 +5,10 @@
 
 export type Chain = 'evm' | 'sol' | 'ton'
 
-const CHAINS: { id: Chain; icon: string; symbol: string; color: string }[] = [
-  { id: 'evm', icon: '◆', symbol: 'ETH', color: '#627EEA' },
-  { id: 'sol', icon: '◎', symbol: 'SOL', color: '#14F195' },
-  { id: 'ton', icon: '💎', symbol: 'TON', color: '#0098EA' },
+const CHAINS: { id: Chain; symbol: string; color: string }[] = [
+  { id: 'evm', symbol: 'ETH', color: '#627EEA' },
+  { id: 'sol', symbol: 'SOL', color: '#14F195' },
+  { id: 'ton', symbol: 'TON', color: '#0098EA' },
 ]
 
 const STORAGE_KEY = 'casino_chain'
@@ -24,6 +24,32 @@ export function getActiveChain(): Chain {
 interface ChainSwitcherProps {
   value: Chain
   onChange: (chain: Chain) => void
+}
+
+function ChainIcon({ chain }: { chain: Chain }) {
+  switch (chain) {
+    case 'evm':
+      return (
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ display: 'block' }}>
+          <path d="M6 0L11 3V9L6 12L1 9V3L6 0Z" stroke="currentColor" strokeWidth="1.2" fill="none" />
+          <path d="M6 3L8 4.5V7.5L6 9L4 7.5V4.5L6 3Z" fill="currentColor" opacity="0.5" />
+        </svg>
+      )
+    case 'sol':
+      return (
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ display: 'block' }}>
+          <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2" />
+          <circle cx="6" cy="6" r="1.5" fill="currentColor" />
+        </svg>
+      )
+    case 'ton':
+      return (
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ display: 'block' }}>
+          <path d="M6 0L11 6L6 12L1 6L6 0Z" stroke="currentColor" strokeWidth="1.2" fill="none" />
+          <path d="M6 2L9.5 6H8L6 9L4 6H2.5L6 2Z" fill="currentColor" opacity="0.5" />
+        </svg>
+      )
+  }
 }
 
 export default function ChainSwitcher({ value, onChange }: ChainSwitcherProps) {
@@ -63,7 +89,9 @@ export default function ChainSwitcher({ value, onChange }: ChainSwitcherProps) {
               background: active ? c.color : 'transparent',
             }}
           >
-            <span style={{ fontSize: 13 }}>{c.icon}</span>
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              <ChainIcon chain={c.id} />
+            </span>
             <span>{c.symbol}</span>
           </button>
         )

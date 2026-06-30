@@ -22,6 +22,8 @@ exports.rouletteResult = rouletteResult;
 exports.roulettePayoutMultiplier = roulettePayoutMultiplier;
 exports.limboResult = limboResult;
 exports.limboPayoutMultiplier = limboPayoutMultiplier;
+exports.crashResult = crashResult;
+exports.verifyCrashRoll = verifyCrashRoll;
 const node_crypto_1 = __importDefault(require("node:crypto"));
 
 /**
@@ -147,10 +149,10 @@ function plinkoPayoutMultiplier(risk, slot) {
 // Slots (3-reel classic)
 // ════════════════════════════════════════════════════════════════════
 
-const SLOTS_SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '🔔', '💎', '⭐', '7️⃣'];
+const SLOTS_SYMBOLS = ['CHERRY', 'LEMON', 'ORANGE', 'GRAPE', 'BELL', 'DIAMOND', 'STAR', 'SEVEN'];
 const SLOTS_PAYOUTS = {
-  '🍒🍒🍒': 5, '🍋🍋🍋': 8, '🍊🍊🍊': 10, '🍇🍇🍇': 15,
-  '🔔🔔🔔': 20, '💎💎💎': 50, '⭐⭐⭐': 100, '7️⃣7️⃣7️⃣': 250,
+  'SEVEN-SEVEN-SEVEN': 250, 'STAR-STAR-STAR': 100, 'DIAMOND-DIAMOND-DIAMOND': 50, 'BELL-BELL-BELL': 20,
+  'CHERRY-CHERRY-CHERRY': 10, 'LEMON-LEMON-LEMON': 8, 'ORANGE-ORANGE-ORANGE': 6, 'GRAPE-GRAPE-GRAPE': 5,
 };
 
 function slotsResult(serverSeed, clientSeed, nonce) {
@@ -163,7 +165,7 @@ function slotsResult(serverSeed, clientSeed, nonce) {
     reels.push(symbols[idx]);
   }
 
-  const combo = reels.join('');
+  const combo = reels.join('-');
   const baseMultiplier = SLOTS_PAYOUTS[combo] || 0;
 
   // Partial matches (2 of a kind on first two reels)
@@ -183,7 +185,7 @@ function slotsResult(serverSeed, clientSeed, nonce) {
 }
 
 function slotsPayout(reels) {
-  const combo = reels.join('');
+  const combo = reels.join('-');
   return SLOTS_PAYOUTS[combo] || 0;
 }
 
@@ -241,18 +243,34 @@ function roulettePayoutMultiplier(betType, betValue, result) {
 }
 
 // ════════════════════════════════════════════════════════════════════
-// Limbo
+// Crash (Bustabit-style)
 // ════════════════════════════════════════════════════════════════════
 
 /**
- * Limbo: similar to crash but simpler.
- * A multiplier flies up (starts at 1x). The player bets on how high it'll go.
- * Player wins if the actual multiplier >= their target.
- *
- * Formula: multiplier = Math.floor((2^32 / (h + 0.01)) * (1 - houseEdge) * 100) / 100
+ * Crash: Bustabit provably fair formula.
+ * multiplier = floor(((2^32 - 1) / (h + 0.01)) * (1 - houseEdge) * 100) / 100
  * Where h = first 4 bytes of HMAC as uint32.
- * Same as Bustabit crash formula.
+ * Minimum crash point is 1.00x.
  */
+const CRASH_EDGE = 0.02;
+
+function crashResult(serverSeed, clientSeed, nonce, houseEdge = CRASH_EDGE) {
+  const hash = computeResult(serverSeed, clientSeed, nonce);
+  const h = hash.readUInt32BE(0);
+  // Bustabit formula: crash point with house edge
+  const numerator = Math.pow(2, 32) - 1;
+  const crashPoint = Math.max(1.00, Math.floor((numerator / (h + 0.01)) * (1 - houseEdge) * 100) / 100);
+  return {
+    crashPoint,
+    resultHash: hash.toString('hex'),
+  };
+}
+
+function verifyCrashRoll(serverSeed, clientSeed, nonce, houseEdge = CRASH_EDGE) {
+  return crashResult(serverSeed, clientSeed, nonce, houseEdge);
+}
+
+// Limbo: uses the same Bustabit formula
 const LIMBO_EDGE = 0.02;
 
 function limboResult(serverSeed, clientSeed, nonce) {

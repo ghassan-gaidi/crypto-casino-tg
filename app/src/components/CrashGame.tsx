@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+const CrashVisual = React.lazy(() => import('./CrashVisual'));
+import React, { Suspense, useState, useCallback, useEffect, useRef } from 'react'
 import { useGameFeedback } from '../hooks'
 import { useGameKeyboard } from '../hooks/keyboard'
 import ShareWin from './ShareWin'
@@ -136,9 +137,6 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
   const displayMultiplier = animating ? currentMultiplier : (result ? result.crashPoint : 1.0)
   const crashed = result && !result.playerWon
 
-  // Compute graph dimensions for the animated crash line
-  const graphProgress = Math.min(((displayMultiplier - 1) / Math.max(displayMultiplier, 2)) * 100, 100)
-
   useGameKeyboard({
     onBet: handlePlay,
     onQuickBet: (v) => setBetAmount(parseFloat(v)),
@@ -153,7 +151,10 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
       {/* Header — .header with .btn-back, .header-title, .header-balance */}
       <div className="header">
         <button className="btn-back" onClick={onBack}>BACK</button>
-        <span className="header-title">🚀 CRASH</span>
+        <span className="header-title" style={{display:'flex',alignItems:'center',gap:6}}>
+          <img src="/icons/icon-crash.svg" alt="" width="18" height="18" />
+          CRASH
+        </span>
         <span className="header-balance">
           {balance !== null
             ? <AnimatedNumber value={balance} decimals={2} />
@@ -161,19 +162,19 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
         </span>
       </div>
 
-      {/* Crash Graph — .crash-graph with .crash-line and .crash-label */}
-      <div className="crash-graph">
-        {animating || result ? (
-          <>
-            <div className="crash-line" style={{ width: graphProgress + '%', height: graphProgress * 0.9 + '%' }} />
-            <div className={"crash-label " + (crashed ? 'text-red' : 'text-green')}>
-              ×{displayMultiplier.toFixed(2)}
-            </div>
-          </>
-        ) : (
-          <div className="crash-label text-dim">WAITING...</div>
-        )}
-      </div>
+      {/* Crash Graph — Phaser Canvas (lazy loaded) */}
+      <Suspense fallback={
+        <div className="crash-graph" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span className="t-label">LOADING GRAPHICS...</span>
+        </div>
+      }>
+        <CrashVisual
+          crashPoint={result?.crashPoint ?? 2}
+          animating={animating}
+          currentMultiplier={displayMultiplier}
+          crashed={!!crashed}
+        />
+      </Suspense>
 
       {/* Bet Amount — .term-box / .term-box-hd / .term-box-bd / .chips / .chip */}
       <div className="term-box">
@@ -226,7 +227,7 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
         onClick={handlePlay}
         disabled={loading || balance === null || betAmount <= 0 || betAmount > (balance ?? 0)}
       >
-        {loading ? "🚀 LAUNCHING..." : animating ? `×${currentMultiplier.toFixed(2)}` : "🚀 LAUNCH"}
+        {loading ? 'LAUNCHING...' : animating ? `×${currentMultiplier.toFixed(2)}` : 'LAUNCH'}
       </button>
 
       <AutoPlay onPlay={handlePlay} disabled={loading} balance={balance} />
@@ -240,7 +241,7 @@ export default function CrashGame({ onBack, userId }: CrashGameProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="result-label">
-              {result.playerWon ? "CASHED OUT ✅" : "CRASHED 💥"}
+              {result.playerWon ? "CASHED OUT" : "CRASHED"}
             </div>
             <div className="result-number">
               ×{result.crashPoint.toFixed(2)}

@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Crypto Casino</title>
+    <title>PICKR — Pick. Play. Prove.</title>
     <meta name="description" content="9 Provably Fair Games · ETH / SOL / TON" />
-    <meta name="theme-color" content="#0A0A0F" />
+    <meta name="theme-color" content="#08080E" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Crypto Casino" />
+    <meta name="apple-mobile-web-app-title" content="PICKR" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -19,7 +19,7 @@
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Crypto Casino — Play & Win" />
+    <meta property="og:title" content="PICKR — Pick. Play. Prove." />
     <meta property="og:description" content="9 Provably Fair Games · ETH / SOL / TON · Instant Payouts" />
     <meta property="og:image" content="/og-image.svg" />
     <meta property="og:image:width" content="1200" />
@@ -27,16 +27,16 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Crypto Casino — Play & Win" />
+    <meta name="twitter:title" content="PICKR — Pick. Play. Prove." />
     <meta name="twitter:description" content="9 Provably Fair Games · ETH / SOL / TON" />
     <meta name="twitter:image" content="/og-image.svg" />
 
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body {
-        font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-        background: #0A0A0F;
-        color: #e0e0e0;
+        font-family: 'Space Grotesk', 'system-ui', sans-serif;
+        background: #08080E;
+        color: #D4D4E0;
         -webkit-font-smoothing: antialiased;
         overflow-x: hidden;
       }
@@ -44,30 +44,27 @@
       /* ── BRANDED SPLASH SCREEN ─────────────────────────────── */
       #splash {
         position: fixed; inset: 0; z-index: 9999;
-        background: #0A0A0F;
+        background: #08080E;
         display: flex; flex-direction: column;
         align-items: center; justify-content: center;
         transition: opacity .4s ease, visibility .4s ease;
       }
       #splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-      .splash-chip {
+      .splash-logo {
         width: 96px; height: 96px;
         animation: splashPulse 1.5s ease-in-out infinite;
       }
       .splash-text {
         margin-top: 20px;
         font-size: 18px; font-weight: 700;
-        letter-spacing: 4px; text-transform: uppercase;
-        background: linear-gradient(135deg, #00F0FF, #A855F7, #FF006E);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        letter-spacing: 5px; text-transform: uppercase;
+        color: #00E5FF;
       }
       .splash-bar {
         margin-top: 24px;
         width: 120px; height: 2px;
-        background: #1A1A2E;
+        background: #1E1E30;
         border-radius: 2px;
         overflow: hidden;
       }
@@ -75,14 +72,14 @@
         content: '';
         display: block;
         width: 40%; height: 100%;
-        background: linear-gradient(90deg, #00F0FF, #A855F7);
+        background: #00E5FF;
         border-radius: 2px;
         animation: splashLoad 1s ease-in-out infinite;
       }
 
       @keyframes splashPulse {
-        0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(0,240,255,.3)); }
-        50% { transform: scale(1.05); filter: drop-shadow(0 0 24px rgba(0,240,255,.5)); }
+        0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(0,229,255,.25)); }
+        50% { transform: scale(1.05); filter: drop-shadow(0 0 24px rgba(0,229,255,.4)); }
       }
       @keyframes splashLoad {
         0% { transform: translateX(-100%); }
@@ -93,31 +90,28 @@
   <body>
     <!-- Branded splash screen -->
     <div id="splash">
-      <svg class="splash-chip" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <svg class="splash-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#00F0FF"/>
-            <stop offset="50%" stop-color="#A855F7"/>
-            <stop offset="100%" stop-color="#FF006E"/>
-          </linearGradient>
           <filter id="sglow">
             <feGaussianBlur stdDeviation="2" result="b"/>
             <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
         </defs>
-        <polygon points="20,2 44,2 62,20 62,44 44,62 20,62 2,44 2,20" fill="none" stroke="url(#sg)" stroke-width="3" filter="url(#sglow)"/>
-        <polygon points="20,6 44,6 58,20 58,44 44,58 20,58 6,44 6,20" fill="#12121A"/>
-        <circle cx="32" cy="32" r="18" fill="none" stroke="url(#sg)" stroke-width="1.5" opacity="0.5"/>
-        <text x="32" y="38" text-anchor="middle" font-family="monospace" font-size="20" font-weight="800" fill="url(#sg)" filter="url(#sglow)">CC</text>
+        <!-- Octagonal chip outline -->
+        <polygon points="20,2 44,2 62,20 62,44 44,62 20,62 2,44 2,20"
+                 fill="none" stroke="#00E5FF" stroke-width="2.5" filter="url(#sglow)"/>
+        <polygon points="20,5 44,5 59,20 59,44 44,59 20,59 5,44 5,20" fill="#101018"/>
+        <!-- P pickaxe monogram -->
+        <path d="M 32 46 L 32 20 L 24 14 L 24 12 L 32 18 L 40 12 L 40 14 L 32 20 L 32 26 L 44 26 Q 48 26 48 32 Q 48 38 44 38 L 32 38"
+              fill="none" stroke="#00E5FF" stroke-width="3.5" stroke-linecap="square" stroke-linejoin="miter" filter="url(#sglow)"/>
       </svg>
-      <div class="splash-text">Crypto Casino</div>
+      <div class="splash-text">PICKR</div>
       <div class="splash-bar"></div>
     </div>
 
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Hide splash once React mounts (check every 200ms, max 5s)
       var _splash = document.getElementById('splash');
       var _checks = 0;
       var _hide = setInterval(function() {

@@ -10,10 +10,10 @@ interface Props {
 type Tab = 'balance' | 'deposit' | 'withdraw' | 'history'
 type Chain = 'evm' | 'sol' | 'ton'
 
-const CHAIN_META: Record<Chain, { symbol: string; name: string; network: string; minDep: string; minWd: string; placeholder: string }> = {
-  evm: { symbol: 'ETH', name: 'ETH', network: 'BASE', minDep: '0.0001', minWd: '0.0005', placeholder: '0x...' },
-  sol: { symbol: 'SOL', name: 'SOL', network: 'SOLANA', minDep: '0.001', minWd: '0.005', placeholder: 'Solana address...' },
-  ton: { symbol: 'TON', name: 'TON', network: 'TON', minDep: '0.1', minWd: '0.5', placeholder: '0:hex or base64...' },
+const CHAIN_META: Record<Chain, { symbol: string; name: string; network: string; minDep: string; minWd: string; placeholder: string; color: string }> = {
+  evm: { symbol: 'ETH', name: 'ETH', network: 'BASE', minDep: '0.0001', minWd: '0.0005', placeholder: '0x...', color: '#627EEA' },
+  sol: { symbol: 'SOL', name: 'SOL', network: 'SOLANA', minDep: '0.001', minWd: '0.005', placeholder: 'Solana address...', color: '#14F195' },
+  ton: { symbol: 'TON', name: 'TON', network: 'TON', minDep: '0.1', minWd: '0.5', placeholder: '0:hex or base64...', color: '#0098EA' },
 }
 
 // Admin wallet addresses — users send crypto here, we keep revenue
@@ -21,6 +21,51 @@ const ADMIN_WALLETS: Record<Chain, string> = {
   evm: '0x29021dd5306D7b3b6608a2bc8276D33c1200C7Ef',
   sol: '2wZ7mvMaEc9sRPTj1y5iiGnT9q9B8XhKT6yWhxBwS7Nc',
   ton: '0:05e21ca19f552360c239599c137a46669aae789417ef4f1a4e3e560939d7aa39',
+}
+
+function ChainIcon({ chain, size = 12 }: { chain: Chain; size?: number }) {
+  switch (chain) {
+    case 'evm':
+      return (
+        <svg width={size} height={size} viewBox="0 0 12 12" fill="none" style={{ display: 'block' }}>
+          <path d="M6 0L11 3V9L6 12L1 9V3L6 0Z" stroke="currentColor" strokeWidth="1.2" fill="none" />
+          <path d="M6 3L8 4.5V7.5L6 9L4 7.5V4.5L6 3Z" fill="currentColor" opacity="0.5" />
+        </svg>
+      )
+    case 'sol':
+      return (
+        <svg width={size} height={size} viewBox="0 0 12 12" fill="none" style={{ display: 'block' }}>
+          <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2" />
+          <circle cx="6" cy="6" r="1.5" fill="currentColor" />
+        </svg>
+      )
+    case 'ton':
+      return (
+        <svg width={size} height={size} viewBox="0 0 12 12" fill="none" style={{ display: 'block' }}>
+          <path d="M6 0L11 6L6 12L1 6L6 0Z" stroke="currentColor" strokeWidth="1.2" fill="none" />
+          <path d="M6 2L9.5 6H8L6 9L4 6H2.5L6 2Z" fill="currentColor" opacity="0.5" />
+        </svg>
+      )
+  }
+}
+
+function CopyIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
+      <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
+      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  )
+}
+
+function WarningIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ display: 'block', flexShrink: 0 }}>
+      <path d="M12 3L2 21h20L12 3Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill="none" />
+      <path d="M12 9v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="12" cy="17" r="1" fill="currentColor" />
+    </svg>
+  )
 }
 
 export default function BalancePage({ onBack, userId, username }: Props) {
@@ -167,7 +212,10 @@ export default function BalancePage({ onBack, userId, username }: Props) {
           {(['evm', 'sol', 'ton'] as Chain[]).map(c => (
             <button key={c} className={`chip${chain === c ? ' active' : ''}`}
               onClick={() => { setChain(c); setTxHash(''); setDepositStatus(''); setDepositError(''); setWdAmount(''); setWdAddress(''); setWdStatus(''); setWdError(''); setCopied(false) }}
-              style={{ fontSize: 10, padding: '4px 8px' }}>
+              style={{ fontSize: 10, padding: '4px 8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+              <span style={{ display: 'flex', alignItems: 'center', color: CHAIN_META[c].color }}>
+                <ChainIcon chain={c} size={10} />
+              </span>
               {CHAIN_META[c].symbol}
             </button>
           ))}
@@ -182,7 +230,14 @@ export default function BalancePage({ onBack, userId, username }: Props) {
           <div className="flex flex-col gap-sm">
             {(['evm', 'sol', 'ton'] as Chain[]).map(c => (
               <div key={c} className="term-box">
-                <div className="term-box-hd"><span>{CHAIN_META[c].symbol} · {CHAIN_META[c].network}</span></div>
+                <div className="term-box-hd">
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', color: CHAIN_META[c].color }}>
+                      <ChainIcon chain={c} size={10} />
+                    </span>
+                    {CHAIN_META[c].symbol} · {CHAIN_META[c].network}
+                  </span>
+                </div>
                 <div className="term-box-bd">
                   <div className="stat-row">
                     <span className="stat-label">BALANCE</span>
@@ -217,14 +272,15 @@ export default function BalancePage({ onBack, userId, username }: Props) {
               }}>
                 {ADMIN_WALLETS[chain]}
               </div>
-              <button className="btn btn-sm" onClick={copyAddr} style={{ width: '100%' }}>
-                {copied ? '✓ COPIED' : '◇ COPY ADDRESS'}
+              <button className="btn btn-sm" onClick={copyAddr}
+                style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                {copied ? '✓ COPIED' : <><CopyIcon /> COPY ADDRESS</>}
               </button>
               <div className="t-small text-muted" style={{ marginTop: 8 }}>
                 MIN DEPOSIT: {meta.minDep} {meta.symbol} · {chain === 'evm' ? '3 CONFIRMATIONS' : '1 CONFIRMATION'}
               </div>
-              <div className="t-small" style={{ marginTop: 6, color: 'var(--yellow)' }}>
-                ⚠ SEND ONLY {meta.symbol} ON {meta.network}
+              <div className="t-small" style={{ marginTop: 6, color: 'var(--yellow)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <WarningIcon /> SEND ONLY {meta.symbol} ON {meta.network}
               </div>
             </div>
           </div>

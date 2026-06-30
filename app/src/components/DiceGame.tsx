@@ -67,6 +67,7 @@ export default function DiceGame({ onBack, userId }: Props) {
       })
       const data = await res.json()
       setResult(data)
+      setBalance(prev => prev !== null ? prev + data.payout - parseFloat(betAmount) : prev)
       setGameHistory(prev => [...prev.slice(-9), data.playerWon])
       if (data.playerWon) showWinToast('dice', parseFloat(betAmount), 99 / (data.winChance || 50) * 0.98, '◆')
     } catch (err) {
@@ -89,7 +90,10 @@ export default function DiceGame({ onBack, userId }: Props) {
     <div className="page">
       <div className="header">
         <button className="btn-back" onClick={onBack}>&larr; Back</button>
-        <span className="s-title" style={{ marginTop: 0 }}>DICE</span>
+        <span className="header-title" style={{display:'flex',alignItems:'center',gap:6}}>
+          <img src="/icons/icon-dice.svg" alt="" width="18" height="18" />
+          DICE
+        </span>
         <span className="header-balance">
           {balance !== null ? <AnimatedNumber value={balance} decimals={4} /> : '---'}
         </span>

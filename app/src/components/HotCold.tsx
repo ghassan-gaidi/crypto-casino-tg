@@ -14,7 +14,7 @@ export default function HotCold({ history, max = 10 }: HotColdProps) {
   const isHot = streak >= 3
   const isCold = streak <= -3
 
-  const label = isHot ? '🔥 HOT' : isCold ? '❄️ COLD' : ''
+  const label = isHot ? 'HOT' : isCold ? 'COLD' : ''
   const labelColor = isHot
     ? 'var(--green)'
     : isCold
@@ -49,10 +49,11 @@ export default function HotCold({ history, max = 10 }: HotColdProps) {
       {label && (
         <span style={{
           color: labelColor,
-          fontWeight: 600,
-          fontSize: '11px',
+          fontWeight: 700,
+          fontSize: '10px',
           marginLeft: '2px',
-          letterSpacing: '0.5px',
+          letterSpacing: '1px',
+          textTransform: 'uppercase',
         }}>
           {label}
         </span>

@@ -213,6 +213,8 @@ module.exports = async (req, res) => {
           clientSeed = generateSeed();
           result = playCoinflip({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, pick, betAmount: amount });
           await recordBet({ userId, game: 'coinflip', chain: 'evm', betAmount: amount, payout: result.payout, outcome: { result: result.result, pick }, serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, resultHash: result.resultHash, playerWon: result.playerWon });
+          const deltaCF = result.payout - amount;
+          await updateBalance(userId, 'evm', deltaCF);
           await incrementSeedNonce(seed.id);
           res.json({ result: result.result, playerWon: result.playerWon, payout: result.payout, payoutMultiplier: result.payoutMultiplier, resultHash: result.resultHash, nonce: seed.current_nonce, clientSeed });
           break;
@@ -230,37 +232,51 @@ module.exports = async (req, res) => {
           res.json({ crashPoint: result.crashPoint, playerWon: result.playerWon, payout: result.payout, payoutMultiplier: result.payoutMultiplier, resultHash: result.resultHash, nonce: seed.current_nonce, clientSeed });
           break;
         }
-        // ── MINES (one-shot: reveal N tiles deterministically) ──
+        // ── MINES (interactive: start → reveal tiles → cashout) ──
         case 'mines': {
           const numMines = parseInt(body.numMines || '3');
           const action = body.action || 'bet';
           if (numMines < 1 || numMines > 24) { res.status(400).json({ error: 'Mines must be 1-24' }); return; }
 
-          if (action === 'bet') {
-            // One-shot play: reveal N tiles (revealCount) or all tiles
-            const revealCount = parseInt(body.revealCount || '1');
-            if (revealCount < 1 || revealCount > GRID_SIZE - numMines) { res.status(400).json({ error: `Reveal count must be 1-${GRID_SIZE - numMines}` }); return; }
+          if (action === 'bet' || action === 'start') {
+            // Start game: deduct bet, generate seeds, reveal first tile
             clientSeed = generateSeed();
-            result = playMines({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, numMines, revealCount });
-            const payout = result.safe ? Math.round(amount * result.multiplier * 1e8) / 1e8 : 0;
-            await recordBet({ userId, game: 'mines', chain: 'evm', betAmount: amount, payout, outcome: { safe: result.safe, numMines, revealCount, mines: result.minePositions }, serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, resultHash: result.resultHash, playerWon: result.safe });
-            const deltaM = payout - amount;
-            await updateBalance(userId, 'evm', deltaM);
-            await incrementSeedNonce(seed.id);
-            res.json({ safe: result.safe, payout, multiplier: result.multiplier, minePositions: result.minePositions, revealCount, numMines, resultHash: result.resultHash, nonce: seed.current_nonce, clientSeed });
+            const result0 = playMines({ serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, numMines, revealCount: 1 });
+            // Deduct bet — payout handled on cashout
+            await updateBalance(userId, 'evm', -amount);
+            const multiplier0 = result0.safe ? minesPayoutMultiplier(numMines, 1) : 0;
+
+            if (!result0.safe) {
+              // First tile is a mine — record the loss immediately
+              const hHash = require("../src/provably-fair").computeResult(seed.seed, clientSeed, seed.current_nonce);
+              const allMines = generateMinePositions(seed.seed, clientSeed, seed.current_nonce, numMines);
+              await recordBet({ userId, game: 'mines', chain: 'evm', betAmount: amount, payout: 0, outcome: { safe: false, numMines, mines: allMines }, serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, resultHash: hHash.toString('hex'), playerWon: false });
+              await incrementSeedNonce(seed.id);
+            }
+
+            res.json({ safe: result0.safe, payout: 0, multiplier: multiplier0, minePositions: result0.minePositions, revealCount: 1, numMines, resultHash: result0.resultHash, nonce: seed.current_nonce, clientSeed });
           } else if (action === 'reveal') {
-            // Stateless reveal: check if tileIndex is a mine
+            // Check if tile is a mine (deterministic, stateless)
             const tileIndex = parseInt(body.tileIndex);
             if (isNaN(tileIndex) || tileIndex < 0 || tileIndex >= GRID_SIZE) { res.status(400).json({ error: 'Invalid tile index' }); return; }
             clientSeed = body.clientSeed || generateSeed();
             const hitMine = isMine(seed.seed, clientSeed, seed.current_nonce, numMines, tileIndex);
             const safe = !hitMine;
-            // Calculate current multiplier for (revealedSoFar + 1) safe tiles
             const revealedSoFar = parseInt(body.revealedSoFar || '0');
             const multiplier = safe ? minesPayoutMultiplier(numMines, revealedSoFar + 1) : 0;
-            res.json({ safe, tileIndex, multiplier, numMines, resultHash: '', nonce: seed.current_nonce, clientSeed });
+            const payout = safe ? Math.round(amount * multiplier * 1e8) / 1e8 : 0;
+
+            if (!safe) {
+              // Mine hit — record the loss
+              const hHash = require("../src/provably-fair").computeResult(seed.seed, clientSeed, seed.current_nonce);
+              const allMines = generateMinePositions(seed.seed, clientSeed, seed.current_nonce, numMines);
+              await recordBet({ userId, game: 'mines', chain: 'evm', betAmount: amount, payout: 0, outcome: { safe: false, numMines, mines: allMines }, serverSeed: seed.seed, clientSeed, nonce: seed.current_nonce, resultHash: hHash.toString('hex'), playerWon: false });
+              await incrementSeedNonce(seed.id);
+            }
+
+            res.json({ safe, tileIndex, multiplier, payout, numMines, minePositions: safe ? [] : generateMinePositions(seed.seed, clientSeed, seed.current_nonce, numMines), resultHash: '', nonce: seed.current_nonce, clientSeed });
           } else if (action === 'cashout') {
-            // Cash out: calculate payout for revealed safe tiles
+            // Cash out: calculate payout for all revealed safe tiles
             const revealedSoFar = parseInt(body.revealedSoFar || '1');
             if (revealedSoFar < 1) { res.status(400).json({ error: 'Reveal at least 1 tile' }); return; }
             const multiplier = minesPayoutMultiplier(numMines, revealedSoFar);
@@ -271,7 +287,8 @@ module.exports = async (req, res) => {
             const allMinePositions = generateMinePositions(seed.seed, clientSeed, finalNonce, numMines);
             const hResultHash = hHash.toString('hex');
             await recordBet({ userId, game: 'mines', chain: 'evm', betAmount: amount, payout, outcome: { safe: true, numMines, revealCount: revealedSoFar, mines: allMinePositions }, serverSeed: seed.seed, clientSeed, nonce: finalNonce, resultHash: hResultHash, playerWon: true });
-            await updateBalance(userId, 'evm', payout - amount);
+            // Bet already deducted at start — credit only the payout
+            await updateBalance(userId, 'evm', payout);
             await incrementSeedNonce(seed.id);
             res.json({ safe: true, payout, multiplier, minePositions: allMinePositions, revealCount: revealedSoFar, numMines, resultHash: hResultHash, nonce: finalNonce, clientSeed });
           } else {

@@ -14,8 +14,9 @@ interface Bet {
 }
 
 const GAME_ICONS: Record<string, string> = {
-  dice: '◆', coinflip: '◑', crash: '↗', mines: '⛏',
-  plinko: '▼', slots: '≡', roulette: '◎', limbo: '↑', jackpot: '★'
+  dice: '/icons/icon-dice.svg', coinflip: '/icons/icon-coinflip.svg', crash: '/icons/icon-crash.svg',
+  mines: '/icons/icon-mines.svg', plinko: '/icons/icon-plinko.svg', slots: '/icons/icon-slots.svg',
+  roulette: '/icons/icon-roulette.svg', limbo: '/icons/icon-limbo.svg', jackpot: '/icons/icon-jackpot.svg'
 }
 
 const BASE = import.meta.env.VITE_API_URL || ''
@@ -64,7 +65,7 @@ export default function RecentBets({ userId }: Props) {
           fontSize: 12,
         }}>
           <span style={{ fontSize: 14, width: 20, textAlign: 'center' }}>
-            {GAME_ICONS[bet.game] || '●'}
+          <img src={GAME_ICONS[bet.game] || '/icons/icon-dice.svg'} alt={bet.game} width={16} height={16} />
           </span>
           <span style={{
             fontFamily: 'var(--font-mono)',

@@ -66,6 +66,7 @@ export default function CoinflipGame({ onBack, userId }: Props) {
         setResult(data)
         setGameHistory(prev => [...prev.slice(-9), data.playerWon])
         if (data.playerWon) showWinToast('coinflip', parseFloat(betAmount), 1.96, '◑')
+        setBalance(prev => prev !== null ? prev + data.payout - parseFloat(betAmount) : prev)
         setFlipping(false)
         setLoading(false)
       }, 800)
@@ -88,7 +89,10 @@ export default function CoinflipGame({ onBack, userId }: Props) {
     <div className="page">
       <div className="header">
         <button className="btn-back" onClick={onBack}>Back</button>
-        <span className="header-title">COINFLIP</span>
+        <span className="header-title" style={{display:'flex',alignItems:'center',gap:6}}>
+          <img src="/icons/icon-coinflip.svg" alt="" width="18" height="18" />
+          COINFLIP
+        </span>
         <span className="header-balance">
           {balance !== null ? <AnimatedNumber value={balance} decimals={4} /> : '---'}
         </span>

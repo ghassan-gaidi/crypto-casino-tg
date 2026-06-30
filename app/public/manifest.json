@@ -1,12 +1,12 @@
 {
-  "name": "Crypto Casino",
-  "short_name": "CryptoCasino",
+  "name": "PICKR — Pick. Play. Prove.",
+  "short_name": "PICKR",
   "description": "9 Provably Fair Games · ETH / SOL / TON",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0A0A0F",
-  "theme_color": "#0A0A0F",
+  "background_color": "#08080E",
+  "theme_color": "#08080E",
   "icons": [
     { "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any" },
     { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },

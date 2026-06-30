@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="rad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#DC2626" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#08080E" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="#08080E"/>
+  <rect width="512" height="512" fill="url(#rad)"/>
+  <!-- P pickaxe monogram centered for circular crop -->
+  <g transform="translate(256,256)" filter="url(#glow)">
+    <path d="M -2 170 L -2 40 L -50 -10 L -50 -30 L -2 10 L 35 -30 L 35 -10 L -2 40 L -2 70 L 85 70 Q 120 70 120 105 Q 120 140 85 140 L -2 140"
+          fill="none" stroke="#DC2626" stroke-width="20" stroke-linecap="square" stroke-linejoin="miter"/>
+  </g>
+</svg>

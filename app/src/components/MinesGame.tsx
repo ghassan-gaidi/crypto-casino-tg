@@ -10,6 +10,7 @@ import { isRateLimited, RateLimitBanner } from '../rate-limit-ui';
 import BetMultipliers from './BetMultipliers';
 import FairnessPanel from './FairnessPanel';
 import GameLiveBets from './GameLiveBets';
+import MinesVisual from './MinesVisual';
 
 interface MinesGameProps {
   onBack: () => void;
@@ -263,7 +264,10 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
         <button className="btn-back" onClick={onBack}>
           Back
         </button>
-        <span className="header-title">MINES</span>
+        <span className="header-title" style={{display:'flex',alignItems:'center',gap:6}}>
+          <img src="/icons/icon-mines.svg" alt="" width="18" height="18" />
+          MINES
+        </span>
         <span className="header-balance"><AnimatedNumber value={balance} decimals={4} /></span>
       </div>
 
@@ -337,48 +341,29 @@ const MinesGame: React.FC<MinesGameProps> = ({ onBack, userId }) => {
         </div>
       )}
 
-      <div className="grid-5 mb-md">
-        {tiles.length > 0
-          ? tiles.map((tile) => {
-              let tileClass = "tile";
-              let content = '';
-
-              if (tile.revealed) {
-                if (tile.isMine) {
-                  tileClass += " revealed-mine";
-                  content = '💣';
-                } else {
-                  tileClass += " revealed-safe";
-                  content = '💎';
-                }
-              } else if (loading || !gameActive) {
-                tileClass += " disabled";
-              }
-
-              return (
-                <button
-                  key={tile.index}
-                  className={tileClass}
-                  onClick={() => revealTile(tile.index)}
-                  disabled={loading || !gameActive || tile.revealed}
-                >
-                  {content}
-                </button>
-              );
-            })
-          : Array.from({ length: GRID_SIZE }).map((_, i) => (
-              <div key={i} className="tile disabled">
-                ·
-              </div>
-            ))}
-      </div>
+      {tiles.length > 0 ? (
+        <MinesVisual
+          tiles={tiles}
+          onReveal={revealTile}
+          loading={loading}
+          gameActive={gameActive}
+        />
+      ) : (
+        <div className="grid-5 mb-md">
+          {Array.from({ length: GRID_SIZE }).map((_, i) => (
+            <div key={i} className="tile disabled">
+              ·
+            </div>
+          ))}
+        </div>
+      )}
 
       <button
         className="btn btn-green btn-pulse"
         onClick={startGame}
         disabled={loading || betAmount <= 0 || betAmount > balance || gameActive}
       >
-        {loading ? '⏳ PROCESSING...' : gameActive ? 'IN GAME' : '▶ START'}
+        {loading ? 'PROCESSING...' : gameActive ? 'IN GAME' : 'START'}
       </button>
 
       {gameActive && (

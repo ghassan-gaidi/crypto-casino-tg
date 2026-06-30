@@ -101,7 +101,10 @@ const LimboGame: React.FC<LimboGameProps> = ({ onBack, userId }) => {
         <button className="btn-back" onClick={onBack}>
           Back
         </button>
-        <span className="header-title">LIMBO</span>
+        <span className="header-title" style={{display:'flex',alignItems:'center',gap:6}}>
+          <img src="/icons/icon-limbo.svg" alt="" width="18" height="18" />
+          LIMBO
+        </span>
         <span className="header-balance"><AnimatedNumber value={balance} decimals={4} /></span>
       </div>
 

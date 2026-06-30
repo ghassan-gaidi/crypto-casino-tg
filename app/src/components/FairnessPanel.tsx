@@ -68,7 +68,7 @@ export default function FairnessPanel({ userId, gameName }: Props) {
           letterSpacing: 1, padding: '4px 0', opacity: 0.7,
         }}
       >
-        {open ? '▼ HIDE' : '▶'} FAIRNESS
+        {open ? 'HIDE' : 'SHOW'} FAIRNESS
       </button>
 
       {open && (

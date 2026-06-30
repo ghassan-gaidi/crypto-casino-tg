@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <path d="M 10 52 L 24 38 L 36 42 L 54 14" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter"/>
+  <polygon points="54,14 48,26 56,24" fill="#DC2626"/>
+  <circle cx="54" cy="14" r="3" fill="#DC2626" filter="url(#g)"/>
+  <defs><filter id="g"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+</svg>

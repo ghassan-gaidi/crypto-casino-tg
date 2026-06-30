@@ -6,5 +6,14 @@ export default defineConfig({
   base: '/',
   build: {
     outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'phaser-vendor': ['phaser'],
+          'wallet-vendor': ['@tonconnect/ui', 'viem'],
+          'react-vendor': ['react', 'react-dom'],
+        },
+      },
+    },
   },
 })

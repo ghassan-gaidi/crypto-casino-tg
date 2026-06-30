@@ -177,7 +177,10 @@ const JackpotGame: React.FC<JackpotGameProps> = ({ onBack, userId }) => {
         <button className="btn-back" onClick={onBack}>
           Back
         </button>
-        <span className="header-title">JACKPOT</span>
+        <span className="header-title" style={{display:'flex',alignItems:'center',gap:6}}>
+          <img src="/icons/icon-jackpot.svg" alt="" width="18" height="18" />
+          JACKPOT
+        </span>
         <span className="header-balance"><AnimatedNumber value={balance} decimals={4} /></span>
       </div>
 
